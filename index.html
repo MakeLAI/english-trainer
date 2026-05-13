@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <!-- PWA / iPhone "Add to Home Screen" -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ENG Trainer">
+  <meta name="theme-color" content="#020617">
+  <title>Accounting English Trainer</title>
+
+  <!-- CDN: Tailwind, React 18, Babel (JSX transpile in browser) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    *  { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+    body { background:#020617; margin:0; overflow-x:hidden; color:#f1f5f9;
+           font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif; }
+    select,textarea,input { outline:none; -webkit-appearance:none; }
+    /* iOS notch safe area */
+    .nav-safe { padding-bottom: max(0.75rem, env(safe-area-inset-bottom)); }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+/* ── Lucide SVG icons (inline – no npm) ───────────────────────────────────── */
+const I = ({c,ch}) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{ch}</svg>;
+const Flame       = ({className})=><I c={className} ch={<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>}/>;
+const SettingsIco = ({className})=><I c={className} ch={<><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></>}/>;
+const BookOpen    = ({className})=><I c={className} ch={<><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></>}/>;
+const BrainIco    = ({className})=><I c={className} ch={<><ellipse cx="12" cy="11" rx="6" ry="6"/><path d="M12 17v5M9 20h6M6 11c-1.5 0-3-1-3-3s1.5-3 3-3M18 11c1.5 0 3-1 3-3s-1.5-3-3-3"/></>}/>;
+const TargetIco   = ({className})=><I c={className} ch={<><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></>}/>;
+const AwardIco    = ({className})=><I c={className} ch={<><circle cx="12" cy="8" r="6"/><path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"/></>}/>;
+const DownloadIco = ({className})=><I c={className} ch={<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></>}/>;
+const PlusIco     = ({className})=><I c={className} ch={<><path d="M5 12h14"/><path d="M12 5v14"/></>}/>;
+const ChevronR    = ({className})=><I c={className} ch={<path d="m9 18 6-6-6-6"/>}/>;
+const XIco        = ({className})=><I c={className} ch={<><path d="M18 6 6 18"/><path d="m6 6 12 12"/></>}/>;
+const CheckIco    = ({className})=><I c={className} ch={<path d="M20 6 9 17l-5-5"/>}/>;
+const SparklesIco = ({className})=><I c={className} ch={<><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.937A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4m2-2h-4"/><path d="M4 17v2m1-1H3"/></>}/>;
+const TrendUp     = ({className})=><I c={className} ch={<><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></>}/>;
+const HomeIco     = ({className})=><I c={className} ch={<><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>}/>;
+const LibraryIco  = ({className})=><I c={className} ch={<><path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/></>}/>;
+const BarChart    = ({className})=><I c={className} ch={<><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></>}/>;
+const ArrowL      = ({className})=><I c={className} ch={<><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></>}/>;
+const ZapIco      = ({className})=><I c={className} ch={<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>}/>;
+const LightbulbIco= ({className})=><I c={className} ch={<><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></>}/>;
+const CopyIco     = ({className})=><I c={className} ch={<><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></>}/>;
+
+/* ── Constants ────────────────────────────────────────────────────────────── */
+const BOX_INTERVALS = [0,1,3,7,14,30];
+const SK = 'acceng_v1'; // localStorage key
+
+const CATEGORIES = {
+  basics:     {label:'Kirjanpidon perusteet',    short:'Perusteet',  color:'from-blue-500 to-cyan-500'},
+  balance:    {label:'Tase',                     short:'Tase',       color:'from-emerald-500 to-teal-500'},
+  income:     {label:'Tuloslaskelma',            short:'Tuloslask.', color:'from-amber-500 to-orange-500'},
+  daily:      {label:'AP / AR / Päivittäinen',   short:'Päivittäin', color:'from-rose-500 to-pink-500'},
+  ifrs:       {label:'IFRS',                     short:'IFRS',       color:'from-violet-500 to-purple-500'},
+  controlling:{label:'Controlling & raportointi',short:'Controlling',color:'from-indigo-500 to-blue-500'},
+  phrases:    {label:'Business-fraasit',         short:'Fraasit',    color:'from-fuchsia-500 to-pink-500'}
+};
+
+const LEVELS = [
+  {min:0,    title:'Junior Bookkeeper',icon:'🌱'},
+  {min:100,  title:'Bookkeeper',       icon:'📖'},
+  {min:300,  title:'Accountant',       icon:'💼'},
+  {min:600,  title:'Senior Accountant',icon:'📊'},
+  {min:1000, title:'Controller',       icon:'🎯'},
+  {min:1500, title:'Senior Controller',icon:'📈'},
+  {min:2500, title:'Finance Manager',  icon:'⭐'},
+  {min:4000, title:'CFO',              icon:'👑'}
+];
+
+const ACHIEVEMENTS = [
+  {id:'first_session',title:'First Steps',    desc:'Suorita ensimmäinen harjoitus',        icon:'🎯'},
+  {id:'streak_3',     title:'3-Day Streak',   desc:'Harjoittele 3 päivää peräkkäin',       icon:'🔥'},
+  {id:'streak_7',     title:'Weekly Warrior', desc:'Harjoittele 7 päivää peräkkäin',       icon:'🔥🔥'},
+  {id:'streak_30',    title:'Iron Discipline',desc:'Harjoittele 30 päivää peräkkäin',      icon:'💎'},
+  {id:'words_25',     title:'Vocab Builder',  desc:'Opi 25 sanaa (taso 3+)',               icon:'📚'},
+  {id:'words_50',     title:'Word Master',    desc:'Opi 50 sanaa (taso 3+)',              icon:'🎓'},
+  {id:'combo_10',     title:'On Fire',        desc:'10 oikein peräkkäin',                 icon:'⚡'},
+  {id:'perfect',      title:'Perfectionist',  desc:'Täydellinen sessio (20+ sanaa, 100%)',icon:'💯'},
+  {id:'ifrs_master',  title:'IFRS Specialist',desc:'Hallitse kaikki IFRS-termit',         icon:'🌍'}
+];
+
+/* Verified: IFRS Foundation · KPMG · BDO · ACCA · Finvoicer · Aalto · TEPA · Cambridge/Longman BED */
+const VOCAB = [
+  {id:'b1', fi:'kirjanpito',               en:'bookkeeping',                   cat:'basics',      diff:1,exFi:'Yrityksen kirjanpito on lakisääteistä.',                    exEn:"A company's bookkeeping is required by law.",                    tip:'"Bookkeeping" = päivittäinen kirjaaminen. "Accounting" = laajempi käsite.'},
+  {id:'b2', fi:'tilinpäätös',              en:'financial statements',          cat:'basics',      diff:1,exFi:'Tilinpäätös laaditaan tilikauden päätyttyä.',               exEn:'Financial statements are prepared at the end of the financial year.',tip:'Aina monikossa! Sisältää taseen, tuloslaskelman, rahoituslaskelman ja liitetiedot.'},
+  {id:'b3', fi:'tase',                     en:'balance sheet',                 cat:'basics',      diff:1,exFi:'Tase kuvaa yrityksen taloudellista asemaa.',                exEn:"The balance sheet shows the company's financial position.",        tip:'IFRS-termi: "statement of financial position". Arkikäytössä "balance sheet".'},
+  {id:'b4', fi:'tuloslaskelma',            en:'income statement',              cat:'basics',      diff:1,exFi:'Tuloslaskelma osoittaa tilikauden voiton tai tappion.',     exEn:'The income statement shows the profit or loss for the period.',    tip:'Synonyymejä: "P&L", "profit and loss account". P&L yleisin puhekielessä.'},
+  {id:'b5', fi:'rahoituslaskelma',         en:'cash flow statement',           cat:'basics',      diff:1,exFi:'Rahoituslaskelma jakautuu kolmeen osaan.',                  exEn:'The cash flow statement is divided into three sections.',          tip:'Kolme osaa: operating, investing, financing. IFRS-termi: "statement of cash flows".'},
+  {id:'b6', fi:'liitetiedot',              en:'notes to the financial statements',cat:'basics',   diff:2,exFi:'Liitetiedot sisältävät selitykset numeroiden takana.',       exEn:'The notes provide explanations behind the numbers.',              tip:'Lyhyemmin "notes". Kertoo arvostusperiaatteet, riskit, sitoumukset.'},
+  {id:'b7', fi:'tilikausi',                en:'financial year',                cat:'basics',      diff:1,exFi:'Tilikausi on yleensä 12 kuukautta.',                        exEn:'The financial year is usually 12 months.',                        tip:'USA: "fiscal year". "Calendar year" = kalenterivuosi.'},
+  {id:'b8', fi:'tosite',                   en:'voucher',                       cat:'basics',      diff:1,exFi:'Jokaisesta kirjauksesta tarvitaan tosite.',                 exEn:'Every entry requires a voucher.',                                 tip:'Myös "supporting document". "Receipt" = kuitti (kapeampi).'},
+  {id:'b9', fi:'liiketapahtuma',           en:'business transaction',          cat:'basics',      diff:1,exFi:'Jokainen liiketapahtuma kirjataan.',                       exEn:'Every business transaction is recorded.',                         tip:'Lyhyesti "transaction". Kaikkien kirjausten lähtökohta.'},
+  {id:'b10',fi:'debet',                    en:'debit',                         cat:'basics',      diff:1,exFi:'Vastaavaa-puolen tilit kasvavat debet-kirjauksella.',       exEn:'Asset accounts increase with a debit entry.',                     tip:'Lyhenne "Dr". Assets ↑ debit, liabilities ↑ credit.'},
+  {id:'b11',fi:'kredit',                   en:'credit',                        cat:'basics',      diff:1,exFi:'Tulot kirjataan kredit-puolelle.',                          exEn:'Revenue is recorded on the credit side.',                         tip:'Lyhenne "Cr". Älä sekoita kuluttajakreditiin.'},
+  {id:'b12',fi:'kirjaus',                  en:'journal entry',                 cat:'basics',      diff:1,exFi:'Tein virheellisen kirjauksen ja korjasin sen.',             exEn:'I made an incorrect journal entry and corrected it.',             tip:'Lyhyesti "JE". Korjaus = "correcting entry".'},
+  {id:'b13',fi:'pääkirja',                 en:'general ledger',                cat:'basics',      diff:1,exFi:'Tarkistin pääkirjasta tilin saldon.',                      exEn:'I checked the account balance from the general ledger.',          tip:'Lyhenne "GL". SAP:ssa keskeinen käsite.'},
+  {id:'b14',fi:'tilintarkastus',           en:'audit',                         cat:'basics',      diff:1,exFi:'Tilintarkastus alkaa helmikuussa.',                         exEn:'The audit begins in February.',                                   tip:'"External audit" = ulkoinen, "internal audit" = sisäinen.'},
+  {id:'b15',fi:'saldo',                    en:'balance',                       cat:'basics',      diff:1,exFi:'Tilin saldo on 1 200 euroa miinuksella.',                  exEn:'The account balance is 1,200 euros negative.',                    tip:'"Opening balance" = alkusaldo, "closing balance" = loppusaldo.'},
+  {id:'bs1',fi:'vastaavaa',                en:'assets',                        cat:'balance',     diff:1,exFi:'Vastaavaa = vastattavaa, aina.',                           exEn:'Assets = Equity + Liabilities, always.',                          tip:'Englanniksi: assets = liabilities + equity.'},
+  {id:'bs2',fi:'vastattavaa',              en:'equity and liabilities',        cat:'balance',     diff:2,exFi:'Vastattavaa-puoli kertoo, miten varat on rahoitettu.',      exEn:'The equity and liabilities side shows how assets are financed.',  tip:'Jaetaan: equity + liabilities. Suomessa saman otsikon alla.'},
+  {id:'bs3',fi:'oma pääoma',               en:'equity',                        cat:'balance',     diff:1,exFi:'Yhtiön oma pääoma kasvoi viime vuonna.',                   exEn:"The company's equity grew last year.",                            tip:'Myös "shareholders\' equity". "Retained earnings" = kertyneet voittovarat.'},
+  {id:'bs4',fi:'pysyvät vastaavat',        en:'non-current assets',            cat:'balance',     diff:2,exFi:'Koneet ovat pysyviä vastaavia.',                           exEn:'Machinery is a non-current asset.',                               tip:'Myös "fixed assets". Käyttöikä yli 12kk.'},
+  {id:'bs5',fi:'vaihtuvat vastaavat',      en:'current assets',                cat:'balance',     diff:2,exFi:'Myyntisaamiset ovat vaihtuvia vastaavia.',                 exEn:'Trade receivables are current assets.',                           tip:'Realisoituvat alle 12 kuukaudessa.'},
+  {id:'bs6',fi:'aineelliset hyödykkeet',   en:'tangible assets',               cat:'balance',     diff:2,exFi:'Rakennukset ovat aineellisia hyödykkeitä.',                exEn:'Buildings are tangible assets.',                                  tip:'IFRS-termi: "property, plant and equipment" (PP&E).'},
+  {id:'bs7',fi:'aineettomat hyödykkeet',   en:'intangible assets',             cat:'balance',     diff:2,exFi:'Patentit ovat aineettomia hyödykkeitä.',                   exEn:'Patents are intangible assets.',                                  tip:'IAS 38. Goodwill on erityyppinen aineeton.'},
+  {id:'bs8',fi:'vaihto-omaisuus',          en:'inventory',                     cat:'balance',     diff:2,exFi:'Vaihto-omaisuuden arvostus tehdään FIFO-menetelmällä.',     exEn:'Inventory is valued using the FIFO method.',                      tip:'UK: "stock". LIFO kielletty IFRS:ssä.'},
+  {id:'bs9',fi:'myyntisaamiset',           en:'trade receivables',             cat:'balance',     diff:2,exFi:'Myyntisaamiset olivat 2,5 miljoonaa kauden lopussa.',       exEn:'Trade receivables were 2.5 million at period end.',               tip:'Myös "accounts receivable" (AR). DSO = saatavien kiertoaika.'},
+  {id:'bs10',fi:'ostovelat',               en:'trade payables',                cat:'balance',     diff:2,exFi:'Ostovelat kasvoivat joulukuussa.',                         exEn:'Trade payables grew in December.',                                tip:'Myös "accounts payable" (AP). DPO = ostovelkojen kiertoaika.'},
+  {id:'bs11',fi:'liikearvo',               en:'goodwill',                      cat:'balance',     diff:2,exFi:'Liikearvo syntyi yrityskaupasta.',                         exEn:'Goodwill arose from the acquisition.',                            tip:'IFRS:ssä testataan impairment vuosittain — ei poisteta.'},
+  {id:'bs12',fi:'rahavarat',               en:'cash and cash equivalents',     cat:'balance',     diff:2,exFi:'Rahavarat olivat 5 miljoonaa euroa.',                      exEn:'Cash and cash equivalents were 5 million euros.',                 tip:'Lyhyet (<3kk) erittäin likvidit sijoitukset mukaan.'},
+  {id:'is1', fi:'liikevaihto',             en:'turnover',                      cat:'income',      diff:1,exFi:'Yhtiön liikevaihto kasvoi 8 %.',                           exEn:"The company's turnover grew by 8%.",                             tip:'UK: "turnover". USA/IFRS: "revenue". Molemmat oikein.'},
+  {id:'is2', fi:'myyntikate',              en:'gross profit',                  cat:'income',      diff:2,exFi:'Myyntikate parani materiaalisäästöjen ansiosta.',           exEn:'Gross profit improved thanks to material savings.',               tip:'= Revenue − COGS. "Gross margin" = myyntikateprosentti.'},
+  {id:'is3', fi:'liikevoitto',             en:'operating profit',              cat:'income',      diff:1,exFi:'Liikevoitto oli 1,2 miljoonaa euroa.',                     exEn:'Operating profit was 1.2 million euros.',                         tip:'Synonyymi: EBIT. Ennen rahoituseriä ja veroja.'},
+  {id:'is4', fi:'käyttökate',              en:'EBITDA',                        cat:'income',      diff:2,exFi:'Käyttökate parani poistojen kasvusta huolimatta.',          exEn:'EBITDA improved despite higher depreciation.',                    tip:'Earnings Before Interest, Taxes, Depreciation and Amortization.'},
+  {id:'is5', fi:'tilikauden voitto',       en:'profit for the financial year', cat:'income',      diff:2,exFi:'Tilikauden voitto oli 850 000 euroa.',                     exEn:'The profit for the financial year was 850,000 euros.',            tip:'Myös "net income", "net profit", "bottom line".'},
+  {id:'is6', fi:'kulut',                   en:'expenses',                      cat:'income',      diff:1,exFi:'Kulut nousivat inflaation takia.',                         exEn:'Expenses rose due to inflation.',                                 tip:'"Costs" ≈ "expenses". "Cost" yleisempi tuotantokuluista.'},
+  {id:'is7', fi:'kiinteät kulut',          en:'fixed costs',                   cat:'income',      diff:2,exFi:'Vuokra on kiinteä kulu.',                                  exEn:'Rent is a fixed cost.',                                           tip:'Pysyvät volyymistä riippumatta. Tärkeä break-even-analyysissä.'},
+  {id:'is8', fi:'muuttuvat kulut',         en:'variable costs',                cat:'income',      diff:2,exFi:'Raaka-aineet ovat muuttuvia kuluja.',                      exEn:'Raw materials are variable costs.',                               tip:'Vaihtelevat volyymin mukaan. Contribution margin = rev − var. costs.'},
+  {id:'is9', fi:'henkilöstökulut',         en:'personnel expenses',            cat:'income',      diff:2,exFi:'Henkilöstökulut olivat 40 % liikevaihdosta.',              exEn:'Personnel expenses were 40% of turnover.',                        tip:'Myös "staff costs" (UK), "employee benefits expense" (IFRS).'},
+  {id:'is10',fi:'poisto',                  en:'depreciation',                  cat:'income',      diff:1,exFi:'Koneiden poisto on 10 % vuodessa.',                        exEn:'Depreciation on machinery is 10% per year.',                      tip:'"Depreciation" = aineelliset, "amortization" = aineettomat.'},
+  {id:'is11',fi:'arvonalentuminen',        en:'impairment',                    cat:'income',      diff:2,exFi:'Liikearvosta tehtiin arvonalentumiskirjaus.',              exEn:'An impairment loss was recognised on goodwill.',                  tip:'IAS 36. Testataan vuosittain mm. liikearvolle.'},
+  {id:'is12',fi:'luottotappio',            en:'credit loss',                   cat:'income',      diff:2,exFi:'Kirjasimme 50 000 euron luottotappion.',                   exEn:'We recognised a credit loss of 50,000 euros.',                    tip:'IFRS 9: "expected credit loss" (ECL). Myös "bad debt".'},
+  {id:'d1',  fi:'lasku',                   en:'invoice',                       cat:'daily',       diff:1,exFi:'Lasku lähetettiin asiakkaalle eilen.',                     exEn:'The invoice was sent to the customer yesterday.',                 tip:'"Bill" on arkisempi. "Invoice" virallisempi B2B-konteksti.'},
+  {id:'d2',  fi:'myyntilasku',             en:'sales invoice',                 cat:'daily',       diff:1,exFi:'Myyntilasku kirjautuu AR-tilille.',                        exEn:'The sales invoice is posted to the AR account.',                  tip:'Outgoing invoice. Kirjaus: Dr AR / Cr Revenue.'},
+  {id:'d3',  fi:'ostolasku',               en:'purchase invoice',              cat:'daily',       diff:1,exFi:'Ostolasku tarkistetaan ja hyväksytään.',                   exEn:'The purchase invoice is verified and approved.',                  tip:'Myös "supplier invoice". Kirjaus: Dr Expense / Cr AP.'},
+  {id:'d4',  fi:'eräpäivä',               en:'due date',                      cat:'daily',       diff:1,exFi:'Eräpäivä on 14 päivän päästä.',                           exEn:'The due date is 14 days from now.',                               tip:'"Payment terms" = maksuehdot (esim. "Net 30").'},
+  {id:'d5',  fi:'maksumuistutus',          en:'payment reminder',              cat:'daily',       diff:2,exFi:'Lähetimme maksumuistutuksen erääntyvästä laskusta.',       exEn:'We sent a payment reminder for the overdue invoice.',             tip:'"Overdue invoice" = erääntynyt lasku. SAP: "dunning".'},
+  {id:'d6',  fi:'arvonlisävero',           en:'value added tax',               cat:'daily',       diff:1,exFi:'Arvonlisävero on Suomessa 25,5 % yleinen kanta.',          exEn:'Value added tax in Finland is 25.5% general rate.',              tip:'Lyhenne "VAT". USA:ssa sales tax (eri rakenne).'},
+  {id:'d7',  fi:'tiliote',                en:'bank statement',                 cat:'daily',       diff:1,exFi:'Sain tiliotteen sähköisesti.',                             exEn:'I received the bank statement electronically.',                   tip:'Täsmäytys = "bank reconciliation". Päivittäinen rutiini.'},
+  {id:'d8',  fi:'täsmäytys',              en:'reconciliation',                 cat:'daily',       diff:2,exFi:'Pankkitilien täsmäytys tehdään kuukausittain.',            exEn:'Bank reconciliation is done monthly.',                            tip:'Verbi: "to reconcile". Kuukauden sulkemisen ydin.'},
+  {id:'d9',  fi:'jaksotus',               en:'accrual',                        cat:'daily',       diff:2,exFi:'Joulukuun jaksotukset tehdään tammikuun alussa.',          exEn:'The December accruals are made in early January.',                tip:'Accrual basis = suoriteperuste. IFRS perustuu tähän.'},
+  {id:'d10', fi:'siirtosaamiset',          en:'accrued income',                cat:'daily',       diff:3,exFi:'Tuloutimme siirtosaamiset tammikuussa.',                   exEn:'We recognised the accrued income in January.',                    tip:'Tulot, jotka kuuluvat tilikaudelle mutta saadaan myöhemmin.'},
+  {id:'d11', fi:'siirtovelat',             en:'accrued expenses',              cat:'daily',       diff:3,exFi:'Lomapalkat kirjataan siirtovelkoihin.',                    exEn:'Holiday pay is recorded as accrued expenses.',                    tip:'Kulut, jotka kuuluvat tilikaudelle mutta maksetaan myöhemmin.'},
+  {id:'d12', fi:'kuukauden sulkeminen',    en:'month-end closing',             cat:'daily',       diff:2,exFi:'Kuukauden sulkeminen on aina kiireinen aika.',             exEn:'Month-end closing is always a busy time.',                        tip:'Myös "month-end close". "Hard close" vs "soft close".'},
+  {id:'i1',  fi:'käypä arvo',              en:'fair value',                    cat:'ifrs',        diff:2,exFi:'Sijoitukset arvostetaan käypään arvoon.',                  exEn:'Investments are measured at fair value.',                         tip:'IFRS 13. Hinta järjestäytyneessä transaktiossa markkinaosapuolten välillä.'},
+  {id:'i2',  fi:'kirjanpitoarvo',          en:'carrying amount',               cat:'ifrs',        diff:2,exFi:'Koneen kirjanpitoarvo on 25 000 euroa.',                   exEn:'The carrying amount of the machine is 25,000 euros.',             tip:'Myös "book value". Hankintameno − poistot − arvonalentumiset.'},
+  {id:'i3',  fi:'käyttöoikeusomaisuuserä', en:'right-of-use asset',           cat:'ifrs',        diff:3,exFi:'IFRS 16 vaatii käyttöoikeusomaisuuserän kirjaamisen.',      exEn:'IFRS 16 requires the recognition of a right-of-use asset.',      tip:'Lyhenne "ROU asset". IFRS 16 (vuokrat) -keskeinen käsite.'},
+  {id:'i4',  fi:'vuokrasopimusvelka',      en:'lease liability',               cat:'ifrs',        diff:3,exFi:'Vuokrasopimusvelka mitataan nykyarvona.',                  exEn:'The lease liability is measured at present value.',               tip:'IFRS 16. Tulevien vuokramaksujen nykyarvo lisäluotonkorolla.'},
+  {id:'i5',  fi:'nykyarvo',               en:'present value',                  cat:'ifrs',        diff:2,exFi:'Tulevat kassavirrat diskontataan nykyarvoon.',             exEn:'Future cash flows are discounted to present value.',              tip:'Lyhenne "PV". NPV = net present value. Tärkeä IFRS 9, 16 ja 36:ssa.'},
+  {id:'i6',  fi:'diskonttauskorko',        en:'discount rate',                 cat:'ifrs',        diff:2,exFi:'IFRS 16 -laskennassa diskonttauskorko on lisäluotonkorko.', exEn:'For IFRS 16, the discount rate is the incremental borrowing rate.',tip:'"Incremental borrowing rate" (IBR) jos implisiittinen korko ei saatavilla.'},
+  {id:'i7',  fi:'olennaisuus',             en:'materiality',                   cat:'ifrs',        diff:2,exFi:'Olennaisuus arvioidaan käyttäjien näkökulmasta.',           exEn:"Materiality is assessed from the users' perspective.",            tip:'Tieto olennaista jos puuttuminen vaikuttaisi käyttäjien päätöksiin.'},
+  {id:'i8',  fi:'tilinpäätöspäivä',       en:'reporting date',                cat:'ifrs',        diff:2,exFi:'Tilinpäätöspäivä on 31.12.',                               exEn:'The reporting date is 31 December.',                              tip:'Myös "balance sheet date". Jälkeiset tapahtumat: IAS 10.'},
+  {id:'c1',  fi:'budjetti',               en:'budget',                         cat:'controlling', diff:1,exFi:'Ensi vuoden budjetti hyväksytään marraskuussa.',           exEn:"Next year's budget is approved in November.",                    tip:'"Budgeting cycle" = budjetointikierros. Controllerin vuosirytmin ydin.'},
+  {id:'c2',  fi:'ennuste',                en:'forecast',                        cat:'controlling', diff:1,exFi:'Päivitämme ennusteen joka kvartaali.',                    exEn:'We update the forecast every quarter.',                           tip:'"Forecast" dynaaminen — budjetti kiinteä. Controllerin tärkein työkalu.'},
+  {id:'c3',  fi:'budjetin toteutuma',     en:'budget vs. actuals',              cat:'controlling', diff:2,exFi:'Tarkistin budjetin toteutuman kuukausittain.',            exEn:'I review budget vs. actuals monthly.',                            tip:'Lyhyesti "BvA". Klassinen controllerin perusraportti.'},
+  {id:'c4',  fi:'poikkeama-analyysi',     en:'variance analysis',               cat:'controlling', diff:2,exFi:'Selitin myynnin poikkeaman johdolle.',                   exEn:'I explained the sales variance to management.',                   tip:'"Favourable" = positiivinen, "adverse" = negatiivinen.'},
+  {id:'c5',  fi:'kustannuspaikka',        en:'cost centre',                     cat:'controlling', diff:1,exFi:'Markkinointi on oma kustannuspaikkansa.',                exEn:'Marketing is its own cost centre.',                               tip:'USA: "cost center". SAP CO -moduulin perusrakenne.'},
+  {id:'c6',  fi:'kannattavuus',           en:'profitability',                   cat:'controlling', diff:2,exFi:'Tuoteryhmän kannattavuus on heikentynyt.',               exEn:"The product group's profitability has declined.",                 tip:'"Profitability analysis" = SAP CO-PA. Marginaalit = mittari.'},
+  {id:'c7',  fi:'tunnusluku',             en:'key figure',                      cat:'controlling', diff:2,exFi:'Esittelin tunnusluvut johtoryhmälle.',                   exEn:'I presented the key figures to the management team.',             tip:'Myös "KPI" tai "financial ratio". ROE, ROI, current ratio.'},
+  {id:'c8',  fi:'omavaraisuusaste',       en:'equity ratio',                    cat:'controlling', diff:2,exFi:'Omavaraisuusaste on yli 40 %, mikä on hyvä.',            exEn:'The equity ratio is over 40%, which is good.',                    tip:'= Equity / Total assets. Suomalainen vakavaraisuuden mittari.'},
+  {id:'p1',  fi:'Liitteessä on...',       en:'Please find attached...',         cat:'phrases',     diff:1,exFi:'Liitteessä on lokakuun raportti.',                       exEn:'Please find attached the October report.',                        tip:'Klassinen sähköpostifraasi. Modernimpi: "I\'ve attached...".'},
+  {id:'p2',  fi:'Selvitämme asian',       en:'We will look into this',          cat:'phrases',     diff:1,exFi:'Kiitos viestistä — selvitämme asian.',                   exEn:'Thanks for the message — we will look into this.',                tip:'Myös "We\'ll investigate this" tai "Let me check on this".'},
+  {id:'p3',  fi:'Pyydän hyväksyntääsi',  en:'I am requesting your approval',   cat:'phrases',     diff:2,exFi:'Pyydän hyväksyntääsi laskulle.',                         exEn:'I am requesting your approval for the invoice.',                  tip:'Vapaammin: "Could you please approve...?" AP-prosessissa tärkeä.'},
+  {id:'p4',  fi:'Saanko nopean päivityksen?',en:'Could I get a quick update?', cat:'phrases',     diff:2,exFi:'Saanko nopean päivityksen sulkemisesta?',                exEn:'Could I get a quick update on the December close?',               tip:'Vapaammin: "Any update on...?" tai "What\'s the status of...?"'},
+  {id:'p5',  fi:'tämän viestin perusteella',en:'as per this message',          cat:'phrases',     diff:2,exFi:'Tämän viestin perusteella jaksotamme 12 000 €.',          exEn:'As per this message, we will accrue 12,000 €.',                   tip:'Myös "based on this". "As per" muodollinen — sopii viestiketjuihin.'},
+  {id:'p6',  fi:'täsmäyttää',             en:'to reconcile',                    cat:'phrases',     diff:2,exFi:'Meidän täytyy täsmäyttää tilit ennen kuun loppua.',       exEn:'We need to reconcile the accounts before month-end.',             tip:'Re + concile = sovitetaan yhteen.'},
+  {id:'p7',  fi:'seurata asian käsittelyä',en:'to follow up on',               cat:'phrases',     diff:2,exFi:'Seuraan asiaa tiimin kanssa huomenna.',                  exEn:"I'll follow up on this with the team tomorrow.",                  tip:'Kirjaimellisesti: seurata perässä.'},
+  {id:'p8',  fi:'ottaa yhteyttä',         en:'to reach out to',                 cat:'phrases',     diff:2,exFi:'Otan yhteyttä tilintarkastajaan tänään.',                exEn:"I'll reach out to the auditor today.",                            tip:'Kurottautua kohti = otetaan kontakti.'},
+  {id:'p9',  fi:'olla samalla sivulla',   en:'to be on the same page',          cat:'phrases',     diff:2,exFi:'Varmistetaan, että olemme samalla sivulla budjetin suhteen.',exEn:"Let's make sure we're on the same page regarding the budget.",  tip:'Kaikki lukevat samaa sivua.'},
+  {id:'p10', fi:'hyväksyä lopullisesti',  en:'to sign off on',                  cat:'phrases',     diff:2,exFi:'CFO hyväksyi tilinpäätöksen eilen.',                    exEn:'The CFO signed off on the financial statements yesterday.',       tip:'Allekirjoitus = hyväksyntä.'},
+  {id:'p11', fi:'syventyä / analysoida',  en:'to drill down into',              cat:'phrases',     diff:2,exFi:'Syvennetään kustannuseroihin tarkemmin.',                exEn:"Let's drill down into the cost variances.",                       tip:'Porata syvemmälle = mennä yksityiskohtiin.'},
+  {id:'p12', fi:'nostaa esiin',           en:'to flag (an issue)',               cat:'phrases',     diff:2,exFi:'Halusin nostaa esiin tämän poikkeaman.',                exEn:'I wanted to flag this discrepancy.',                              tip:'Lippu nostetaan = asia nostetaan näkyviin.'},
+  {id:'p13', fi:'palata asiaan',          en:'to circle back to',               cat:'phrases',     diff:2,exFi:'Palataan tähän kysymykseen kokouksen lopussa.',          exEn:"Let's circle back to this question at the end of the meeting.",   tip:'Ympyrä = palataan samaan kohtaan.'},
+  {id:'p14', fi:'ydin on',                en:'the bottom line is',              cat:'phrases',     diff:2,exFi:'Ydin on, että kate ei riitä.',                           exEn:'The bottom line is that the margin is insufficient.',             tip:'Tuloslaskelman viimeinen rivi = ydin.'},
+  {id:'p15', fi:'jäädyttää / laittaa odottamaan',en:'to put on hold',          cat:'phrases',     diff:2,exFi:'Projekti on toistaiseksi jäädytetty.',                  exEn:'The project has been put on hold for now.',                       tip:'Puhelin hold = odota.'},
+  {id:'p16', fi:'pitää kirjaa',           en:'to keep track of',                cat:'phrases',     diff:2,exFi:'On tärkeää pitää kirjaa kaikista kuluista.',             exEn:"It's important to keep track of all expenses.",                   tip:'Track = jälki → seurataan jälkeä.'},
+  {id:'p17', fi:'edetä jonkin kanssa',    en:'to move forward with',            cat:'phrases',     diff:2,exFi:'Voidaan edetä hyväksytyn budjetin kanssa.',              exEn:'We can move forward with the approved budget.',                   tip:'Liikutaan eteenpäin.'},
+  {id:'p18', fi:'ryhtyä toimiin',         en:'to take action on',               cat:'phrases',     diff:2,exFi:'Meidän täytyy ryhtyä toimiin tähän poikkeamaan.',        exEn:'We need to take action on this variance.',                        tip:'Otetaan toiminta käyttöön.'},
+  {id:'p19', fi:'päättää / saattaa loppuun',en:'to wrap up',                   cat:'phrases',     diff:2,exFi:'Päätetään tämä kvartaaliraportti tänään.',               exEn:"Let's wrap up this quarterly report today.",                      tip:'Kääritään paketti = lopetetaan.'},
+  {id:'p20', fi:'kuten sovittiin',        en:'as per our agreement',            cat:'phrases',     diff:2,exFi:'Kuten sovittiin, lasku lähetetään kuun lopussa.',        exEn:'As per our agreement, the invoice will be sent at month-end.',   tip:'Per = latinaa: mukaan. Sopii kirjalliseen viestintään.'}
+];
+
+/* ── Helpers ─────────────────────────────────────────────────────────────── */
+const todayKey    = () => new Date().toISOString().slice(0,10);
+const daysBetween = (a,b) => Math.floor((new Date(a)-new Date(b))/86400000);
+const addDays     = (d,n) => { const r=new Date(d); r.setDate(r.getDate()+n); return r.toISOString(); };
+const getLevel    = xp => {
+  let cur=LEVELS[0];
+  for(const l of LEVELS) if(xp>=l.min) cur=l;
+  const next=LEVELS[LEVELS.indexOf(cur)+1];
+  return {current:cur,next,progress:next?(xp-cur.min)/(next.min-cur.min):1};
+};
+const defaultState = () => ({
+  xp:0,totalCorrect:0,totalWrong:0,streak:0,lastSessionDate:null,
+  dailyGoal:100,todayXp:0,todayDate:todayKey(),achievements:[],
+  wordProgress:{},customWords:[],totalSessions:0,sessionHistory:[]
+});
+const makeOptions = (word,pool) => {
+  const others=pool.filter(w=>w.id!==word.id);
+  const same=others.filter(w=>w.cat===word.cat);
+  const src=same.length>=3?same:[...same,...others.filter(w=>w.cat!==word.cat)];
+  return [...[...src].sort(()=>Math.random()-.5).slice(0,3),word].sort(()=>Math.random()-.5);
+};
+
+/* ── localStorage (synchronous — no async/await needed) ─────────────────── */
+const loadState = () => {
+  try { const d=localStorage.getItem(SK); if(d) return {...defaultState(),...JSON.parse(d)}; }
+  catch(_){}
+  return defaultState();
+};
+const saveState = s => { try { localStorage.setItem(SK,JSON.stringify(s)); } catch(_){} };
+
+/* ── Pure display components (defined outside App — never recreated) ──────── */
+const Pill = ({color,children}) => (
+  <span className={`text-xs px-3 py-1 rounded-full bg-gradient-to-r ${color} text-white font-medium`}>{children}</span>
+);
+const TopBar = ({title,back}) => (
+  <div className="sticky top-0 z-30 bg-slate-950/90 backdrop-blur-lg border-b border-slate-800/70 px-4 py-3 flex items-center gap-3">
+    {back&&<button onClick={back} className="p-1.5 -ml-1.5 rounded-lg hover:bg-slate-800 active:bg-slate-700"><ArrowL className="w-5 h-5 text-slate-300"/></button>}
+    <h1 className="text-base font-semibold text-slate-100">{title}</h1>
+  </div>
+);
+const KCard = ({icon:Icon,label,value,sub}) => (
+  <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
+    <Icon className="w-4 h-4 text-slate-500 mb-2"/>
+    <div className="text-xs text-slate-400">{label}</div>
+    <div className="flex items-baseline gap-1.5 mt-0.5">
+      <span className="text-xl font-semibold text-slate-100">{value}</span>
+      {sub&&<span className="text-xs text-slate-500">{sub}</span>}
+    </div>
+  </div>
+);
+const CatPill = ({active,onClick,children}) => (
+  <button onClick={onClick} className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition ${active?'bg-violet-500/20 border border-violet-500/40 text-violet-300':'bg-slate-900 border border-slate-800 text-slate-400'}`}>{children}</button>
+);
+const Dots = ({box}) => (
+  <div className="flex gap-0.5 shrink-0">{[0,1,2,3,4].map(i=><div key={i} className={`w-1.5 h-1.5 rounded-full ${i<box?'bg-emerald-500':'bg-slate-700'}`}/>)}</div>
+);
+const Field = ({label,value,onChange,area}) => (
+  <div>
+    <label className="text-xs text-slate-400 block mb-1">{label}</label>
+    {area
+      ?<textarea value={value} onChange={e=>onChange(e.target.value)} rows={2} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100 resize-none"/>
+      :<input type="text" value={value} onChange={e=>onChange(e.target.value)} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100"/>
+    }
+  </div>
+);
+const Nav = ({view,setView}) => (
+  <div className="fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-lg border-t border-slate-800 nav-safe">
+    <div className="grid grid-cols-4 max-w-md mx-auto">
+      {[{id:'home',icon:HomeIco,label:'Etusivu'},{id:'library',icon:LibraryIco,label:'Library'},
+        {id:'stats',icon:BarChart,label:'Edistyminen'},{id:'settings',icon:SettingsIco,label:'Asetukset'}
+      ].map(t=>(
+        <button key={t.id} onClick={()=>setView(t.id)} className={`py-3 flex flex-col items-center gap-1 transition ${view===t.id?'text-violet-400':'text-slate-500 hover:text-slate-300'}`}>
+          <t.icon className="w-5 h-5"/><span className="text-[10px] font-medium">{t.label}</span>
+        </button>
+      ))}
+    </div>
+  </div>
+);
+
+/* Flashcard — pure component, outside App */
+const Flashcard = ({word,flipped,answered,idx,qLen,onFlip,onAnswer,onNext}) => {
+  const cat=CATEGORIES[word.cat];
+  return (
+    <>
+      <div className="mb-4 flex justify-center"><Pill color={cat.color}>{cat.short}</Pill></div>
+      <button onClick={onFlip} className="w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 min-h-[260px] flex flex-col items-center justify-center text-center active:scale-[0.99] transition shadow-xl">
+        {!flipped?(<>
+          <div className="text-xs uppercase tracking-wider text-slate-500 mb-3">Suomi</div>
+          <div className="text-3xl font-semibold text-slate-100 mb-4">{word.fi}</div>
+          <div className="text-sm text-slate-500 italic">{word.exFi}</div>
+          <div className="mt-6 text-xs text-slate-600">Napauta nähdäksesi vastaus</div>
+        </>):(<>
+          <div className="text-xs uppercase tracking-wider text-violet-400 mb-3">English</div>
+          <div className="text-3xl font-semibold text-slate-100 mb-3">{word.en}</div>
+          <div className="text-sm text-slate-400 italic mb-4">{word.exEn}</div>
+          <div className="pt-4 border-t border-slate-800 w-full">
+            <div className="flex items-start gap-2 text-left">
+              <LightbulbIco className="w-4 h-4 text-amber-400 shrink-0 mt-0.5"/>
+              <div className="text-xs text-slate-300 leading-relaxed">{word.tip}</div>
+            </div>
+          </div>
+        </>)}
+      </button>
+      {flipped&&!answered&&(
+        <div className="grid grid-cols-2 gap-3 mt-5">
+          <button onClick={()=>onAnswer(false)} className="py-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 font-medium active:scale-[0.97] transition">En osannut</button>
+          <button onClick={()=>onAnswer(true)}  className="py-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-medium active:scale-[0.97] transition">Osasin</button>
+        </div>
+      )}
+      {answered&&<button onClick={onNext} className="mt-5 w-full py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold active:scale-[0.97] transition">{idx+1>=qLen?'Päätä sessio':'Seuraava'}</button>}
+    </>
+  );
+};
+
+/* Quiz — pure component, outside App */
+const Quiz = ({word,options,selAns,answered,idx,qLen,onSelect,onNext}) => {
+  const cat=CATEGORIES[word.cat];
+  return (
+    <>
+      <div className="mb-4 flex justify-center"><Pill color={cat.color}>{cat.short}</Pill></div>
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 mb-5 text-center">
+        <div className="text-xs uppercase tracking-wider text-slate-500 mb-3">Mitä on englanniksi?</div>
+        <div className="text-3xl font-semibold text-slate-100">{word.fi}</div>
+        {word.cat==='phrases'&&<div className="text-xs text-slate-500 italic mt-2">"{word.exFi}"</div>}
+      </div>
+      <div className="space-y-2.5">
+        {options.map(opt=>{
+          const isSel=selAns===opt.id,isRight=opt.id===word.id;
+          return (
+            <button key={opt.id} onClick={()=>!answered&&onSelect(opt)} disabled={answered}
+              className={`w-full p-4 rounded-xl border text-left transition ${!answered?'bg-slate-900 border-slate-800 hover:border-slate-700 active:scale-[0.99]':isRight?'bg-emerald-500/10 border-emerald-500/40':isSel?'bg-rose-500/10 border-rose-500/40':'bg-slate-900 border-slate-800 opacity-50'}`}>
+              <div className="flex items-center justify-between">
+                <span className={`text-sm ${answered&&isRight?'text-emerald-300':answered&&isSel?'text-rose-300':'text-slate-200'}`}>{opt.en}</span>
+                {answered&&isRight&&<CheckIco className="w-4 h-4 text-emerald-400"/>}
+                {answered&&isSel&&!isRight&&<XIco className="w-4 h-4 text-rose-400"/>}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+      {answered&&(<>
+        <div className="mt-5 p-4 rounded-xl bg-slate-900 border border-slate-800">
+          <div className="flex items-start gap-2">
+            <LightbulbIco className="w-4 h-4 text-amber-400 shrink-0 mt-0.5"/>
+            <div><div className="text-xs text-slate-400 mb-1">"{word.exEn}"</div><div className="text-xs text-slate-300 leading-relaxed">{word.tip}</div></div>
+          </div>
+        </div>
+        <button onClick={onNext} className="mt-4 w-full py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold active:scale-[0.97] transition">{idx+1>=qLen?'Päätä sessio':'Seuraava'}</button>
+      </>)}
+    </>
+  );
+};
+
+/* ── Main App ────────────────────────────────────────────────────────────── */
+function App() {
+  /* localStorage is sync → lazy init; st is never null */
+  const [st,  setSt]  = useState(()=>{
+    const s=loadState(); const today=todayKey();
+    if(s.todayDate!==today){
+      if(s.lastSessionDate&&daysBetween(today,s.lastSessionDate)>1) s.streak=0;
+      s.todayDate=today; s.todayXp=0;
+    }
+    return s;
+  });
+  const [view, setView]= useState('home');
+  const [sess, setSess]= useState(null);
+  const [cat,  setCat] = useState('all');
+  const [addW, setAddW]= useState(false);
+  const [nw,   setNw]  = useState({fi:'',en:'',cat:'basics',exFi:'',exEn:'',tip:''});
+  const [exp,  setExp] = useState(null);
+  const [pop,  setPop] = useState(null);
+
+  useEffect(()=>{ saveState(st); },[st]);
+
+  const allWords=[...VOCAB,...st.customWords];
+  const lv=getLevel(st.xp);
+
+  /* Session management */
+  const startSession=mode=>{
+    const due=allWords.filter(w=>{const p=st.wordProgress[w.id];return p?.nextReview&&new Date(p.nextReview)<=new Date();});
+    const lvIdx=LEVELS.indexOf(lv.current);
+    const tDiff=Math.min(3,Math.max(1,Math.floor(lvIdx/2)+1));
+    const fresh=allWords.filter(w=>!st.wordProgress[w.id]).sort((a,b)=>Math.abs(a.diff-tDiff)-Math.abs(b.diff-tDiff));
+    let q=[...due]; let i=0;
+    while(q.length<15&&i<fresh.length) q.push(fresh[i++]);
+    if(!q.length) q=[...allWords].sort(()=>Math.random()-.5).slice(0,10);
+    q.sort(()=>Math.random()-.5);
+    const opts=mode==='quiz'?q.map(w=>makeOptions(w,allWords)):q.map(()=>[]);
+    setSess({mode,queue:q,opts,idx:0,correct:0,wrong:0,combo:0,maxCombo:0,xp:0,flipped:false,answered:false,selAns:null,start:Date.now(),done:false,unlocked:[]});
+    setView('practice');
+  };
+
+  const answer=correct=>{
+    if(!sess||sess.answered) return;
+    const word=sess.queue[sess.idx];
+    const prev=st.wordProgress[word.id]||{box:0,correct:0,wrong:0};
+    const box=correct?Math.min(5,prev.box+1):Math.max(0,prev.box-1);
+    const xpGain=correct?5+Math.min(15,sess.combo)+(word.diff-1)*2:1;
+    setSt(s=>({...s,totalCorrect:s.totalCorrect+(correct?1:0),totalWrong:s.totalWrong+(correct?0:1),
+      wordProgress:{...s.wordProgress,[word.id]:{box,nextReview:addDays(new Date(),BOX_INTERVALS[box]),correct:prev.correct+(correct?1:0),wrong:prev.wrong+(correct?0:1),lastSeen:new Date().toISOString()}}}));
+    setSess(s=>({...s,answered:true,correct:s.correct+(correct?1:0),wrong:s.wrong+(correct?0:1),
+      combo:correct?s.combo+1:0,maxCombo:correct?Math.max(s.maxCombo,s.combo+1):s.maxCombo,xp:s.xp+xpGain}));
+  };
+
+  const selectOpt=opt=>{
+    if(!sess||sess.answered) return;
+    const correct=opt.id===sess.queue[sess.idx].id;
+    setSess(s=>({...s,selAns:opt.id}));
+    answer(correct);
+  };
+
+  const next=()=>{
+    if(!sess) return;
+    if(sess.idx+1>=sess.queue.length){finish();return;}
+    setSess(s=>({...s,idx:s.idx+1,flipped:false,answered:false,selAns:null}));
+  };
+
+  const finish=()=>{
+    if(!sess) return;
+    const today=todayKey(); const isNew=st.lastSessionDate!==today;
+    let streak=st.streak;
+    if(isNew) streak=st.lastSessionDate&&daysBetween(today,st.lastSessionDate)===1?st.streak+1:1;
+    const ach=[...st.achievements];
+    const u=id=>{if(!ach.includes(id))ach.push(id);};
+    if(!st.totalSessions)u('first_session');
+    if(streak>=3)u('streak_3'); if(streak>=7)u('streak_7'); if(streak>=30)u('streak_30');
+    if(sess.maxCombo>=10)u('combo_10');
+    if(sess.queue.length>=20&&sess.wrong===0)u('perfect');
+    setSt(s=>{
+      const wp=s.wordProgress; const m=Object.values(wp).filter(p=>p.box>=3).length;
+      if(m>=25)u('words_25'); if(m>=50)u('words_50');
+      if(allWords.filter(w=>w.cat==='ifrs').every(w=>(wp[w.id]?.box||0)>=4))u('ifrs_master');
+      return {...s,xp:s.xp+sess.xp,todayXp:s.todayXp+sess.xp,lastSessionDate:today,streak,achievements:ach,
+        totalSessions:s.totalSessions+1,
+        sessionHistory:[{date:today,mode:sess.mode,correct:sess.correct,wrong:sess.wrong,xp:sess.xp,words:sess.queue.length,maxCombo:sess.maxCombo,dur:Math.round((Date.now()-sess.start)/1000)},...s.sessionHistory.slice(0,49)]};
+    });
+    setSess(s=>({...s,done:true,unlocked:ach.filter(a=>!st.achievements.includes(a)),newStreak:streak}));
+  };
+
+  const buildExport=()=>{
+    const ws=Object.entries(st.wordProgress).map(([id,p])=>{const w=allWords.find(x=>x.id===id);return w?{fi:w.fi,en:w.en,cat:w.cat,box:p.box,correct:p.correct,wrong:p.wrong,acc:p.correct+p.wrong>0?Math.round(100*p.correct/(p.correct+p.wrong)):null}:null;}).filter(Boolean);
+    const cs={}; Object.keys(CATEGORIES).forEach(k=>{const cws=ws.filter(w=>w.cat===k);cs[k]={studied:cws.length,mastered:cws.filter(w=>w.box>=3).length,avgAcc:cws.length?Math.round(cws.reduce((s,w)=>s+(w.acc||0),0)/cws.length):null};});
+    setExp(JSON.stringify({exportDate:new Date().toISOString(),xp:st.xp,level:lv.current.title,streak:st.streak,sessions:st.totalSessions,overallAccuracy:st.totalCorrect+st.totalWrong>0?Math.round(100*st.totalCorrect/(st.totalCorrect+st.totalWrong)):null,achievements:st.achievements,categories:cs,weakWords:ws.filter(w=>w.wrong>=2&&w.box<=2).slice(0,10),strongWords:ws.filter(w=>w.box>=4).map(w=>`${w.fi}/${w.en}`),recent:st.sessionHistory.slice(0,10)},null,2));
+  };
+
+  const W='max-w-md mx-auto min-h-screen'; // wrapper shorthand
+
+  /* ── HOME ── */
+  if(view==='home'){
+    const learned=Object.values(st.wordProgress).filter(p=>p.box>=3).length;
+    const acc=st.totalCorrect+st.totalWrong>0?Math.round(100*st.totalCorrect/(st.totalCorrect+st.totalWrong)):0;
+    const lastA=ACHIEVEMENTS.find(a=>a.id===st.achievements[st.achievements.length-1]);
+    return (
+      <div className={`${W} pb-28`}>
+        <div className="px-5 pt-6 pb-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="text-4xl">{lv.current.icon}</div>
+              <div><div className="text-xs text-slate-400 uppercase tracking-wider">Your level</div><div className="text-lg font-semibold text-slate-100">{lv.current.title}</div></div>
+            </div>
+            <div className="flex items-center gap-1.5 bg-orange-500/10 border border-orange-500/30 px-3 py-1.5 rounded-full">
+              <Flame className={`w-4 h-4 ${st.streak>0?'text-orange-400':'text-slate-500'}`}/><span className="text-sm font-semibold text-orange-400">{st.streak}</span>
+            </div>
+          </div>
+          <div className="mb-1 flex justify-between text-xs"><span className="text-slate-400">{st.xp} XP</span>{lv.next&&<span className="text-slate-500">{lv.next.min-st.xp} XP → {lv.next.title}</span>}</div>
+          <div className="h-2 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-gradient-to-r from-violet-500 to-fuchsia-500 transition-all" style={{width:`${lv.progress*100}%`}}/></div>
+        </div>
+        <div className="mx-5 mb-5 p-5 rounded-2xl bg-slate-900 border border-slate-800">
+          <div className="flex items-center justify-between mb-3"><div className="flex items-center gap-2"><TargetIco className="w-4 h-4 text-violet-400"/><span className="text-sm font-medium text-slate-200">Päivän tavoite</span></div><span className="text-sm text-slate-400">{st.todayXp}/{st.dailyGoal} XP</span></div>
+          <div className="h-2.5 bg-slate-800 rounded-full overflow-hidden mb-2"><div className="h-full bg-gradient-to-r from-emerald-500 to-teal-500" style={{width:`${Math.min(1,st.todayXp/st.dailyGoal)*100}%`}}/></div>
+          {st.todayXp>=st.dailyGoal?<div className="text-xs text-emerald-400 flex items-center gap-1.5"><CheckIco className="w-3.5 h-3.5"/>Tavoite saavutettu!</div>:<div className="text-xs text-slate-500">~15 min harjoittelua riittää</div>}
+        </div>
+        <div className="px-5 mb-5">
+          <button onClick={()=>setView('modes')} className="w-full p-5 rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 active:scale-[0.98] transition shadow-lg shadow-violet-500/20">
+            <div className="flex items-center justify-between"><div><div className="text-xs uppercase tracking-wider text-violet-100/80 mb-0.5">Aloita harjoitus</div><div className="text-lg font-semibold text-white">Start daily practice</div></div><ChevronR className="w-6 h-6 text-white"/></div>
+          </button>
+        </div>
+        <div className="px-5 grid grid-cols-2 gap-3 mb-5">
+          <KCard icon={BookOpen} label="Sanoja opittu" value={learned} sub={`/ ${allWords.length}`}/>
+          <KCard icon={TrendUp} label="Tarkkuus" value={`${acc}%`} sub="kaikki sessiot"/>
+          <KCard icon={SparklesIco} label="Sessiot" value={st.totalSessions} sub="yhteensä"/>
+          <KCard icon={AwardIco} label="Saavutukset" value={st.achievements.length} sub={`/ ${ACHIEVEMENTS.length}`}/>
+        </div>
+        {lastA&&<div className="px-5 mb-5"><div className="text-xs uppercase tracking-wider text-slate-500 mb-2 px-1">Viimeisin saavutus</div><div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-3"><div className="text-3xl">{lastA.icon}</div><div><div className="font-semibold text-sm text-slate-100">{lastA.title}</div><div className="text-xs text-slate-400">{lastA.desc}</div></div></div></div>}
+        <Nav view={view} setView={setView}/>
+      </div>
+    );
+  }
+
+  /* ── MODES ── */
+  if(view==='modes') return (
+    <div className={W}>
+      <TopBar title="Valitse harjoitustyyppi" back={()=>setView('home')}/>
+      <div className="p-5 space-y-3">
+        {[{icon:BrainIco,title:'Muistikortit',desc:'Katso sana, mieti vastaus, käännä kortti',color:'from-violet-500 to-fuchsia-500',mode:'flashcard'},
+          {icon:TargetIco,title:'Monivalintatesti',desc:'Valitse oikea käännös neljästä vaihtoehdosta',color:'from-emerald-500 to-teal-500',mode:'quiz'}
+        ].map(({icon:Icon,title,desc,color,mode})=>(
+          <button key={mode} onClick={()=>startSession(mode)} className="w-full p-5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 active:scale-[0.98] transition text-left">
+            <div className="flex items-start gap-4">
+              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center shrink-0`}><Icon className="w-6 h-6 text-white"/></div>
+              <div className="flex-1"><div className="font-semibold text-slate-100 mb-0.5">{title}</div><div className="text-sm text-slate-400">{desc}</div></div>
+              <ChevronR className="w-5 h-5 text-slate-600 mt-3"/>
+            </div>
+          </button>
+        ))}
+        <div className="text-xs text-slate-500 px-1 pt-2">SRS valitsee sanat automaattisesti taitojesi mukaan.</div>
+      </div>
+    </div>
+  );
+
+  /* ── PRACTICE ── */
+  if(view==='practice'&&sess){
+    /* Session complete */
+    if(sess.done){
+      const acc2=sess.correct+sess.wrong>0?Math.round(100*sess.correct/(sess.correct+sess.wrong)):0;
+      const ins=acc2>=90?'Erinomainen! Vaikeustaso nousee automaattisesti kun kehityt.':acc2>=70?'Hyvää työtä — pari sanaa palaa SRS:n optimaalisin välein.':acc2>=50?'Toistot tekevät mestarin. Vaikeat sanat palaavat huomenna.':'Haastava sessio — kokeile Library-välilehteä ennen seuraavaa harjoitusta.';
+      return (
+        <div className={`${W} px-5 pt-8 pb-10`}>
+          <div className="text-center mb-8"><div className="text-6xl mb-3">{acc2>=80?'🎉':acc2>=60?'💪':'🌱'}</div><div className="text-2xl font-bold text-slate-100 mb-1">Sessio valmis!</div><div className="text-sm text-slate-400">+{sess.xp} XP</div></div>
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            {[['text-emerald-400',sess.correct,'Oikein'],['text-rose-400',sess.wrong,'Väärin'],['text-amber-400',sess.maxCombo+'x','Max combo']].map(([c,v,l])=>(
+              <div key={l} className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-center"><div className={`text-2xl font-semibold ${c}`}>{v}</div><div className="text-xs text-slate-500 mt-0.5">{l}</div></div>
+            ))}
+          </div>
+          <div className="p-4 rounded-xl bg-violet-500/5 border border-violet-500/20 mb-5"><div className="flex items-start gap-2"><SparklesIco className="w-4 h-4 text-violet-400 shrink-0 mt-0.5"/><div><div className="text-xs uppercase tracking-wider text-violet-400 mb-1">Daily Insight</div><div className="text-sm text-slate-200 leading-relaxed">{ins}</div></div></div></div>
+          {sess.newStreak>1&&<div className="p-4 rounded-xl bg-orange-500/5 border border-orange-500/20 mb-5 flex items-center gap-3"><Flame className="w-6 h-6 text-orange-400"/><div><div className="font-semibold text-orange-400">{sess.newStreak} päivän streak! 🔥</div><div className="text-xs text-slate-400">Pidä yllä huomennakin!</div></div></div>}
+          {sess.unlocked?.length>0&&<div className="space-y-2 mb-5"><div className="text-xs uppercase tracking-wider text-slate-500 px-1">Uudet saavutukset</div>{sess.unlocked.map(id=>{const a=ACHIEVEMENTS.find(x=>x.id===id);return a?<div key={id} className="p-4 rounded-xl bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/30 flex items-center gap-3"><div className="text-3xl">{a.icon}</div><div><div className="font-semibold text-amber-300">{a.title}</div><div className="text-xs text-slate-400">{a.desc}</div></div></div>:null;})}</div>}
+          <button onClick={()=>{setSess(null);setView('home');}} className="w-full py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold active:scale-[0.97] transition">Takaisin etusivulle</button>
+        </div>
+      );
+    }
+
+    const word=sess.queue[sess.idx]; const pct=(sess.idx+1)/sess.queue.length;
+    return (
+      <div className={`${W} flex flex-col min-h-screen`}>
+        <div className="px-4 pt-4 pb-3">
+          <div className="flex items-center justify-between mb-3">
+            <button onClick={()=>{if(window.confirm('Keskeyttää sessio?')){setSess(null);setView('home');}}} className="p-2 -ml-2 rounded-lg hover:bg-slate-800"><XIco className="w-5 h-5 text-slate-400"/></button>
+            <div className="flex items-center gap-3 text-sm">
+              {sess.combo>=3&&<div className="flex items-center gap-1 bg-orange-500/10 border border-orange-500/30 px-2 py-0.5 rounded-full"><ZapIco className="w-3.5 h-3.5 text-orange-400"/><span className="text-orange-400 font-semibold">{sess.combo}x</span></div>}
+              <span className="text-slate-400">{sess.idx+1}/{sess.queue.length}</span>
+            </div>
+          </div>
+          <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-gradient-to-r from-violet-500 to-fuchsia-500 transition-all" style={{width:`${pct*100}%`}}/></div>
+        </div>
+        <div className="flex-1 px-5 pb-5 flex flex-col justify-center">
+          {sess.mode==='flashcard'
+            ?<Flashcard word={word} flipped={sess.flipped} answered={sess.answered} idx={sess.idx} qLen={sess.queue.length} onFlip={()=>setSess(s=>({...s,flipped:!s.flipped}))} onAnswer={answer} onNext={next}/>
+            :<Quiz word={word} options={sess.opts[sess.idx]||[]} selAns={sess.selAns} answered={sess.answered} idx={sess.idx} qLen={sess.queue.length} onSelect={selectOpt} onNext={next}/>
+          }
+        </div>
+      </div>
+    );
+  }
+
+  /* ── LIBRARY ── */
+  if(view==='library'){
+    const filtered=cat==='all'?allWords:allWords.filter(w=>w.cat===cat);
+    return (
+      <div className={`${W} pb-28`}>
+        <TopBar title="Library"/>
+        <div className="px-4 pt-3 pb-2 overflow-x-auto"><div className="flex gap-2 pb-2">
+          <CatPill active={cat==='all'} onClick={()=>setCat('all')}>Kaikki ({allWords.length})</CatPill>
+          {Object.entries(CATEGORIES).map(([k,v])=><CatPill key={k} active={cat===k} onClick={()=>setCat(k)}>{v.short} ({allWords.filter(w=>w.cat===k).length})</CatPill>)}
+        </div></div>
+        <div className="px-5 mb-4">
+          <button onClick={()=>setAddW(true)} className="w-full py-3 rounded-xl border border-dashed border-slate-700 text-slate-400 hover:border-slate-600 transition flex items-center justify-center gap-2"><PlusIco className="w-4 h-4"/><span className="text-sm">Lisää oma sana</span></button>
+        </div>
+        <div className="px-5 space-y-2">
+          {filtered.map(w=>{const box=st.wordProgress[w.id]?.box||0;return(
+            <div key={w.id} className="p-4 rounded-xl bg-slate-900 border border-slate-800">
+              <div className="flex items-start justify-between gap-3 mb-1"><div className="flex-1 min-w-0"><div className="text-sm font-medium text-slate-100">{w.fi}</div><div className="text-sm text-slate-400">{w.en}</div></div><Dots box={box}/></div>
+              <span className={`inline-block text-[10px] uppercase tracking-wider px-2 py-0.5 rounded mt-1 bg-gradient-to-r ${CATEGORIES[w.cat].color} text-white`}>{CATEGORIES[w.cat].short}</span>
+            </div>
+          );})}
+        </div>
+        {addW&&(
+          <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
+            <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-5 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4"><h3 className="font-semibold text-slate-100">Lisää oma sana</h3><button onClick={()=>setAddW(false)} className="p-1 rounded-lg hover:bg-slate-800"><XIco className="w-4 h-4 text-slate-400"/></button></div>
+              <div className="space-y-3">
+                <Field label="Suomeksi *" value={nw.fi} onChange={v=>setNw({...nw,fi:v})}/>
+                <Field label="Englanniksi *" value={nw.en} onChange={v=>setNw({...nw,en:v})}/>
+                <div><label className="text-xs text-slate-400 block mb-1">Kategoria</label><select value={nw.cat} onChange={e=>setNw({...nw,cat:e.target.value})} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100">{Object.entries(CATEGORIES).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}</select></div>
+                <Field label="Esimerkki (FI)" value={nw.exFi} onChange={v=>setNw({...nw,exFi:v})}/>
+                <Field label="Esimerkki (EN)" value={nw.exEn} onChange={v=>setNw({...nw,exEn:v})}/>
+                <Field label="Vinkki" value={nw.tip} onChange={v=>setNw({...nw,tip:v})} area/>
+                <button onClick={()=>{if(!nw.fi.trim()||!nw.en.trim())return;setSt(s=>({...s,customWords:[...s.customWords,{...nw,id:'c'+Date.now(),diff:2}]}));setNw({fi:'',en:'',cat:'basics',exFi:'',exEn:'',tip:''});setAddW(false);}} disabled={!nw.fi.trim()||!nw.en.trim()} className="w-full py-3 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold disabled:opacity-40 disabled:cursor-not-allowed">Tallenna</button>
+              </div>
+            </div>
+          </div>
+        )}
+        <Nav view={view} setView={setView}/>
+      </div>
+    );
+  }
+
+  /* ── STATS ── */
+  if(view==='stats'){
+    const wp=st.wordProgress;
+    const catStats=Object.entries(CATEGORIES).map(([k,v])=>{
+      const cws=allWords.filter(w=>w.cat===k);
+      const tc=cws.reduce((s,w)=>s+(wp[w.id]?.correct||0),0);
+      const tw=cws.reduce((s,w)=>s+(wp[w.id]?.wrong||0),0);
+      return{k,...v,total:cws.length,mastered:cws.filter(w=>(wp[w.id]?.box||0)>=3).length,acc:tc+tw>0?Math.round(100*tc/(tc+tw)):null};
+    });
+    const weak=Object.entries(wp).filter(([,p])=>p.wrong>=2&&p.box<=2).sort((a,b)=>b[1].wrong-a[1].wrong).slice(0,5).map(([id,p])=>({word:allWords.find(w=>w.id===id),p})).filter(x=>x.word);
+    return (
+      <div className={`${W} pb-28`}>
+        <TopBar title="Edistyminen"/>
+        <div className="px-5 pt-4">
+          <div className="mb-6"><div className="text-xs uppercase tracking-wider text-slate-500 mb-3 px-1">Hallinta kategorioittain</div>
+            <div className="space-y-2">{catStats.map(s=>(
+              <div key={s.k} className="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                <div className="flex items-center justify-between mb-2"><span className="text-sm text-slate-200">{s.label}</span><span className="text-xs text-slate-400">{s.mastered}/{s.total}</span></div>
+                <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden"><div className={`h-full bg-gradient-to-r ${s.color}`} style={{width:`${s.total?s.mastered/s.total*100:0}%`}}/></div>
+                {s.acc!==null&&<div className="text-[10px] text-slate-500 mt-1.5">Tarkkuus: {s.acc}%</div>}
+              </div>
+            ))}</div>
+          </div>
+          {weak.length>0&&<div className="mb-6"><div className="text-xs uppercase tracking-wider text-slate-500 mb-3 px-1">Kehitettävää</div>
+            <div className="space-y-2">{weak.map(({word,p})=>(
+              <div key={word.id} className="p-3 rounded-xl bg-rose-500/5 border border-rose-500/20">
+                <div className="flex items-center justify-between"><div><div className="text-sm text-slate-200">{word.fi}</div><div className="text-xs text-slate-400">{word.en}</div></div><div className="text-xs text-rose-400">{p.wrong} virhettä</div></div>
+              </div>
+            ))}</div>
+          </div>}
+          <div className="mb-6"><div className="text-xs uppercase tracking-wider text-slate-500 mb-3 px-1">Saavutukset ({st.achievements.length}/{ACHIEVEMENTS.length})</div>
+            <div className="grid grid-cols-2 gap-2">{ACHIEVEMENTS.map(a=>{const ok=st.achievements.includes(a.id);return(
+              <div key={a.id} className={`p-3 rounded-xl border ${ok?'bg-amber-500/5 border-amber-500/30':'bg-slate-900 border-slate-800 opacity-50'}`}>
+                <div className="text-2xl mb-1">{a.icon}</div><div className={`text-xs font-semibold ${ok?'text-amber-300':'text-slate-400'}`}>{a.title}</div><div className="text-[10px] text-slate-500 mt-0.5">{a.desc}</div>
+              </div>
+            );})}</div>
+          </div>
+          <button onClick={buildExport} className="w-full py-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition mb-4"><DownloadIco className="w-4 h-4"/>Vie edistyminen Claudelle</button>
+          {exp&&(
+            <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
+              <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-5 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-3"><h3 className="font-semibold text-slate-100">Export Claudelle</h3><button onClick={()=>setExp(null)} className="p-1 rounded-lg hover:bg-slate-800"><XIco className="w-4 h-4 text-slate-400"/></button></div>
+                <p className="text-xs text-slate-400 mb-3">Kopioi ja liitä Claudelle uudessa keskustelussa pyytäen analyysiä tai uusia harjoituksia.</p>
+                <pre className="text-[10px] text-slate-300 bg-slate-950 p-3 rounded-lg overflow-x-auto whitespace-pre-wrap max-h-64 mb-3">{exp}</pre>
+                <button onClick={()=>{navigator.clipboard?.writeText(exp);setPop('Kopioitu!');setTimeout(()=>setPop(null),2000);}} className="w-full py-3 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold flex items-center justify-center gap-2"><CopyIco className="w-4 h-4"/>Kopioi</button>
+              </div>
+            </div>
+          )}
+        </div>
+        <Nav view={view} setView={setView}/>
+      </div>
+    );
+  }
+
+  /* ── SETTINGS ── */
+  return (
+    <div className={`${W} pb-28`}>
+      <TopBar title="Asetukset"/>
+      <div className="px-5 pt-4 space-y-4">
+        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
+          <div className="text-sm font-medium text-slate-100 mb-2">Päivän XP-tavoite</div>
+          <div className="flex gap-2">{[50,100,150,200].map(g=><button key={g} onClick={()=>setSt(s=>({...s,dailyGoal:g}))} className={`flex-1 py-2 rounded-lg text-sm font-medium ${st.dailyGoal===g?'bg-violet-500/20 border border-violet-500/40 text-violet-300':'bg-slate-800 text-slate-400'}`}>{g}</button>)}</div>
+          <div className="text-xs text-slate-500 mt-2">100 XP ≈ 15 min harjoittelua</div>
+        </div>
+        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
+          <div className="text-sm font-medium text-slate-100 mb-2">📱 Asenna iPhoneen</div>
+          <div className="text-xs text-slate-400 leading-relaxed">1. Avaa <strong className="text-slate-300">makelai.github.io/english-trainer</strong> Safarissa<br/>2. Napauta jako-painiketta (□↑)<br/>3. Valitse "Lisää Koti-näyttöön"<br/>4. Sovellus toimii kuin natiivi app!</div>
+        </div>
+        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
+          <div className="text-sm font-medium text-slate-100 mb-1">🔒 Yksityisyys</div>
+          <div className="text-xs text-slate-400">Data tallennetaan vain tähän selaimeen (localStorage). Mikään ei lähde laitteeltasi.</div>
+        </div>
+        <button onClick={()=>{if(window.confirm('Nollaa kaikki edistyminen? Ei voi peruuttaa.'))setSt(defaultState());}} className="w-full py-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-sm font-medium">Nollaa kaikki edistyminen</button>
+      </div>
+      <Nav view={view} setView={setView}/>
+      {pop&&<div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-slate-800 border border-slate-700 text-sm text-slate-100 shadow-xl">{pop}</div>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
