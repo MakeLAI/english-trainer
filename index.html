@@ -62,26 +62,45 @@ const CATEGORIES = {
 };
 
 const LEVELS = [
-  {min:0,    title:'Junior Bookkeeper',icon:'🌱'},
-  {min:100,  title:'Bookkeeper',       icon:'📖'},
-  {min:300,  title:'Accountant',       icon:'💼'},
-  {min:600,  title:'Senior Accountant',icon:'📊'},
-  {min:1000, title:'Controller',       icon:'🎯'},
-  {min:1500, title:'Senior Controller',icon:'📈'},
-  {min:2500, title:'Finance Manager',  icon:'⭐'},
-  {min:4000, title:'CFO',              icon:'👑'}
+  {min:0,     title:'Junior Bookkeeper',     icon:'🌱'},
+  {min:200,   title:'Bookkeeper',            icon:'📖'},
+  {min:500,   title:'Senior Bookkeeper',     icon:'📚'},
+  {min:1000,  title:'Accounts Clerk',        icon:'🗂️'},
+  {min:1800,  title:'Accountant',            icon:'💼'},
+  {min:3000,  title:'Senior Accountant',     icon:'📊'},
+  {min:4500,  title:'Financial Analyst',     icon:'🔍'},
+  {min:6500,  title:'Senior Analyst',        icon:'📉'},
+  {min:9000,  title:'Controller',            icon:'🎯'},
+  {min:12000, title:'Senior Controller',     icon:'📈'},
+  {min:16000, title:'Finance Manager',       icon:'⭐'},
+  {min:21000, title:'Senior Finance Manager',icon:'🌟'},
+  {min:27000, title:'VP Finance',            icon:'💎'},
+  {min:34000, title:'Finance Director',      icon:'🔑'},
+  {min:42000, title:'CFO',                   icon:'👑'}
 ];
 
 const ACHIEVEMENTS = [
-  {id:'first_session',title:'First Steps',    desc:'Suorita ensimmäinen harjoitus',        icon:'🎯'},
-  {id:'streak_3',     title:'3-Day Streak',   desc:'Harjoittele 3 päivää peräkkäin',       icon:'🔥'},
-  {id:'streak_7',     title:'Weekly Warrior', desc:'Harjoittele 7 päivää peräkkäin',       icon:'🔥🔥'},
-  {id:'streak_30',    title:'Iron Discipline',desc:'Harjoittele 30 päivää peräkkäin',      icon:'💎'},
-  {id:'words_25',     title:'Vocab Builder',  desc:'Opi 25 sanaa (taso 3+)',               icon:'📚'},
-  {id:'words_50',     title:'Word Master',    desc:'Opi 50 sanaa (taso 3+)',              icon:'🎓'},
-  {id:'combo_10',     title:'On Fire',        desc:'10 oikein peräkkäin',                 icon:'⚡'},
-  {id:'perfect',      title:'Perfectionist',  desc:'Täydellinen sessio (20+ sanaa, 100%)',icon:'💯'},
-  {id:'ifrs_master',  title:'IFRS Specialist',desc:'Hallitse kaikki IFRS-termit',         icon:'🌍'}
+  {id:'first_session',     title:'First Steps',         desc:'Suorita ensimmäinen harjoitus',          icon:'🎯'},
+  {id:'sessions_10',       title:'Getting Started',     desc:'Suorita 10 sessiota',                    icon:'🚀'},
+  {id:'sessions_50',       title:'Half Century',        desc:'Suorita 50 sessiota',                    icon:'🏅'},
+  {id:'sessions_100',      title:'Century Club',        desc:'Suorita 100 sessiota',                   icon:'🏆'},
+  {id:'streak_3',          title:'3-Day Streak',        desc:'Harjoittele 3 päivää peräkkäin',         icon:'🔥'},
+  {id:'streak_7',          title:'Weekly Warrior',      desc:'Harjoittele 7 päivää peräkkäin',         icon:'🔥🔥'},
+  {id:'streak_14',         title:'2-Week Streak',       desc:'Harjoittele 14 päivää peräkkäin',        icon:'🔥🔥🔥'},
+  {id:'streak_30',         title:'Iron Discipline',     desc:'Harjoittele 30 päivää peräkkäin',        icon:'💎'},
+  {id:'streak_60',         title:'Iron Will',           desc:'Harjoittele 60 päivää peräkkäin',        icon:'💎💎'},
+  {id:'words_25',          title:'Vocab Builder',       desc:'Opi 25 sanaa (taso 3+)',                 icon:'📚'},
+  {id:'words_50',          title:'Word Master',         desc:'Opi 50 sanaa (taso 3+)',                 icon:'🎓'},
+  {id:'words_75',          title:'Vocab Expert',        desc:'Opi 75 sanaa (taso 3+)',                 icon:'📖'},
+  {id:'words_all',         title:'Full Collection',     desc:'Hallitse kaikki sanat (taso 3+)',        icon:'🌟'},
+  {id:'combo_10',          title:'On Fire',             desc:'10 oikein peräkkäin',                    icon:'⚡'},
+  {id:'combo_20',          title:'Unstoppable',         desc:'20 oikein peräkkäin',                    icon:'⚡⚡'},
+  {id:'perfect',           title:'Perfectionist',       desc:'Täydellinen sessio (20+ sanaa, 100%)',   icon:'💯'},
+  {id:'ifrs_master',       title:'IFRS Specialist',     desc:'Hallitse kaikki IFRS-termit',            icon:'🌍'},
+  {id:'controlling_master',title:'Controlling Pro',     desc:'Hallitse kaikki Controlling-termit',     icon:'📊'},
+  {id:'balance_master',    title:'Balance Sheet Pro',   desc:'Hallitse kaikki tase-termit',            icon:'💰'},
+  {id:'income_master',     title:'P&L Expert',          desc:'Hallitse kaikki tuloslaskelma-termit',   icon:'📈'},
+  {id:'phrases_master',    title:'Business English Pro',desc:'Hallitse kaikki business-fraasit',       icon:'🗣️'}
 ];
 
 /* ── SANASTO (97 sanaa) ─────────────────────────────────────────────────────
@@ -419,13 +438,19 @@ function App() {
     const ach=[...st.achievements];
     const u=id=>{if(!ach.includes(id))ach.push(id);};
     if(!st.totalSessions)u('first_session');
-    if(streak>=3)u('streak_3'); if(streak>=7)u('streak_7'); if(streak>=30)u('streak_30');
-    if(sess.maxCombo>=10)u('combo_10');
+    if(st.totalSessions>=9)u('sessions_10'); if(st.totalSessions>=49)u('sessions_50'); if(st.totalSessions>=99)u('sessions_100');
+    if(streak>=3)u('streak_3'); if(streak>=7)u('streak_7'); if(streak>=14)u('streak_14'); if(streak>=30)u('streak_30'); if(streak>=60)u('streak_60');
+    if(sess.maxCombo>=10)u('combo_10'); if(sess.maxCombo>=20)u('combo_20');
     if(sess.queue.length>=20&&sess.wrong===0)u('perfect');
     setSt(s=>{
       const wp=s.wordProgress; const m=Object.values(wp).filter(p=>p.box>=3).length;
-      if(m>=25)u('words_25'); if(m>=50)u('words_50');
+      if(m>=25)u('words_25'); if(m>=50)u('words_50'); if(m>=75)u('words_75');
+      if(VOCAB.every(w=>(wp[w.id]?.box||0)>=3))u('words_all');
       if(allWords.filter(w=>w.cat==='ifrs').every(w=>(wp[w.id]?.box||0)>=4))u('ifrs_master');
+      if(allWords.filter(w=>w.cat==='controlling').every(w=>(wp[w.id]?.box||0)>=3))u('controlling_master');
+      if(allWords.filter(w=>w.cat==='balance').every(w=>(wp[w.id]?.box||0)>=3))u('balance_master');
+      if(allWords.filter(w=>w.cat==='income').every(w=>(wp[w.id]?.box||0)>=3))u('income_master');
+      if(allWords.filter(w=>w.cat==='phrases').every(w=>(wp[w.id]?.box||0)>=3))u('phrases_master');
       return {...s,xp:s.xp+sess.xp,todayXp:s.todayXp+sess.xp,lastSessionDate:today,streak,achievements:ach,
         totalSessions:s.totalSessions+1,
         sessionHistory:[{date:today,mode:sess.mode,correct:sess.correct,wrong:sess.wrong,xp:sess.xp,words:sess.queue.length,maxCombo:sess.maxCombo,dur:Math.round((Date.now()-sess.start)/1000)},...s.sessionHistory.slice(0,49)]};
