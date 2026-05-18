@@ -457,6 +457,7 @@ function App() {
   const [nw,   setNw]  = useState({fi:'',en:'',cat:'basics',exFi:'',exEn:'',tip:''});
   const [exp,  setExp] = useState(null);
   const [pop,  setPop] = useState(null);
+  const [openTip,setOpenTip]=useState(null);
 
   useEffect(()=>{ saveState(st); },[st]);
 
@@ -704,7 +705,6 @@ function App() {
 
   /* STATS */
   if(view==='stats'){
-    const [openTip,setOpenTip]=React.useState(null);
     const wp=st.wordProgress;
     const catStats=Object.entries(CATEGORIES).map(([k,v])=>{
       const cws=allWords.filter(w=>w.cat===k);
