@@ -646,7 +646,12 @@ function App() {
 
   /* LIBRARY */
   if(view==='library'){
-    const filtered=cat==='all'?allWords:allWords.filter(w=>w.cat===cat);
+    const catOrder=Object.keys(CATEGORIES);
+    const filtered=(cat==='all'?allWords:allWords.filter(w=>w.cat===cat)).slice().sort((a,b)=>{
+      const cd=catOrder.indexOf(a.cat)-catOrder.indexOf(b.cat);
+      if(cd!==0)return cd;
+      return parseInt(a.id.replace(/\D/g,''))-parseInt(b.id.replace(/\D/g,''));
+    });
     return (
       <div className={`${W} pb-28`}>
         <TopBar title="Sanasto"/>
