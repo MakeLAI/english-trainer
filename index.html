@@ -605,7 +605,18 @@ function App() {
   if(view==='practice'&&sess){
     if(sess.done){
       const acc2=sess.correct+sess.wrong>0?Math.round(100*sess.correct/(sess.correct+sess.wrong)):0;
-      const ins=acc2>=90?'Erinomainen! Vaikeustaso nousee automaattisesti kun kehityt.':acc2>=70?'Hyvää työtä — pari sanaa palaa SRS:n optimaalisin välein.':acc2>=50?'Toistot tekevät mestarin. Vaikeat sanat palaavat huomenna.':'Haastava sessio — kokeile Library-välilehteä ennen seuraavaa harjoitusta.';
+      const wp=st.wordProgress;
+      const weakInSess=sess.queue.filter(w=>(wp[w.id]?.box??0)<=1).sort((a,b)=>(wp[b.id]?.wrong||0)-(wp[a.id]?.wrong||0));
+      const newInSess=sess.queue.filter(w=>!wp[w.id]||(wp[w.id].correct+wp[w.id].wrong)<=1);
+      const prevBestCombo=st.sessionHistory.slice(1).reduce((m,s)=>Math.max(m,s.maxCombo||0),0);
+      const ins=
+        sess.maxCombo>=12&&sess.maxCombo>prevBestCombo?`Sessioennätys: ${sess.maxCombo}x combo-putki — erinomainen!`
+        :weakInSess.length>0?`"${weakInSess[0].en}" kaipaa vielä toistoja (boksi ${wp[weakInSess[0].id]?.box??0}). Avaa sen tippi Sanasto-välilehdeltä.`
+        :newInSess.length>=4?`${newInSess.length} uutta sanaa tuli tutuksi — ne palaavat 1–3 päivässä SRS:n kautta.`
+        :acc2>=95?'Täydellinen tarkkuus! Sanat siirtyvät boksissa ylöspäin ja palaavat myöhemmin.'
+        :acc2>=80?'Hyvää työtä — epävarmat sanat palaavat SRS:n optimaalisin välein.'
+        :acc2>=60?'Toistot tekevät mestarin. Vaikeat sanat palaavat huomenna.'
+        :'Haastava sessio — selaa Sanasto-välilehdeltä vaikeiden sanojen tippejä ennen seuraavaa kertaa.';
       return (
         <div className={`${W} px-5 pt-8 pb-10`}>
           <div className="text-center mb-8"><div className="text-6xl mb-3">{acc2>=80?'🎉':acc2>=60?'💪':'🌱'}</div><div className="text-2xl font-bold text-slate-100 mb-1">Sessio valmis!</div><div className="text-sm text-slate-400">+{sess.xp} XP</div></div>
