@@ -232,6 +232,7 @@ const defaultState = () => ({
   dailyGoal:250,todayXp:0,todayDate:todayKey(),achievements:[],
   wordProgress:{},customWords:[],totalSessions:0,sessionHistory:[]
 });
+const wordSize = t => t.length > 22 ? 'text-xl' : t.length > 14 ? 'text-2xl' : 'text-3xl';
 const makeOptions = (word,pool) => {
   const others=pool.filter(w=>w.id!==word.id);
   const same=others.filter(w=>w.cat===word.cat);
@@ -303,7 +304,7 @@ const Flashcard = ({word,flipped,answered,idx,qLen,onFlip,onAnswer,onNext}) => {
       <button onClick={onFlip} className="w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 min-h-[260px] flex flex-col items-center justify-center text-center active:scale-[0.99] transition shadow-xl">
         {!flipped?(<>
           <div className="text-xs uppercase tracking-wider text-slate-500 mb-3">Suomi</div>
-          <div className="text-3xl font-semibold text-slate-100 mb-4">{word.fi}</div>
+          <div className={`${wordSize(word.fi)} font-semibold text-slate-100 mb-4 leading-tight`}>{word.fi}</div>
           <div className="text-sm text-slate-500 italic">{word.exFi}</div>
           <div className="mt-6 text-xs text-slate-600">Napauta nähdäksesi vastaus</div>
         </>):(<>
@@ -337,7 +338,7 @@ const Quiz = ({word,options,selAns,answered,idx,qLen,onSelect,onNext}) => {
       <div className="mb-4 flex justify-center"><Pill color={cat.color}>{cat.short}</Pill></div>
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 mb-5 text-center">
         <div className="text-xs uppercase tracking-wider text-slate-500 mb-3">Mitä on englanniksi?</div>
-        <div className="text-3xl font-semibold text-slate-100">{word.fi}</div>
+        <div className={`${wordSize(word.fi)} font-semibold text-slate-100 leading-tight`}>{word.fi}</div>
         {word.cat==='phrases'&&<div className="text-xs text-slate-500 italic mt-2">"{word.exFi}"</div>}
       </div>
       <div className="space-y-2.5">
