@@ -379,7 +379,7 @@ function App() {
     const fresh=allWords.filter(w=>!st.wordProgress[w.id]).sort((a,b)=>Math.abs(a.diff-tDiff)-Math.abs(b.diff-tDiff));
     let q=[...due]; let i=0;
     while(q.length<15&&i<fresh.length) q.push(fresh[i++]);
-    if(!q.length) q=[...allWords].sort(()=>Math.random()-.5).slice(0,10);
+    if(!q.length) q=[...allWords].sort(()=>Math.random()-.5).slice(0,15);
     q.sort(()=>Math.random()-.5);
     const opts=mode==='quiz'?q.map(w=>makeOptions(w,allWords)):q.map(()=>[]);
     setSess({mode,queue:q,opts,idx:0,correct:0,wrong:0,combo:0,maxCombo:0,xp:0,flipped:false,answered:false,selAns:null,start:Date.now(),done:false,unlocked:[]});
