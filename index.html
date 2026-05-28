@@ -6,19 +6,22 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="ENG Trainer">
-  <meta name="theme-color" content="#020617">
+  <meta name="apple-mobile-web-app-title" content="Sanasto">
+  <meta name="theme-color" content="#15110c">
   <title>Accounting English Trainer</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
-    *  { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
-    body { background:#020617; margin:0; overflow-x:hidden; color:#f1f5f9;
-           font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif; }
-    select,textarea,input { outline:none; -webkit-appearance:none; }
-    .nav-safe { padding-bottom: max(0.75rem, env(safe-area-inset-bottom)); }
+    * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; margin: 0; padding: 0; }
+    html, body, #root { width: 100%; height: 100%; }
+    body { background: #15110c; overflow: hidden; }
+    select, textarea, input { outline: none; -webkit-appearance: none; }
+    ::-webkit-scrollbar { width: 0; height: 0; }
+    * { scrollbar-width: none; }
   </style>
 </head>
 <body>
@@ -26,90 +29,91 @@
 <script type="text/babel">
 const { useState, useEffect } = React;
 
-const I = ({c,ch}) => <svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{ch}</svg>;
-const Flame       = ({className})=><I c={className} ch={<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>}/>;
-const SettingsIco = ({className})=><I c={className} ch={<><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></>}/>;
-const BookOpen    = ({className})=><I c={className} ch={<><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></>}/>;
-const BrainIco    = ({className})=><I c={className} ch={<><ellipse cx="12" cy="11" rx="6" ry="6"/><path d="M12 17v5M9 20h6M6 11c-1.5 0-3-1-3-3s1.5-3 3-3M18 11c1.5 0 3-1 3-3s-1.5-3-3-3"/></>}/>;
-const TargetIco   = ({className})=><I c={className} ch={<><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></>}/>;
-const AwardIco    = ({className})=><I c={className} ch={<><circle cx="12" cy="8" r="6"/><path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"/></>}/>;
-const DownloadIco = ({className})=><I c={className} ch={<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></>}/>;
-const PlusIco     = ({className})=><I c={className} ch={<><path d="M5 12h14"/><path d="M12 5v14"/></>}/>;
-const ChevronR    = ({className})=><I c={className} ch={<path d="m9 18 6-6-6-6"/>}/>;
-const XIco        = ({className})=><I c={className} ch={<><path d="M18 6 6 18"/><path d="m6 6 12 12"/></>}/>;
-const CheckIco    = ({className})=><I c={className} ch={<path d="M20 6 9 17l-5-5"/>}/>;
-const SparklesIco = ({className})=><I c={className} ch={<><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.937A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4m2-2h-4"/><path d="M4 17v2m1-1H3"/></>}/>;
-const TrendUp     = ({className})=><I c={className} ch={<><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></>}/>;
-const HomeIco     = ({className})=><I c={className} ch={<><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>}/>;
-const LibraryIco  = ({className})=><I c={className} ch={<><path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/></>}/>;
-const BarChart    = ({className})=><I c={className} ch={<><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></>}/>;
-const ArrowL      = ({className})=><I c={className} ch={<><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></>}/>;
-const ZapIco      = ({className})=><I c={className} ch={<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>}/>;
-const LightbulbIco= ({className})=><I c={className} ch={<><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></>}/>;
-const CopyIco     = ({className})=><I c={className} ch={<><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></>}/>;
+/* ── DESIGN TOKENS ─────────────────────────────────────────────────────────── */
+const C = {
+  bg:'#15110c', bgGlow:'#241c12',
+  paper:'#e6d9b8', paperShade:'#d0c096', paperEdge:'#a89464',
+  ink:'#1a1611', inkLight:'#3a342a', inkMute:'#6b5f4a', inkFaint:'#a89466',
+  accent:'#c97a3c', accentDark:'#8e4b1d',
+};
+const FS = '"Crimson Pro", Georgia, serif';
+const FM = '"IBM Plex Mono", ui-monospace, Menlo, monospace';
+const FU = '"Inter Tight", -apple-system, system-ui, sans-serif';
+const CAT_HUE = {basics:210,balance:158,income:38,daily:350,ifrs:268,controlling:232,phrases:318};
+const catColor = cat => `oklch(58% 0.13 ${CAT_HUE[cat]||210})`;
+const paperBg = {background:`linear-gradient(180deg,${C.paper} 0%,${C.paperShade} 100%)`};
+const paperGrain = {backgroundImage:`repeating-linear-gradient(0deg,rgba(60,40,10,0.04) 0px,rgba(60,40,10,0.04) 1px,transparent 1px,transparent 3px),repeating-linear-gradient(90deg,rgba(80,50,20,0.025) 0px,rgba(80,50,20,0.025) 1px,transparent 1px,transparent 5px)`};
 
+/* ── TIER GLYPHS ───────────────────────────────────────────────────────────── */
+const TIER_GLYPHS = [
+  c=><><rect x="11" y="9" width="18" height="22" rx="1" stroke={c} strokeWidth="1.8" fill="none"/><line x1="14" y1="17" x2="26" y2="17" stroke={c} strokeWidth="1.6"/><line x1="14" y1="22" x2="22" y2="22" stroke={c} strokeWidth="1.6"/></>,
+  c=><><rect x="11" y="9" width="18" height="22" rx="1" stroke={c} strokeWidth="1.8" fill="none"/><line x1="14" y1="15" x2="26" y2="15" stroke={c} strokeWidth="1.6"/><line x1="14" y1="20" x2="26" y2="20" stroke={c} strokeWidth="1.6"/><line x1="14" y1="25" x2="26" y2="25" stroke={c} strokeWidth="1.6"/></>,
+  c=><><rect x="11" y="9" width="18" height="22" rx="1" stroke={c} strokeWidth="1.8" fill="none"/><line x1="14" y1="15" x2="26" y2="15" stroke={c} strokeWidth="1.6"/><line x1="14" y1="20" x2="26" y2="20" stroke={c} strokeWidth="1.6"/><line x1="14" y1="25" x2="22" y2="25" stroke={c} strokeWidth="1.6"/><path d="M24 9 L24 14 L26.5 12 L29 14 L29 9" stroke={c} strokeWidth="1.8" fill={c} strokeLinejoin="round"/></>,
+  c=><><path d="M10 13 L18 13 L20 11 L30 11 L30 30 L10 30 Z" stroke={c} strokeWidth="1.8" fill="none" strokeLinejoin="round"/><line x1="14" y1="20" x2="26" y2="20" stroke={c} strokeWidth="1.6"/></>,
+  c=><><line x1="20" y1="10" x2="20" y2="30" stroke={c} strokeWidth="1.8"/><line x1="10" y1="14" x2="30" y2="14" stroke={c} strokeWidth="1.8"/><path d="M10 14 L7 22 L13 22 Z" stroke={c} strokeWidth="1.6" fill="none" strokeLinejoin="round"/><path d="M30 14 L27 22 L33 22 Z" stroke={c} strokeWidth="1.6" fill="none" strokeLinejoin="round"/><line x1="14" y1="30" x2="26" y2="30" stroke={c} strokeWidth="1.8"/></>,
+  c=><><line x1="20" y1="10" x2="20" y2="30" stroke={c} strokeWidth="1.8"/><line x1="10" y1="14" x2="30" y2="14" stroke={c} strokeWidth="1.8"/><path d="M10 14 L7 22 L13 22 Z" stroke={c} strokeWidth="1.6" fill={c} strokeLinejoin="round"/><path d="M30 14 L27 22 L33 22 Z" stroke={c} strokeWidth="1.6" fill="none" strokeLinejoin="round"/><circle cx="20" cy="11" r="1.6" fill={c}/><line x1="14" y1="30" x2="26" y2="30" stroke={c} strokeWidth="1.8"/></>,
+  c=><><polyline points="9,28 14,22 19,25 24,15 31,11" stroke={c} strokeWidth="2" fill="none" strokeLinejoin="round" strokeLinecap="round"/><circle cx="9" cy="28" r="1.6" fill={c}/><circle cx="14" cy="22" r="1.6" fill={c}/><circle cx="19" cy="25" r="1.6" fill={c}/><circle cx="24" cy="15" r="1.6" fill={c}/><circle cx="31" cy="11" r="1.6" fill={c}/></>,
+  c=><><rect x="10" y="24" width="4" height="6" fill={c}/><rect x="16" y="19" width="4" height="11" fill={c}/><rect x="22" y="14" width="4" height="16" fill={c}/><rect x="28" y="9" width="4" height="21" fill={c}/></>,
+  c=><><path d="M11 9 L29 9 L29 22 Q29 30 20 32 Q11 30 11 22 Z" stroke={c} strokeWidth="1.8" fill="none" strokeLinejoin="round"/><rect x="15" y="20" width="2.5" height="6" fill={c}/><rect x="18.75" y="17" width="2.5" height="9" fill={c}/><rect x="22.5" y="14" width="2.5" height="12" fill={c}/></>,
+  c=><><path d="M11 9 L29 9 L29 22 Q29 30 20 32 Q11 30 11 22 Z" stroke={c} strokeWidth="1.8" fill="none" strokeLinejoin="round"/><path d="M15 25 L20 18 L25 23" stroke={c} strokeWidth="1.8" fill="none" strokeLinejoin="round" strokeLinecap="round"/><path d="M22 18 L25 18 L25 21" stroke={c} strokeWidth="1.8" fill="none" strokeLinejoin="round" strokeLinecap="round"/><line x1="15" y1="27.5" x2="25" y2="27.5" stroke={c} strokeWidth="1.6"/></>,
+  c=><><line x1="9" y1="12" x2="31" y2="12" stroke={c} strokeWidth="2"/><rect x="13" y="14" width="3" height="14" fill={c}/><rect x="24" y="14" width="3" height="14" fill={c}/><line x1="9" y1="30" x2="31" y2="30" stroke={c} strokeWidth="2"/></>,
+  c=><><line x1="9" y1="12" x2="31" y2="12" stroke={c} strokeWidth="2"/><rect x="11" y="14" width="3" height="14" fill={c}/><rect x="18.5" y="14" width="3" height="14" fill={c}/><rect x="26" y="14" width="3" height="14" fill={c}/><line x1="9" y1="30" x2="31" y2="30" stroke={c} strokeWidth="2"/></>,
+  c=><><path d="M9 14 L20 7 L31 14 Z" stroke={c} strokeWidth="1.8" fill="none" strokeLinejoin="round"/><line x1="9" y1="16" x2="31" y2="16" stroke={c} strokeWidth="2"/><rect x="11" y="18" width="3" height="11" fill={c}/><rect x="18.5" y="18" width="3" height="11" fill={c}/><rect x="26" y="18" width="3" height="11" fill={c}/><line x1="9" y1="31" x2="31" y2="31" stroke={c} strokeWidth="2"/></>,
+  c=><><path d="M15 8 L25 8 L25 32 L15 32 Z" stroke={c} strokeWidth="1.8" fill="none" strokeLinejoin="round"/><rect x="17" y="11" width="2" height="2" fill={c}/><rect x="21" y="11" width="2" height="2" fill={c}/><rect x="17" y="15" width="2" height="2" fill={c}/><rect x="21" y="15" width="2" height="2" fill={c}/><rect x="17" y="19" width="2" height="2" fill={c}/><rect x="21" y="19" width="2" height="2" fill={c}/><rect x="17" y="23" width="2" height="2" fill={c}/><rect x="21" y="23" width="2" height="2" fill={c}/><line x1="13" y1="32" x2="27" y2="32" stroke={c} strokeWidth="2"/></>,
+  c=><><path d="M9 28 L31 28 L29 12 L24 19 L20 9 L16 19 L11 12 Z" stroke={c} strokeWidth="1.8" fill="none" strokeLinejoin="round"/><circle cx="11" cy="11" r="1.6" fill={c}/><circle cx="20" cy="8" r="1.6" fill={c}/><circle cx="29" cy="11" r="1.6" fill={c}/><line x1="9" y1="31" x2="31" y2="31" stroke={c} strokeWidth="2"/></>,
+];
+
+/* ── SRS + KATEGORIAT ──────────────────────────────────────────────────────── */
 const BOX_INTERVALS = [0,1,3,7,14,30];
 const SK = 'acceng_v1';
 
-const CATEGORIES = {
-  basics:     {label:'Kirjanpidon perusteet',    short:'Perusteet',  color:'from-blue-500 to-cyan-500'},
-  balance:    {label:'Tase',                     short:'Tase',       color:'from-emerald-500 to-teal-500'},
-  income:     {label:'Tuloslaskelma',            short:'Tuloslask.', color:'from-amber-500 to-orange-500'},
-  daily:      {label:'AP / AR / Päivittäinen',   short:'Päivittäin', color:'from-rose-500 to-pink-500'},
-  ifrs:       {label:'IFRS',                     short:'IFRS',       color:'from-violet-500 to-purple-500'},
-  controlling:{label:'Controlling & raportointi',short:'Controlling',color:'from-indigo-500 to-blue-500'},
-  phrases:    {label:'Business-fraasit',         short:'Fraasit',    color:'from-fuchsia-500 to-pink-500'}
+const CATS = {
+  basics:     {fi:'Perusteet',   en:'Basics',       label:'Kirjanpidon perusteet',    short:'Perusteet',   hue:210},
+  balance:    {fi:'Tase',        en:'Balance Sheet', label:'Tase',                     short:'Tase',        hue:158},
+  income:     {fi:'Tuloslask.',  en:'Income Stmt',   label:'Tuloslaskelma',            short:'Tuloslask.',  hue:38},
+  daily:      {fi:'Päivittäin',  en:'Daily',         label:'AP / AR / Päivittäinen',   short:'Päivittäin',  hue:350},
+  ifrs:       {fi:'IFRS',        en:'IFRS',          label:'IFRS',                     short:'IFRS',        hue:268},
+  controlling:{fi:'Controlling', en:'Controlling',   label:'Controlling & raportointi',short:'Controlling', hue:232},
+  phrases:    {fi:'Fraasit',     en:'Phrases',       label:'Business-fraasit',         short:'Fraasit',     hue:318},
 };
 
 const LEVELS = [
-  {min:0,     title:'Junior Bookkeeper',     icon:'🌱'},
-  {min:200,   title:'Bookkeeper',            icon:'📖'},
-  {min:500,   title:'Senior Bookkeeper',     icon:'📚'},
-  {min:1000,  title:'Accounts Clerk',        icon:'🗂️'},
-  {min:1800,  title:'Accountant',            icon:'💼'},
-  {min:3000,  title:'Senior Accountant',     icon:'📊'},
-  {min:4500,  title:'Financial Analyst',     icon:'🔍'},
-  {min:6500,  title:'Senior Analyst',        icon:'📉'},
-  {min:9000,  title:'Controller',            icon:'🎯'},
-  {min:12000, title:'Senior Controller',     icon:'📈'},
-  {min:16000, title:'Finance Manager',       icon:'⭐'},
-  {min:21000, title:'Senior Finance Manager',icon:'🌟'},
-  {min:27000, title:'VP Finance',            icon:'💎'},
-  {min:34000, title:'Finance Director',      icon:'🔑'},
-  {min:42000, title:'CFO',                   icon:'👑'}
+  {min:0,    title:'Junior Bookkeeper'},    {min:200,  title:'Bookkeeper'},
+  {min:500,  title:'Senior Bookkeeper'},   {min:1000, title:'Accounts Clerk'},
+  {min:1800, title:'Accountant'},          {min:3000, title:'Senior Accountant'},
+  {min:4500, title:'Financial Analyst'},   {min:6500, title:'Senior Analyst'},
+  {min:9000, title:'Controller'},          {min:12000,title:'Senior Controller'},
+  {min:16000,title:'Finance Manager'},     {min:21000,title:'Senior Finance Manager'},
+  {min:27000,title:'VP Finance'},          {min:34000,title:'Finance Director'},
+  {min:42000,title:'CFO'},
 ];
 
 const ACHIEVEMENTS = [
-  {id:'first_session',     title:'First Steps',         desc:'Suorita ensimmäinen harjoitus',          icon:'🎯'},
-  {id:'sessions_10',       title:'Getting Started',     desc:'Suorita 10 sessiota',                    icon:'🚀'},
-  {id:'sessions_50',       title:'Half Century',        desc:'Suorita 50 sessiota',                    icon:'🏅'},
-  {id:'sessions_100',      title:'Century Club',        desc:'Suorita 100 sessiota',                   icon:'🏆'},
-  {id:'streak_3',          title:'3-Day Streak',        desc:'Harjoittele 3 päivää peräkkäin',         icon:'🔥'},
-  {id:'streak_7',          title:'Weekly Warrior',      desc:'Harjoittele 7 päivää peräkkäin',         icon:'🔥🔥'},
-  {id:'streak_14',         title:'2-Week Streak',       desc:'Harjoittele 14 päivää peräkkäin',        icon:'🔥🔥🔥'},
-  {id:'streak_30',         title:'Iron Discipline',     desc:'Harjoittele 30 päivää peräkkäin',        icon:'💎'},
-  {id:'streak_60',         title:'Iron Will',           desc:'Harjoittele 60 päivää peräkkäin',        icon:'💎💎'},
-  {id:'words_25',          title:'Vocab Builder',       desc:'Opi 25 sanaa (taso 3+)',                 icon:'📚'},
-  {id:'words_50',          title:'Word Master',         desc:'Opi 50 sanaa (taso 3+)',                 icon:'🎓'},
-  {id:'words_75',          title:'Vocab Expert',        desc:'Opi 75 sanaa (taso 3+)',                 icon:'📖'},
-  {id:'words_all',         title:'Full Collection',     desc:'Hallitse kaikki sanat (taso 3+)',        icon:'🌟'},
-  {id:'combo_10',          title:'On Fire',             desc:'10 oikein peräkkäin',                    icon:'⚡'},
-  {id:'combo_20',          title:'Unstoppable',         desc:'20 oikein peräkkäin',                    icon:'⚡⚡'},
-  {id:'perfect',           title:'Perfectionist',       desc:'Täydellinen sessio (20+ sanaa, 100%)',   icon:'💯'},
-  {id:'ifrs_master',       title:'IFRS Specialist',     desc:'Hallitse kaikki IFRS-termit',            icon:'🌍'},
-  {id:'controlling_master',title:'Controlling Pro',     desc:'Hallitse kaikki Controlling-termit',     icon:'📊'},
-  {id:'balance_master',    title:'Balance Sheet Pro',   desc:'Hallitse kaikki tase-termit',            icon:'💰'},
-  {id:'income_master',     title:'P&L Expert',          desc:'Hallitse kaikki tuloslaskelma-termit',   icon:'📈'},
-  {id:'phrases_master',    title:'Business English Pro',desc:'Hallitse kaikki business-fraasit',       icon:'🗣️'}
+  {id:'first_session',     title:'First Steps',         desc:'Suorita ensimmäinen harjoitus',        icon:'🎯'},
+  {id:'sessions_10',       title:'Getting Started',     desc:'Suorita 10 sessiota',                  icon:'🚀'},
+  {id:'sessions_50',       title:'Half Century',        desc:'Suorita 50 sessiota',                  icon:'🏅'},
+  {id:'sessions_100',      title:'Century Club',        desc:'Suorita 100 sessiota',                 icon:'🏆'},
+  {id:'streak_3',          title:'3-Day Streak',        desc:'Harjoittele 3 päivää peräkkäin',       icon:'🔥'},
+  {id:'streak_7',          title:'Weekly Warrior',      desc:'Harjoittele 7 päivää peräkkäin',       icon:'🔥🔥'},
+  {id:'streak_14',         title:'2-Week Streak',       desc:'Harjoittele 14 päivää peräkkäin',      icon:'🔥🔥🔥'},
+  {id:'streak_30',         title:'Iron Discipline',     desc:'Harjoittele 30 päivää peräkkäin',      icon:'💎'},
+  {id:'streak_60',         title:'Iron Will',           desc:'Harjoittele 60 päivää peräkkäin',      icon:'💎💎'},
+  {id:'words_25',          title:'Vocab Builder',       desc:'Opi 25 sanaa (taso 3+)',               icon:'📚'},
+  {id:'words_50',          title:'Word Master',         desc:'Opi 50 sanaa (taso 3+)',               icon:'🎓'},
+  {id:'words_75',          title:'Vocab Expert',        desc:'Opi 75 sanaa (taso 3+)',               icon:'📖'},
+  {id:'words_all',         title:'Full Collection',     desc:'Hallitse kaikki sanat (taso 3+)',      icon:'🌟'},
+  {id:'combo_10',          title:'On Fire',             desc:'10 oikein peräkkäin',                  icon:'⚡'},
+  {id:'combo_20',          title:'Unstoppable',         desc:'20 oikein peräkkäin',                  icon:'⚡⚡'},
+  {id:'perfect',           title:'Perfectionist',       desc:'Täydellinen sessio (20+ sanaa, 100%)', icon:'💯'},
+  {id:'ifrs_master',       title:'IFRS Specialist',     desc:'Hallitse kaikki IFRS-termit',          icon:'🌍'},
+  {id:'controlling_master',title:'Controlling Pro',     desc:'Hallitse kaikki Controlling-termit',   icon:'📊'},
+  {id:'balance_master',    title:'Balance Sheet Pro',   desc:'Hallitse kaikki tase-termit',          icon:'💰'},
+  {id:'income_master',     title:'P&L Expert',          desc:'Hallitse kaikki tuloslaskelma-termit', icon:'📈'},
+  {id:'phrases_master',    title:'Business English Pro',desc:'Hallitse kaikki business-fraasit',     icon:'🗣️'},
 ];
 
-/* ── SANASTO (97 sanaa) ─────────────────────────────────────────────────────
-   Lähteet: IFRS Foundation · KPMG · BDO · ACCA · Finvoicer · Aalto · TEPA
-            Cambridge Business English Dictionary · Longman Business English Dictionary
-            PwC, KPMG, Aalto (i9–i20 validoitu)
-   Tipit p6,p8,p10-p14,p17,p19,p20: päivitetty kielenopettajan toimesta ──── */
+/* ── VOCAB ─────────────────────────────────────────────────────────────────── */
 const VOCAB = [
-  /* KIRJANPIDON PERUSTEET */
   {id:'b1', fi:'kirjanpito',               en:'bookkeeping',                   cat:'basics',      diff:1,exFi:'Yrityksen kirjanpito on lakisääteistä.',                    exEn:"A company's bookkeeping is required by law.",                    tip:'"Bookkeeping" = päivittäinen kirjaaminen. "Accounting" = laajempi käsite.'},
   {id:'b2', fi:'tilinpäätös',              en:'financial statements',          cat:'basics',      diff:1,exFi:'Tilinpäätös laaditaan tilikauden päätyttyä.',               exEn:'Financial statements are prepared at the end of the financial year.',tip:'Aina monikossa! Sisältää taseen, tuloslaskelman, rahoituslaskelman ja liitetiedot.'},
   {id:'b3', fi:'tase',                     en:'balance sheet',                 cat:'basics',      diff:1,exFi:'Tase kuvaa yrityksen taloudellista asemaa.',                exEn:"The balance sheet shows the company's financial position.",        tip:'IFRS-termi: "statement of financial position". Arkikäytössä "balance sheet".'},
@@ -125,20 +129,34 @@ const VOCAB = [
   {id:'b13',fi:'pääkirja',                 en:'general ledger',                cat:'basics',      diff:1,exFi:'Tarkistin pääkirjasta tilin saldon.',                      exEn:'I checked the account balance from the general ledger.',          tip:'Lyhenne "GL". SAP:ssa keskeinen käsite.'},
   {id:'b14',fi:'tilintarkastus',           en:'audit',                         cat:'basics',      diff:1,exFi:'Tilintarkastus alkaa helmikuussa.',                         exEn:'The audit begins in February.',                                   tip:'"External audit" = ulkoinen, "internal audit" = sisäinen.'},
   {id:'b15',fi:'saldo',                    en:'balance',                       cat:'basics',      diff:1,exFi:'Tilin saldo on 1 200 euroa miinuksella.',                  exEn:'The account balance is 1,200 euros negative.',                    tip:'"Opening balance" = alkusaldo, "closing balance" = loppusaldo.'},
-  /* TASE */
-  {id:'bs1',fi:'vastaavaa',                en:'assets',                        cat:'balance',     diff:1,exFi:'Vastaavaa = vastattavaa, aina.',                           exEn:'Assets = Equity + Liabilities, always.',                          tip:'Englanniksi: assets = liabilities + equity.'},
-  {id:'bs2',fi:'vastattavaa',              en:'equity and liabilities',        cat:'balance',     diff:2,exFi:'Vastattavaa-puoli kertoo, miten varat on rahoitettu.',      exEn:'The equity and liabilities side shows how assets are financed.',  tip:'Jaetaan: equity + liabilities. Suomessa saman otsikon alla.'},
-  {id:'bs3',fi:'oma pääoma',               en:'equity',                        cat:'balance',     diff:1,exFi:'Yhtiön oma pääoma kasvoi viime vuonna.',                   exEn:"The company's equity grew last year.",                            tip:"Myös \"shareholders' equity\". \"Retained earnings\" = kertyneet voittovarat."},
-  {id:'bs4',fi:'pysyvät vastaavat',        en:'non-current assets',            cat:'balance',     diff:2,exFi:'Koneet ovat pysyviä vastaavia.',                           exEn:'Machinery is a non-current asset.',                               tip:'Myös "fixed assets". Käyttöikä yli 12kk.'},
-  {id:'bs5',fi:'vaihtuvat vastaavat',      en:'current assets',                cat:'balance',     diff:2,exFi:'Myyntisaamiset ovat vaihtuvia vastaavia.',                 exEn:'Trade receivables are current assets.',                           tip:'Realisoituvat alle 12 kuukaudessa.'},
-  {id:'bs6',fi:'aineelliset hyödykkeet',   en:'tangible assets',               cat:'balance',     diff:2,exFi:'Rakennukset ovat aineellisia hyödykkeitä.',                exEn:'Buildings are tangible assets.',                                  tip:'IFRS-termi: "property, plant and equipment" (PP&E).'},
-  {id:'bs7',fi:'aineettomat hyödykkeet',   en:'intangible assets',             cat:'balance',     diff:2,exFi:'Patentit ovat aineettomia hyödykkeitä.',                   exEn:'Patents are intangible assets.',                                  tip:'IAS 38. Goodwill on erityyppinen aineeton.'},
-  {id:'bs8',fi:'vaihto-omaisuus',          en:'inventory',                     cat:'balance',     diff:2,exFi:'Vaihto-omaisuuden arvostus tehdään FIFO-menetelmällä.',     exEn:'Inventory is valued using the FIFO method.',                      tip:'UK: "stock". LIFO kielletty IFRS:ssä.'},
-  {id:'bs9',fi:'myyntisaamiset',           en:'trade receivables',             cat:'balance',     diff:2,exFi:'Myyntisaamiset olivat 2,5 miljoonaa kauden lopussa.',       exEn:'Trade receivables were 2.5 million at period end.',               tip:'Myös "accounts receivable" (AR). DSO = saatavien kiertoaika.'},
+  {id:'b16',fi:'kahdenkertainen kirjanpito',en:'double-entry bookkeeping',     cat:'basics',      diff:2,exFi:'Kahdenkertainen kirjanpito tarkoittaa, että jokainen kirjaus tehdään kahdelle tilille.',exEn:'Double-entry bookkeeping means every entry is posted to two accounts.',tip:'"Double-entry" = debet ja kredit aina yhtä suuret. Luca Paciolin keksintö 1494.'},
+  {id:'b17',fi:'tilikartta',               en:'chart of accounts',             cat:'basics',      diff:2,exFi:'Kirjanpitäjä ylläpitää tilikarttaa, jossa on kaikki tilinumerot.',exEn:'The accountant maintains the chart of accounts with all account numbers.',tip:'"COA" on yleinen lyhenne. SAP:ssa jokaisella yhtiöllä on oma tilikarttansa.'},
+  {id:'b18',fi:'alustava tase',            en:'trial balance',                 cat:'basics',      diff:2,exFi:'Alustava tase tarkistetaan ennen tilinpäätöksen valmistumista.',exEn:'The trial balance is checked before the financial statements are finalised.',tip:'Varmistaa, että debet = kredit.'},
+  {id:'b19',fi:'ennakkomaksu',             en:'prepayment',                    cat:'basics',      diff:1,exFi:'Maksamme vakuutusmaksun ennakkoon koko vuodelle.',        exEn:'We pay the insurance premium in advance for the full year.',      tip:'Taseessa lyhytaikaisena saamisena.'},
+  {id:'b20',fi:'sisäinen valvonta',        en:'internal control',              cat:'basics',      diff:2,exFi:'Sisäinen valvonta estää virheitä ja väärinkäytöksiä.',    exEn:'Internal control prevents errors and misconduct.',                tip:'"Internal control framework" = COSO-malli.'},
+  {id:'b21',fi:'konserni',                 en:'group',                         cat:'basics',      diff:1,exFi:'Konsernin tilinpäätös laaditaan konsolidoituina.',         exEn:'The group financial statements are prepared on a consolidated basis.',tip:'"Parent company" = emoyhtiö, "subsidiary" = tytäryhtiö.'},
+  {id:'b22',fi:'konsolidointi',            en:'consolidation',                 cat:'basics',      diff:2,exFi:'Tytäryhtiöiden luvut konsolidoidaan konsernitilinpäätökseen.',exEn:'Subsidiary figures are consolidated into the group financial statements.',tip:'IFRS 10. Sisäiset erät eliminoidaan.'},
+  {id:'b23',fi:'arvostusperiaate',         en:'accounting policy',             cat:'basics',      diff:2,exFi:'Liitetiedoissa kerrotaan käytetyt arvostusperiaatteet.',    exEn:'The notes disclose the accounting policies used.',                tip:'IAS 1. Muutos vaatii IAS 8 -käsittelyn.'},
+  {id:'bs1', fi:'vastaavaa',               en:'assets',                        cat:'balance',     diff:1,exFi:'Vastaavaa = vastattavaa, aina.',                           exEn:'Assets = Equity + Liabilities, always.',                          tip:'Englanniksi: assets = liabilities + equity.'},
+  {id:'bs2', fi:'vastattavaa',             en:'equity and liabilities',        cat:'balance',     diff:2,exFi:'Vastattavaa-puoli kertoo, miten varat on rahoitettu.',      exEn:'The equity and liabilities side shows how assets are financed.',  tip:'Jaetaan: equity + liabilities.'},
+  {id:'bs3', fi:'oma pääoma',              en:'equity',                        cat:'balance',     diff:1,exFi:'Yhtiön oma pääoma kasvoi viime vuonna.',                   exEn:"The company's equity grew last year.",                            tip:"Myös \"shareholders' equity\". \"Retained earnings\" = kertyneet voittovarat."},
+  {id:'bs4', fi:'pysyvät vastaavat',       en:'non-current assets',            cat:'balance',     diff:2,exFi:'Koneet ovat pysyviä vastaavia.',                           exEn:'Machinery is a non-current asset.',                               tip:'Myös "fixed assets". Käyttöikä yli 12kk.'},
+  {id:'bs5', fi:'vaihtuvat vastaavat',     en:'current assets',                cat:'balance',     diff:2,exFi:'Myyntisaamiset ovat vaihtuvia vastaavia.',                 exEn:'Trade receivables are current assets.',                           tip:'Realisoituvat alle 12 kuukaudessa.'},
+  {id:'bs6', fi:'aineelliset hyödykkeet',  en:'tangible assets',               cat:'balance',     diff:2,exFi:'Rakennukset ovat aineellisia hyödykkeitä.',                exEn:'Buildings are tangible assets.',                                  tip:'IFRS-termi: "property, plant and equipment" (PP&E).'},
+  {id:'bs7', fi:'aineettomat hyödykkeet',  en:'intangible assets',             cat:'balance',     diff:2,exFi:'Patentit ovat aineettomia hyödykkeitä.',                   exEn:'Patents are intangible assets.',                                  tip:'IAS 38. Goodwill on erityyppinen aineeton.'},
+  {id:'bs8', fi:'vaihto-omaisuus',         en:'inventory',                     cat:'balance',     diff:2,exFi:'Vaihto-omaisuuden arvostus tehdään FIFO-menetelmällä.',     exEn:'Inventory is valued using the FIFO method.',                      tip:'UK: "stock". LIFO kielletty IFRS:ssä.'},
+  {id:'bs9', fi:'myyntisaamiset',          en:'trade receivables',             cat:'balance',     diff:2,exFi:'Myyntisaamiset olivat 2,5 miljoonaa kauden lopussa.',       exEn:'Trade receivables were 2.5 million at period end.',               tip:'Myös "accounts receivable" (AR). DSO = saatavien kiertoaika.'},
   {id:'bs10',fi:'ostovelat',               en:'trade payables',                cat:'balance',     diff:2,exFi:'Ostovelat kasvoivat joulukuussa.',                         exEn:'Trade payables grew in December.',                                tip:'Myös "accounts payable" (AP). DPO = ostovelkojen kiertoaika.'},
   {id:'bs11',fi:'liikearvo',               en:'goodwill',                      cat:'balance',     diff:2,exFi:'Liikearvo syntyi yrityskaupasta.',                         exEn:'Goodwill arose from the acquisition.',                            tip:'IFRS:ssä testataan impairment vuosittain — ei poisteta.'},
   {id:'bs12',fi:'rahavarat',               en:'cash and cash equivalents',     cat:'balance',     diff:2,exFi:'Rahavarat olivat 5 miljoonaa euroa.',                      exEn:'Cash and cash equivalents were 5 million euros.',                 tip:'Lyhyet (<3kk) erittäin likvidit sijoitukset mukaan.'},
-  /* TULOSLASKELMA */
+  {id:'bs13',fi:'käyttöoikeusomaisuuserä', en:'right-of-use asset',            cat:'balance',     diff:3,exFi:'Käyttöoikeusomaisuuserä kirjataan, kun vuokrasopimus alkaa.',exEn:'A right-of-use asset is recognised when a lease commences.',      tip:'IFRS 16. ROU asset = diskontattujen vuokramaksujen nykyarvo.'},
+  {id:'bs14',fi:'vuokravelka',             en:'lease liability',               cat:'balance',     diff:3,exFi:'Vuokravelka vähenee maksettujen vuokrien myötä.',          exEn:'The lease liability decreases as lease payments are made.',       tip:'IFRS 16. = tulevien vuokramaksujen nykyarvo.'},
+  {id:'bs15',fi:'laskennallinen verovelka',en:'deferred tax liability',        cat:'balance',     diff:3,exFi:'Laskennallinen verovelka syntyy kirjanpidon ja verotuksen väliaikaisesta erosta.',exEn:'A deferred tax liability arises from a temporary difference between accounting and tax values.',tip:'IAS 12. Veroja maksetaan tulevaisuudessa.'},
+  {id:'bs16',fi:'varaukset',               en:'provisions',                    cat:'balance',     diff:2,exFi:'Varaukset tehdään odotettavissa oleviin kuluihin.',         exEn:'Provisions are made for anticipated expenses.',                   tip:'IAS 37. Provision = todennäköinen velvoite, summa epävarma.'},
+  {id:'bs17',fi:'pitkäaikaiset velat',     en:'non-current liabilities',       cat:'balance',     diff:1,exFi:'Pitkäaikaiset velat erääntyvät yli 12 kuukauden kuluttua.',exEn:'Non-current liabilities fall due after more than 12 months.',    tip:'Vastakohta: "current liabilities".'},
+  {id:'bs18',fi:'lyhytaikaiset velat',     en:'current liabilities',           cat:'balance',     diff:1,exFi:'Lyhytaikaiset velat erääntyvät 12 kuukauden sisällä.',     exEn:'Current liabilities fall due within 12 months.',                  tip:'Sisältää: trade payables, accrued expenses, lainojen lyhytaikaiset osat.'},
+  {id:'bs19',fi:'kertyneet voittovarat',   en:'retained earnings',             cat:'balance',     diff:2,exFi:'Kertyneet voittovarat sisältävät aiempien tilikausien voitot.',exEn:'Retained earnings include profits from previous financial years.',tip:'"Retained earnings" = oma pääoma miinus osakepääoma ja muut rahastot.'},
+  {id:'bs20',fi:'vähemmistöosuus',         en:'non-controlling interest',      cat:'balance',     diff:3,exFi:'Vähemmistöosuus esitetään omana pääomana konsernitaseessa.',exEn:'Non-controlling interest is presented as equity in the consolidated balance sheet.',tip:'IFRS 10. Aiempi nimitys: "minority interest".'},
   {id:'is1', fi:'liikevaihto',             en:'turnover',                      cat:'income',      diff:1,exFi:'Yhtiön liikevaihto kasvoi 8 %.',                           exEn:"The company's turnover grew by 8%.",                             tip:'UK: "turnover". USA/IFRS: "revenue". Molemmat oikein.'},
   {id:'is2', fi:'myyntikate',              en:'gross profit',                  cat:'income',      diff:2,exFi:'Myyntikate parani materiaalisäästöjen ansiosta.',           exEn:'Gross profit improved thanks to material savings.',               tip:'= Revenue − COGS. "Gross margin" = myyntikateprosentti.'},
   {id:'is3', fi:'liikevoitto',             en:'operating profit',              cat:'income',      diff:1,exFi:'Liikevoitto oli 1,2 miljoonaa euroa.',                     exEn:'Operating profit was 1.2 million euros.',                         tip:'Synonyymi: EBIT. Ennen rahoituseriä ja veroja.'},
@@ -146,745 +164,703 @@ const VOCAB = [
   {id:'is5', fi:'tilikauden voitto',       en:'profit for the financial year', cat:'income',      diff:2,exFi:'Tilikauden voitto oli 850 000 euroa.',                     exEn:'The profit for the financial year was 850,000 euros.',            tip:'Myös "net income", "net profit", "bottom line".'},
   {id:'is6', fi:'kulut',                   en:'expenses',                      cat:'income',      diff:1,exFi:'Kulut nousivat inflaation takia.',                         exEn:'Expenses rose due to inflation.',                                 tip:'"Costs" ≈ "expenses". "Cost" yleisempi tuotantokuluista.'},
   {id:'is7', fi:'kiinteät kulut',          en:'fixed costs',                   cat:'income',      diff:2,exFi:'Vuokra on kiinteä kulu.',                                  exEn:'Rent is a fixed cost.',                                           tip:'Pysyvät volyymistä riippumatta. Tärkeä break-even-analyysissä.'},
-  {id:'is8', fi:'muuttuvat kulut',         en:'variable costs',                cat:'income',      diff:2,exFi:'Raaka-aineet ovat muuttuvia kuluja.',                      exEn:'Raw materials are variable costs.',                               tip:'Vaihtelevat volyymin mukaan. Contribution margin = rev − var. costs.'},
+  {id:'is8', fi:'muuttuvat kulut',         en:'variable costs',                cat:'income',      diff:2,exFi:'Raaka-aineet ovat muuttuvia kuluja.',                      exEn:'Raw materials are variable costs.',                               tip:'Vaihtelevat volyymin mukaan.'},
   {id:'is9', fi:'henkilöstökulut',         en:'personnel expenses',            cat:'income',      diff:2,exFi:'Henkilöstökulut olivat 40 % liikevaihdosta.',              exEn:'Personnel expenses were 40% of turnover.',                        tip:'Myös "staff costs" (UK), "employee benefits expense" (IFRS).'},
   {id:'is10',fi:'poisto',                  en:'depreciation',                  cat:'income',      diff:1,exFi:'Koneiden poisto on 10 % vuodessa.',                        exEn:'Depreciation on machinery is 10% per year.',                      tip:'"Depreciation" = aineelliset, "amortization" = aineettomat.'},
   {id:'is11',fi:'arvonalentuminen',        en:'impairment',                    cat:'income',      diff:2,exFi:'Liikearvosta tehtiin arvonalentumiskirjaus.',              exEn:'An impairment loss was recognised on goodwill.',                  tip:'IAS 36. Testataan vuosittain mm. liikearvolle.'},
   {id:'is12',fi:'luottotappio',            en:'credit loss',                   cat:'income',      diff:2,exFi:'Kirjasimme 50 000 euron luottotappion.',                   exEn:'We recognised a credit loss of 50,000 euros.',                    tip:'IFRS 9: "expected credit loss" (ECL). Myös "bad debt".'},
-  /* AP / AR / PÄIVITTÄINEN */
+  {id:'is13',fi:'myytyjen tuotteiden kustannukset',en:'cost of goods sold',    cat:'income',      diff:2,exFi:'Myytyjen tuotteiden kustannukset olivat 60 % liikevaihdosta.',exEn:'Cost of goods sold was 60% of revenue.',                       tip:'Lyhenne "COGS". Gross profit = Revenue − COGS.'},
+  {id:'is14',fi:'myynti- ja markkinointikulut',en:'selling and marketing expenses',cat:'income',  diff:2,exFi:'Myynti- ja markkinointikulut kasvoivat uuden kampanjan myötä.',exEn:'Selling and marketing expenses grew with the new campaign.',    tip:'Lyhenne "S&M". Osa "operating expenses".'},
+  {id:'is15',fi:'hallinto- ja yleiskulut', en:'general and administrative expenses',cat:'income', diff:2,exFi:'Hallinto- ja yleiskuluja leikattiin kustannussäästöohjelmassa.',exEn:'General and administrative expenses were cut in the cost-saving programme.',tip:'Lyhenne "G&A". Sisältää: HR, IT, johtoryhmä, vuokra.'},
+  {id:'is16',fi:'rahoitustuotot',          en:'financial income',              cat:'income',      diff:2,exFi:'Rahoitustuotot koostuivat korkotuotoista ja osingoista.',  exEn:'Financial income consisted of interest income and dividends.',    tip:'"Net financial items" = rahoitustuotot − rahoituskulut.'},
+  {id:'is17',fi:'rahoituskulut',           en:'finance costs',                 cat:'income',      diff:2,exFi:'Rahoituskulut nousivat korkojen noustua.',                 exEn:'Finance costs increased as interest rates rose.',                 tip:'Myös "financial expenses". IFRS:ssä "finance costs".'},
+  {id:'is18',fi:'verokulut',               en:'income tax expense',            cat:'income',      diff:2,exFi:'Verokulut olivat 22 % voitosta ennen veroja.',             exEn:'Income tax expense was 22% of profit before tax.',                tip:'IAS 12. Sisältää "current tax" + "deferred tax".'},
+  {id:'is19',fi:'osakekohtainen tulos',    en:'earnings per share',            cat:'income',      diff:3,exFi:'Osakekohtainen tulos parani 15 % edellisvuodesta.',        exEn:'Earnings per share improved by 15% from the previous year.',      tip:'Lyhenne "EPS". IAS 33. Basic EPS vs diluted EPS.'},
   {id:'d1',  fi:'lasku',                   en:'invoice',                       cat:'daily',       diff:1,exFi:'Lasku lähetettiin asiakkaalle eilen.',                     exEn:'The invoice was sent to the customer yesterday.',                 tip:'"Bill" on arkisempi. "Invoice" virallisempi B2B-konteksti.'},
   {id:'d2',  fi:'myyntilasku',             en:'sales invoice',                 cat:'daily',       diff:1,exFi:'Myyntilasku kirjautuu AR-tilille.',                        exEn:'The sales invoice is posted to the AR account.',                  tip:'Outgoing invoice. Kirjaus: Dr AR / Cr Revenue.'},
   {id:'d3',  fi:'ostolasku',               en:'purchase invoice',              cat:'daily',       diff:1,exFi:'Ostolasku tarkistetaan ja hyväksytään.',                   exEn:'The purchase invoice is verified and approved.',                  tip:'Myös "supplier invoice". Kirjaus: Dr Expense / Cr AP.'},
-  {id:'d4',  fi:'eräpäivä',               en:'due date',                      cat:'daily',       diff:1,exFi:'Eräpäivä on 14 päivän päästä.',                           exEn:'The due date is 14 days from now.',                               tip:'"Payment terms" = maksuehdot (esim. "Net 30").'},
+  {id:'d4',  fi:'eräpäivä',               en:'due date',                       cat:'daily',       diff:1,exFi:'Eräpäivä on 14 päivän päästä.',                           exEn:'The due date is 14 days from now.',                               tip:'"Payment terms" = maksuehdot (esim. "Net 30").'},
   {id:'d5',  fi:'maksumuistutus',          en:'payment reminder',              cat:'daily',       diff:2,exFi:'Lähetimme maksumuistutuksen erääntyvästä laskusta.',       exEn:'We sent a payment reminder for the overdue invoice.',             tip:'"Overdue invoice" = erääntynyt lasku. SAP: "dunning".'},
-  {id:'d6',  fi:'arvonlisävero',           en:'value added tax',               cat:'daily',       diff:1,exFi:'Arvonlisävero on Suomessa 25,5 % yleinen kanta.',          exEn:'Value added tax in Finland is 25.5% general rate.',              tip:'Lyhenne "VAT". USA:ssa sales tax (eri rakenne).'},
-  {id:'d7',  fi:'tiliote',               en:'bank statement',                  cat:'daily',       diff:1,exFi:'Sain tiliotteen sähköisesti.',                             exEn:'I received the bank statement electronically.',                   tip:'Täsmäytys = "bank reconciliation". Päivittäinen rutiini.'},
-  {id:'d8',  fi:'täsmäytys',             en:'reconciliation',                  cat:'daily',       diff:2,exFi:'Pankkitilien täsmäytys tehdään kuukausittain.',            exEn:'Bank reconciliation is done monthly.',                            tip:'Verbi: "to reconcile". Kuukauden sulkemisen ydin.'},
-  {id:'d9',  fi:'jaksotus',              en:'accrual',                         cat:'daily',       diff:2,exFi:'Joulukuun jaksotukset tehdään tammikuun alussa.',          exEn:'The December accruals are made in early January.',                tip:'Accrual basis = suoriteperuste. IFRS perustuu tähän.'},
-  {id:'d10', fi:'siirtosaamiset',         en:'accrued income',                 cat:'daily',       diff:3,exFi:'Tuloutimme siirtosaamiset tammikuussa.',                   exEn:'We recognised the accrued income in January.',                    tip:'Tulot, jotka kuuluvat tilikaudelle mutta saadaan myöhemmin.'},
-  {id:'d11', fi:'siirtovelat',            en:'accrued expenses',               cat:'daily',       diff:3,exFi:'Lomapalkat kirjataan siirtovelkoihin.',                    exEn:'Holiday pay is recorded as accrued expenses.',                    tip:'Kulut, jotka kuuluvat tilikaudelle mutta maksetaan myöhemmin.'},
-  {id:'d12', fi:'kuukauden sulkeminen',   en:'month-end closing',              cat:'daily',       diff:2,exFi:'Kuukauden sulkeminen on aina kiireinen aika.',             exEn:'Month-end closing is always a busy time.',                        tip:'Myös "month-end close". "Hard close" vs "soft close".'},
-  /* IFRS */
-  {id:'i1',  fi:'käypä arvo',             en:'fair value',                     cat:'ifrs',        diff:2,exFi:'Sijoitukset arvostetaan käypään arvoon.',                  exEn:'Investments are measured at fair value.',                         tip:'IFRS 13. Hinta järjestäytyneessä transaktiossa markkinaosapuolten välillä.'},
-  {id:'i2',  fi:'kirjanpitoarvo',         en:'carrying amount',                cat:'ifrs',        diff:2,exFi:'Koneen kirjanpitoarvo on 25 000 euroa.',                   exEn:'The carrying amount of the machine is 25,000 euros.',             tip:'Myös "book value". Hankintameno − poistot − arvonalentumiset.'},
-  {id:'i3',  fi:'käyttöoikeusomaisuuserä',en:'right-of-use asset',            cat:'ifrs',        diff:3,exFi:'IFRS 16 vaatii käyttöoikeusomaisuuserän kirjaamisen.',      exEn:'IFRS 16 requires the recognition of a right-of-use asset.',      tip:'Lyhenne "ROU asset". IFRS 16 (vuokrat) -keskeinen käsite.'},
-  {id:'i4',  fi:'vuokrasopimusvelka',     en:'lease liability',                cat:'ifrs',        diff:3,exFi:'Vuokrasopimusvelka mitataan nykyarvona.',                  exEn:'The lease liability is measured at present value.',               tip:'IFRS 16. Tulevien vuokramaksujen nykyarvo lisäluotonkorolla.'},
-  {id:'i5',  fi:'nykyarvo',             en:'present value',                    cat:'ifrs',        diff:2,exFi:'Tulevat kassavirrat diskontataan nykyarvoon.',             exEn:'Future cash flows are discounted to present value.',              tip:'Lyhenne "PV". NPV = net present value. Tärkeä IFRS 9, 16 ja 36:ssa.'},
-  {id:'i6',  fi:'diskonttauskorko',       en:'discount rate',                  cat:'ifrs',        diff:2,exFi:'IFRS 16 -laskennassa diskonttauskorko on lisäluotonkorko.', exEn:'For IFRS 16, the discount rate is the incremental borrowing rate.',tip:'"Incremental borrowing rate" (IBR) jos implisiittinen korko ei saatavilla.'},
-  {id:'i7',  fi:'olennaisuus',            en:'materiality',                    cat:'ifrs',        diff:2,exFi:'Olennaisuus arvioidaan käyttäjien näkökulmasta.',           exEn:"Materiality is assessed from the users' perspective.",            tip:'Tieto olennaista jos puuttuminen vaikuttaisi käyttäjien päätöksiin.'},
-  {id:'i8',  fi:'tilinpäätöspäivä',      en:'reporting date',                 cat:'ifrs',        diff:2,exFi:'Tilinpäätöspäivä on 31.12.',                               exEn:'The reporting date is 31 December.',                              tip:'Myös "balance sheet date". Jälkeiset tapahtumat: IAS 10.'},
-  {id:'i9',  fi:'konsolidoidut tilinpäätökset',en:'consolidated financial statements',cat:'ifrs',diff:3,exFi:'Konsolidoiduissa tilinpäätöksissä sisaryritykset eliminoidaan.',    exEn:'In consolidated financial statements, intra-group transactions are eliminated.',  tip:'IFRS 10. Consolidation = yhdistetään äiti + sisaryritykset yhteen (>50% omistus). Näyttää koko ryhmän kuvan.'},
-  {id:'i10', fi:'osakkuusyhtiö',          en:'associate',                      cat:'ifrs',        diff:3,exFi:'ABC-yhtiö on osakkuusyhtiö, jota kirjaamme pääomasijoitusmenetelmällä.',exEn:'ABC Company is an associate, accounted for using the equity method.',           tip:'IAS 28. Associate = omistus 20–50%, merkittävä vaikutus. EI konsolidoidaan, vaan equity method.'},
-  {id:'i11', fi:'ehdollinen velka',        en:'contingent liability',           cat:'ifrs',        diff:3,exFi:'Mahdollinen oikeuskäsittely on ehdollinen velka — ei kirjata, vaan julkistetaan.',exEn:'A potential lawsuit is a contingent liability — not recognized but disclosed.',tip:'IAS 37. Contingent = riippuu tulevasta tapahtumasta (oikeusjuttu, takuu). Ero: Provision (varaus) vs. Contingent liability (ehdollinen).'},
-  {id:'i12', fi:'jatkuvuusolettama',       en:'going concern',                  cat:'ifrs',        diff:2,exFi:'Tilintarkastaja testasi jatkuvuusolettamaa — ilman epävarmuuksia.',   exEn:'The auditor assessed going concern — no material uncertainties identified.',     tip:'IAS 1. Going concern = yhtiö jatkaa toimintaa ainakin 12 kk. Kriittinen tilinpäätöksen perusoletus. Jos riski: merkintä raporttiin.'},
-  {id:'i13', fi:'taloudellinen vaikutusaika',en:'useful life',                  cat:'ifrs',        diff:2,exFi:'Koneen taloudellinen vaikutusaika on 10 vuotta, poisto 100k€/vuosi.',  exEn:"The machine's useful life is 10 years, resulting in €100k annual depreciation.",tip:'IAS 16. Useful life = kuinka pitkään omaisuus tuottaa hyötyä. Joka vuosi tarkistetaan. Finance-kokouksissa: "reassess useful lives".'},
-  {id:'i14', fi:'segmenttitiedot',         en:'segment reporting',              cat:'ifrs',        diff:3,exFi:'Segmenttitiedoissa näkyvät tuotot geografisesti: Suomi 60%, Ruotsi 40%.',exEn:'In segment reporting, revenues are disclosed by geography: Finland 60%, Sweden 40%.',tip:'IFRS 8. Segment = operatiivinen haara (maantieteellinen, tuoteryhmä). Suuret yhtiöt raportoivat segmenteittäin.'},
-  {id:'i15', fi:'pääomasijoitusmenetelmällä kirjattu',en:'equity-accounted',   cat:'ifrs',        diff:3,exFi:'Osakkuusyhtiön voittoosuus kirjataan pääomasijoitusmenetelmällä omaan pääomaan.',exEn:"The associate's share of profit is equity-accounted and included in equity.",tip:'IAS 28. Equity method = kirjataan osakkuusyhtiön voitto/tappio ja osinko. Omaan pääomaan (ei OCI). Ero: konsolidointi (rivi riviltä) vs. equity method (yhteenlaskettu).'},
-  {id:'i16', fi:'luokittelu',              en:'classification',                 cat:'ifrs',        diff:3,exFi:'Finanssiinstrumenttien luokittelu määrää, miten ne arvostetaan (AC vs. FVPL).',exEn:'Classification of financial instruments determines their measurement basis (AC vs. FVPL).',tip:'IFRS 9. Classification = millä logiikalla omaisuus/velka kategorisoidaan. Lainat: AC (Amortized Cost) vai FVPL (Fair Value P&L)? Kriittinen.'},
-  {id:'i17', fi:'poiskirjaus',             en:'derecognition',                  cat:'ifrs',        diff:3,exFi:'Lainan maksun jälkeen se poiskirjataan taseen joukkovelkakirjoista.',  exEn:'When the loan is repaid, it is derecognized from bonds payable.',                tip:'IFRS 9, IAS 39. Derecognition = poistetaan taseesta. Ero: "write-off" (arvonalennus). Kirjaus: omaisuus pois, voitto/tappio.'},
-  {id:'i18', fi:'efektiivinen korko',      en:'effective interest rate',        cat:'ifrs',        diff:3,exFi:'Joukkovelkakirjalainan efektiivinen korko on 3,5% — käytetään diskonttaukseen.',exEn:'The effective interest rate on the bond loan is 3.5% — used for amortized cost calculation.',tip:'IFRS 9, IAS 18. Effective = todellinen vuosittain (ei nimellinen), sisältää kulut. Excel: pv(), irr() -funktio.'},
-  {id:'i19', fi:'jaksotettu hankintameno', en:'amortized cost',                 cat:'ifrs',        diff:3,exFi:'Lainat arvostetaan jaksotetulla hankintamenolla — nimellinen 4%, efektiivinen 3,8%, nettoinvestointi.',exEn:'Loans are measured at amortized cost — nominal 4%, effective 3.8%, net investment.',tip:'IFRS 9. Amortized Cost = hankintameno − maksetut pääomat + korkokulut. Kaava: AC(t) = PV × (1+EIR)^t − cash flows. Ero: Fair value vs. AC.'},
-  {id:'i20', fi:'jaksotusperiaate',        en:'accrual basis',                  cat:'ifrs',        diff:2,exFi:'Tilinpäätös laaditaan suoriteperiaatteen mukaan, ei kassamenetelmällä.',  exEn:'Financial statements are prepared on an accrual basis, not cash basis.',        tip:'IAS 1. Accrual = jaksotus. Tuotot ja kulut kirjataan sille kaudelle jolle kuuluvat, riippumatta maksusta. IFRS-perusta.'},
-  /* CONTROLLING & RAPORTOINTI */
-  {id:'c1',  fi:'budjetti',             en:'budget',                           cat:'controlling', diff:1,exFi:'Ensi vuoden budjetti hyväksytään marraskuussa.',           exEn:"Next year's budget is approved in November.",                    tip:'"Budgeting cycle" = budjetointikierros. Controllerin vuosirytmin ydin.'},
-  {id:'c2',  fi:'ennuste',              en:'forecast',                         cat:'controlling', diff:1,exFi:'Päivitämme ennusteen joka kvartaali.',                     exEn:'We update the forecast every quarter.',                           tip:'"Forecast" dynaaminen — budjetti kiinteä. Controllerin tärkein työkalu.'},
-  {id:'c3',  fi:'budjetin toteutuma',   en:'budget vs. actuals',               cat:'controlling', diff:2,exFi:'Tarkistin budjetin toteutuman kuukausittain.',            exEn:'I review budget vs. actuals monthly.',                            tip:'Lyhyesti "BvA". Klassinen controllerin perusraportti.'},
-  {id:'c4',  fi:'poikkeama-analyysi',   en:'variance analysis',                cat:'controlling', diff:2,exFi:'Selitin myynnin poikkeaman johdolle.',                   exEn:'I explained the sales variance to management.',                   tip:'"Favourable" = positiivinen, "adverse" = negatiivinen.'},
-  {id:'c5',  fi:'kustannuspaikka',      en:'cost centre',                      cat:'controlling', diff:1,exFi:'Markkinointi on oma kustannuspaikkansa.',                exEn:'Marketing is its own cost centre.',                               tip:'USA: "cost center". SAP CO -moduulin perusrakenne.'},
-  {id:'c6',  fi:'kannattavuus',         en:'profitability',                    cat:'controlling', diff:2,exFi:'Tuoteryhmän kannattavuus on heikentynyt.',               exEn:"The product group's profitability has declined.",                 tip:'"Profitability analysis" = SAP CO-PA. Marginaalit = mittari.'},
-  {id:'c7',  fi:'tunnusluku',           en:'key figure',                       cat:'controlling', diff:2,exFi:'Esittelin tunnusluvut johtoryhmälle.',                   exEn:'I presented the key figures to the management team.',             tip:'Myös "KPI" tai "financial ratio". ROE, ROI, current ratio.'},
-  {id:'c8',  fi:'omavaraisuusaste',     en:'equity ratio',                     cat:'controlling', diff:2,exFi:'Omavaraisuusaste on yli 40 %, mikä on hyvä.',            exEn:'The equity ratio is over 40%, which is good.',                    tip:'= Equity / Total assets. Suomalainen vakavaraisuuden mittari.'},
-  /* BUSINESS-FRAASIT — p1-p5 alkuperäiset, p6-p20 lisätty / tipit päivitetty kielenopettajan toimesta */
-  {id:'p1',  fi:'Liitteessä on...',     en:'Please find attached...',          cat:'phrases',     diff:1,exFi:'Liitteessä on lokakuun raportti.',                       exEn:'Please find attached the October report.',                        tip:"Klassinen sähköpostifraasi. Modernimpi: \"I've attached...\"."},
-  {id:'p2',  fi:'Selvitämme asian',     en:'We will look into this',           cat:'phrases',     diff:1,exFi:'Kiitos viestistä — selvitämme asian.',                   exEn:'Thanks for the message — we will look into this.',                tip:"Myös \"We'll investigate this\" tai \"Let me check on this\"."},
-  {id:'p3',  fi:'Pyydän hyväksyntääsi', en:'I am requesting your approval',    cat:'phrases',     diff:2,exFi:'Pyydän hyväksyntääsi laskulle.',                         exEn:'I am requesting your approval for the invoice.',                  tip:'Vapaammin: "Could you please approve...?" AP-prosessissa tärkeä.'},
+  {id:'d6',  fi:'arvonlisävero',           en:'value added tax',               cat:'daily',       diff:1,exFi:'Arvonlisävero on Suomessa 25,5 % yleinen kanta.',          exEn:'Value added tax in Finland is 25.5% general rate.',              tip:'Lyhenne "VAT". USA:ssa sales tax.'},
+  {id:'d7',  fi:'tiliote',                 en:'bank statement',                cat:'daily',       diff:1,exFi:'Sain tiliotteen sähköisesti.',                             exEn:'I received the bank statement electronically.',                   tip:'Täsmäytys = "bank reconciliation". Päivittäinen rutiini.'},
+  {id:'d8',  fi:'täsmäytys',               en:'reconciliation',                cat:'daily',       diff:2,exFi:'Pankkitilien täsmäytys tehdään kuukausittain.',            exEn:'Bank reconciliation is done monthly.',                            tip:'Verbi: "to reconcile". Kuukauden sulkemisen ydin.'},
+  {id:'d9',  fi:'jaksotus',                en:'accrual',                       cat:'daily',       diff:2,exFi:'Joulukuun jaksotukset tehdään tammikuun alussa.',          exEn:'The December accruals are made in early January.',                tip:'Accrual basis = suoriteperuste. IFRS perustuu tähän.'},
+  {id:'d10', fi:'siirtosaamiset',          en:'accrued income',                cat:'daily',       diff:3,exFi:'Tuloutimme siirtosaamiset tammikuussa.',                   exEn:'We recognised the accrued income in January.',                    tip:'Tulot, jotka kuuluvat tilikaudelle mutta saadaan myöhemmin.'},
+  {id:'d11', fi:'siirtovelat',             en:'accrued expenses',              cat:'daily',       diff:3,exFi:'Lomapalkat kirjataan siirtovelkoihin.',                    exEn:'Holiday pay is recorded as accrued expenses.',                    tip:'Kulut, jotka kuuluvat tilikaudelle mutta maksetaan myöhemmin.'},
+  {id:'d12', fi:'kuukauden sulkeminen',    en:'month-end closing',             cat:'daily',       diff:2,exFi:'Kuukauden sulkeminen on aina kiireinen aika.',             exEn:'Month-end closing is always a busy time.',                        tip:'Myös "month-end close". "Hard close" vs "soft close".'},
+  {id:'d13', fi:'hyvityslasku',            en:'credit note',                   cat:'daily',       diff:1,exFi:'Lähetimme asiakkaalle hyvityslaskun virheellisestä laskusta.',exEn:'We sent the customer a credit note for the incorrect invoice.',  tip:'"Credit note" = negatiivinen lasku. Kirjaus: Dr AR / Cr Revenue.'},
+  {id:'d14', fi:'maksuehto',               en:'payment terms',                 cat:'daily',       diff:1,exFi:'Sovimme 30 päivän maksuehdosta.',                         exEn:'We agreed on 30-day payment terms.',                              tip:'"Net 30" = maksu 30 päivässä laskun päivästä.'},
+  {id:'d15', fi:'viivästyskorko',          en:'late payment interest',         cat:'daily',       diff:2,exFi:'Laskutamme viivästyskoron erääntyneistä laskuista.',       exEn:'We charge late payment interest on overdue invoices.',            tip:'EU-direktiivi: vähintään 8% + EKP:n viitekorko.'},
+  {id:'d16', fi:'perintä',                 en:'debt collection',               cat:'daily',       diff:2,exFi:'Lasku siirrettiin perintään maksamattomuuden vuoksi.',     exEn:'The invoice was sent to debt collection due to non-payment.',     tip:'"Debt collection agency" = perintätoimisto.'},
+  {id:'d17', fi:'konserniyhtiöiden sisäiset tapahtumat',en:'intercompany transactions',cat:'daily',diff:2,exFi:'Sisäiset tapahtumat eliminoidaan konsolidoinnissa.',      exEn:'Intercompany transactions are eliminated in consolidation.',      tip:'Lyhenne "IC". "IC reconciliation" = sisäisten erien täsmäytys.'},
+  {id:'d18', fi:'käyttöomaisuusrekisteri', en:'fixed asset register',          cat:'daily',       diff:2,exFi:'Käyttöomaisuusrekisteri sisältää kaikki pitkäaikaiset omaisuuserät.',exEn:'The fixed asset register contains all long-term assets.',   tip:'"FAR". SAP AA -moduuli.'},
+  {id:'d19', fi:'palkanlaskenta',          en:'payroll',                       cat:'daily',       diff:1,exFi:'Palkanlaskenta ajetaan kuun lopussa.',                     exEn:'Payroll is run at the end of the month.',                         tip:'"Payroll run" = palkanmaksuajo. Usein ulkoistettu prosessi.'},
+  {id:'d20', fi:'kustannuskohdistus',      en:'account assignment',            cat:'daily',       diff:2,exFi:'Kustannuskohdistuksessa määritetään, mille tileille kulut kirjataan.',exEn:'Account assignment determines which accounts costs are allocated to.',tip:'SAP-termi: tili + kustannuspaikka + tilausviite.'},
+  {id:'d21', fi:'tilinpäätöspaketti',      en:'reporting package',             cat:'daily',       diff:2,exFi:'Lähetimme tilinpäätöspaketin emoyhtiölle.',                exEn:'We submitted the reporting package to the parent company.',       tip:'Konserniraportoinnin ydin.'},
+  {id:'d22', fi:'suljettu kausi',          en:'closed period',                 cat:'daily',       diff:2,exFi:'Suljetulle kaudelle ei voi enää tehdä kirjauksia.',         exEn:'No postings can be made to a closed period.',                     tip:'SAP: "posting period". Uudelleenavaukseen tarvitaan hyväksyntä.'},
+  {id:'i1',  fi:'käypä arvo',              en:'fair value',                    cat:'ifrs',        diff:2,exFi:'Sijoitukset arvostetaan käypään arvoon.',                  exEn:'Investments are measured at fair value.',                         tip:'IFRS 13. Hinta järjestäytyneessä transaktiossa markkinaosapuolten välillä.'},
+  {id:'i2',  fi:'kirjanpitoarvo',          en:'carrying amount',               cat:'ifrs',        diff:2,exFi:'Koneen kirjanpitoarvo on 25 000 euroa.',                   exEn:'The carrying amount of the machine is 25,000 euros.',             tip:'Myös "book value". Hankintameno − poistot − arvonalentumiset.'},
+  {id:'i3',  fi:'käyttöoikeusomaisuuserä', en:'right-of-use asset',            cat:'ifrs',        diff:3,exFi:'IFRS 16 vaatii käyttöoikeusomaisuuserän kirjaamisen.',      exEn:'IFRS 16 requires the recognition of a right-of-use asset.',      tip:'Lyhenne "ROU asset". IFRS 16 (vuokrat) -keskeinen käsite.'},
+  {id:'i4',  fi:'vuokrasopimusvelka',      en:'lease liability',               cat:'ifrs',        diff:3,exFi:'Vuokrasopimusvelka mitataan nykyarvona.',                  exEn:'The lease liability is measured at present value.',               tip:'IFRS 16. Tulevien vuokramaksujen nykyarvo lisäluotonkorolla.'},
+  {id:'i5',  fi:'nykyarvo',                en:'present value',                 cat:'ifrs',        diff:2,exFi:'Tulevat kassavirrat diskontataan nykyarvoon.',             exEn:'Future cash flows are discounted to present value.',              tip:'Lyhenne "PV". NPV = net present value.'},
+  {id:'i6',  fi:'diskonttauskorko',        en:'discount rate',                 cat:'ifrs',        diff:2,exFi:'IFRS 16 -laskennassa diskonttauskorko on lisäluotonkorko.', exEn:'For IFRS 16, the discount rate is the incremental borrowing rate.',tip:'"Incremental borrowing rate" (IBR) jos implisiittinen korko ei saatavilla.'},
+  {id:'i7',  fi:'olennaisuus',             en:'materiality',                   cat:'ifrs',        diff:2,exFi:'Olennaisuus arvioidaan käyttäjien näkökulmasta.',           exEn:"Materiality is assessed from the users' perspective.",            tip:'Tieto olennaista jos puuttuminen vaikuttaisi käyttäjien päätöksiin.'},
+  {id:'i8',  fi:'tilinpäätöspäivä',       en:'reporting date',                cat:'ifrs',        diff:2,exFi:'Tilinpäätöspäivä on 31.12.',                               exEn:'The reporting date is 31 December.',                              tip:'Myös "balance sheet date". Jälkeiset tapahtumat: IAS 10.'},
+  {id:'i9',  fi:'konsolidoidut tilinpäätökset',en:'consolidated financial statements',cat:'ifrs',diff:3,exFi:'Konsolidoiduissa tilinpäätöksissä sisäiset tapahtumat eliminoidaan.',exEn:'In consolidated financial statements, intra-group transactions are eliminated.',tip:'IFRS 10. Consolidation = yhdistetään äiti + sisaryritykset yhteen (>50% omistus).'},
+  {id:'i10', fi:'osakkuusyhtiö',           en:'associate',                     cat:'ifrs',        diff:3,exFi:'ABC-yhtiö on osakkuusyhtiö, jota kirjaamme pääomasijoitusmenetelmällä.',exEn:'ABC Company is an associate, accounted for using the equity method.',tip:'IAS 28. Associate = omistus 20–50%. EI konsolidoidaan, vaan equity method.'},
+  {id:'i11', fi:'ehdollinen velka',        en:'contingent liability',          cat:'ifrs',        diff:3,exFi:'Mahdollinen oikeuskäsittely on ehdollinen velka.',          exEn:'A potential lawsuit is a contingent liability — not recognized but disclosed.',tip:'IAS 37. Contingent = riippuu tulevasta tapahtumasta. Ero: Provision vs. Contingent.'},
+  {id:'i12', fi:'jatkuvuusolettama',       en:'going concern',                 cat:'ifrs',        diff:2,exFi:'Tilintarkastaja testasi jatkuvuusolettamaa.',               exEn:'The auditor assessed going concern — no material uncertainties identified.',tip:'IAS 1. Going concern = yhtiö jatkaa toimintaa ainakin 12 kk.'},
+  {id:'i13', fi:'taloudellinen vaikutusaika',en:'useful life',                 cat:'ifrs',        diff:2,exFi:'Koneen taloudellinen vaikutusaika on 10 vuotta.',           exEn:"The machine's useful life is 10 years, resulting in 100k annual depreciation.",tip:'IAS 16. Useful life = kuinka pitkään omaisuus tuottaa hyötyä.'},
+  {id:'i14', fi:'segmenttitiedot',         en:'segment reporting',             cat:'ifrs',        diff:3,exFi:'Segmenttitiedoissa näkyvät tuotot geografisesti.',          exEn:'In segment reporting, revenues are disclosed by geography.',      tip:'IFRS 8. Segment = operatiivinen haara. Suuret yhtiöt raportoivat segmenteittäin.'},
+  {id:'i15', fi:'pääomasijoitusmenetelmällä kirjattu',en:'equity-accounted',  cat:'ifrs',        diff:3,exFi:'Osakkuusyhtiön voittoosuus kirjataan pääomasijoitusmenetelmällä.',exEn:"The associate's share of profit is equity-accounted.",        tip:'IAS 28. Equity method = kirjataan osakkuusyhtiön voitto/tappio ja osinko.'},
+  {id:'i16', fi:'luokittelu',              en:'classification',                cat:'ifrs',        diff:3,exFi:'Finanssiinstrumenttien luokittelu määrää arvostusmenetelmän.',exEn:'Classification of financial instruments determines their measurement basis.',tip:'IFRS 9. Classification = millä logiikalla omaisuus/velka kategorisoidaan.'},
+  {id:'i17', fi:'poiskirjaus',             en:'derecognition',                 cat:'ifrs',        diff:3,exFi:'Lainan maksun jälkeen se poiskirjataan taseesta.',          exEn:'When the loan is repaid, it is derecognized from the balance sheet.',tip:'IFRS 9. Derecognition = poistetaan taseesta. Ero: "write-off" (arvonalennus).'},
+  {id:'i18', fi:'efektiivinen korko',      en:'effective interest rate',       cat:'ifrs',        diff:3,exFi:'Joukkovelkakirjalainan efektiivinen korko on 3,5%.',        exEn:'The effective interest rate on the bond is 3.5%.',                tip:'IFRS 9. Effective = todellinen vuosittain, sisältää kulut.'},
+  {id:'i19', fi:'jaksotettu hankintameno', en:'amortized cost',                cat:'ifrs',        diff:3,exFi:'Lainat arvostetaan jaksotetulla hankintamenolla.',          exEn:'Loans are measured at amortized cost.',                           tip:'IFRS 9. Amortized Cost = hankintameno − maksetut pääomat + korkokulut.'},
+  {id:'i20', fi:'jaksotusperiaate',        en:'accrual basis',                 cat:'ifrs',        diff:2,exFi:'Tilinpäätös laaditaan suoriteperiaatteen mukaan.',          exEn:'Financial statements are prepared on an accrual basis.',         tip:'IAS 1. Tuotot ja kulut kirjataan sille kaudelle jolle kuuluvat.'},
+  {id:'i21', fi:'toimintasegmentti',       en:'operating segment',             cat:'ifrs',        diff:2,exFi:'Yhtiöllä on kolme toimintasegmenttiä.',                    exEn:'The company has three operating segments.',                       tip:'IFRS 8. Raportoitava segmentti = yli 10% tuloista/varoista/tuloksesta.'},
+  {id:'i22', fi:'laskennalliset verot',    en:'deferred taxes',                cat:'ifrs',        diff:3,exFi:'Laskennalliset verot syntyvät väliaikaisista eroista.',     exEn:'Deferred taxes arise from temporary differences between accounting and tax values.',tip:'IAS 12. "DTA" = deferred tax asset, "DTL" = deferred tax liability.'},
+  {id:'i23', fi:'työsuhde-etuudet',        en:'employee benefits',             cat:'ifrs',        diff:3,exFi:'Eläkevastuut ovat merkittävin työsuhde-etuuksien erä.',     exEn:'Pension obligations are the most significant employee benefit item.',tip:'IAS 19. "Defined benefit plan" vs "Defined contribution plan".'},
+  {id:'i24', fi:'ehdolliset velat',        en:'contingent liabilities',        cat:'ifrs',        diff:3,exFi:'Ehdolliset velat esitetään liitetiedoissa, ei taseessa.',   exEn:'Contingent liabilities are disclosed in the notes, not on the balance sheet.',tip:'IAS 37. Ero: "provision" = todennäköinen → kirjataan.'},
+  {id:'i25', fi:'muut laajan tuloksen erät',en:'other comprehensive income',   cat:'ifrs',        diff:3,exFi:'Muut laajan tuloksen erät esitetään tuloslaskelman jälkeen.',exEn:'Other comprehensive income is presented after the income statement.',tip:'IAS 1. Lyhenne "OCI". Erät jotka eivät kulje P&L:n kautta.'},
+  {id:'i26', fi:'investointikiinteistö',   en:'investment property',           cat:'ifrs',        diff:2,exFi:'Vuokrattava toimistokiinteistö luokitellaan investointikiinteistöksi.',exEn:'A rented office building is classified as investment property.',tip:'IAS 40. "Cost model" tai "fair value model".'},
+  {id:'i27', fi:'osakeperusteiset maksut', en:'share-based payments',          cat:'ifrs',        diff:3,exFi:'Johtoryhmälle myönnetyt optiot ovat osakeperusteisia maksuja.',exEn:'Share options granted to management are share-based payments.',  tip:'IFRS 2. "Equity-settled" (optiot) vs "cash-settled" (SARit).'},
+  {id:'i28', fi:'rahoitusinstrumentit',    en:'financial instruments',         cat:'ifrs',        diff:2,exFi:'Lainat, johdannaiset ja sijoitukset ovat rahoitusinstrumentteja.',exEn:'Loans, derivatives and investments are financial instruments.',  tip:'IFRS 9. Luokittelu: amortized cost / FVOCI / FVTPL.'},
+  {id:'i29', fi:'suojauslaskenta',         en:'hedge accounting',              cat:'ifrs',        diff:3,exFi:'Valuuttariskiä suojataan termiineillä, joille sovelletaan suojauslaskentaa.',exEn:'Currency risk is hedged with forward contracts applying hedge accounting.',tip:'IFRS 9. "Cash flow hedge" vs "fair value hedge".'},
+  {id:'c1',  fi:'budjetti',                en:'budget',                        cat:'controlling', diff:1,exFi:'Ensi vuoden budjetti hyväksytään marraskuussa.',           exEn:"Next year's budget is approved in November.",                    tip:'"Budgeting cycle" = budjetointikierros. Controllerin vuosirytmin ydin.'},
+  {id:'c2',  fi:'ennuste',                 en:'forecast',                      cat:'controlling', diff:1,exFi:'Päivitämme ennusteen joka kvartaali.',                     exEn:'We update the forecast every quarter.',                           tip:'"Forecast" dynaaminen — budjetti kiinteä.'},
+  {id:'c3',  fi:'budjetin toteutuma',      en:'budget vs. actuals',            cat:'controlling', diff:2,exFi:'Tarkistin budjetin toteutuman kuukausittain.',            exEn:'I review budget vs. actuals monthly.',                            tip:'Lyhyesti "BvA". Klassinen controllerin perusraportti.'},
+  {id:'c4',  fi:'poikkeama-analyysi',      en:'variance analysis',             cat:'controlling', diff:2,exFi:'Selitin myynnin poikkeaman johdolle.',                   exEn:'I explained the sales variance to management.',                   tip:'"Favourable" = positiivinen, "adverse" = negatiivinen.'},
+  {id:'c5',  fi:'kustannuspaikka',         en:'cost centre',                   cat:'controlling', diff:1,exFi:'Markkinointi on oma kustannuspaikkansa.',                exEn:'Marketing is its own cost centre.',                               tip:'USA: "cost center". SAP CO -moduulin perusrakenne.'},
+  {id:'c6',  fi:'kannattavuus',            en:'profitability',                 cat:'controlling', diff:2,exFi:'Tuoteryhmän kannattavuus on heikentynyt.',               exEn:"The product group's profitability has declined.",                 tip:'"Profitability analysis" = SAP CO-PA.'},
+  {id:'c7',  fi:'tunnusluku',              en:'key figure',                    cat:'controlling', diff:2,exFi:'Esittelin tunnusluvut johtoryhmälle.',                   exEn:'I presented the key figures to the management team.',             tip:'Myös "KPI" tai "financial ratio". ROE, ROI, current ratio.'},
+  {id:'c8',  fi:'omavaraisuusaste',        en:'equity ratio',                  cat:'controlling', diff:2,exFi:'Omavaraisuusaste on yli 40 %, mikä on hyvä.',            exEn:'The equity ratio is over 40%, which is good.',                    tip:'= Equity / Total assets. Suomalainen vakavaraisuuden mittari.'},
+  {id:'c9',  fi:'käyttöpääoma',            en:'working capital',               cat:'controlling', diff:2,exFi:'Käyttöpääoma laski tehokkaamman ostovelanhallinnan ansiosta.',exEn:'Working capital decreased thanks to more efficient management of trade payables.',tip:'= Current assets − Current liabilities. "NWC" = nettokäyttöpääoma.'},
+  {id:'c10', fi:'velkaantumisaste',        en:'gearing',                       cat:'controlling', diff:2,exFi:'Velkaantumisaste on alle 30 %.',                         exEn:'The gearing ratio is below 30%.',                                 tip:'= Net debt / Equity. Usein kovenanttirajoitus rahoitussopimuksissa.'},
+  {id:'c11', fi:'sijoitetun pääoman tuotto',en:'return on invested capital',   cat:'controlling', diff:3,exFi:'Sijoitetun pääoman tuotto ylitti pääomakustannuksen.',   exEn:'Return on invested capital exceeded the cost of capital.',        tip:'Lyhenne "ROIC". = EBIT(1−t) / Invested capital.'},
+  {id:'c12', fi:'oman pääoman tuotto',     en:'return on equity',              cat:'controlling', diff:2,exFi:'Oman pääoman tuotto oli 18 %, yli tavoitteen.',          exEn:'Return on equity was 18%, above target.',                         tip:'Lyhenne "ROE". = Net income / Equity.'},
+  {id:'c13', fi:'kokonaispääoman tuotto',  en:'return on assets',              cat:'controlling', diff:2,exFi:'Kokonaispääoman tuotto kertoo, kuinka tehokkaasti varoja käytetään.',exEn:'Return on assets shows how efficiently assets are used.',      tip:'Lyhenne "ROA". = Net income / Total assets.'},
+  {id:'c14', fi:'rullaava ennuste',        en:'rolling forecast',              cat:'controlling', diff:2,exFi:'Rullaava ennuste päivitetään kuukausittain 12 kuukauden horisontilla.',exEn:'The rolling forecast is updated monthly with a 12-month horizon.',tip:'Ero budjettiin: "budget" = kiinteä. "Rolling forecast" = jatkuvasti päivittyvä.'},
+  {id:'c15', fi:'pääomakustannus',         en:'cost of capital',               cat:'controlling', diff:3,exFi:'Investoinnin tulee ylittää pääomakustannus ollakseen kannattava.',exEn:'An investment must exceed the cost of capital to be profitable.',tip:'"WACC" = weighted average cost of capital.'},
+  {id:'c16', fi:'investointibudjetti',     en:'capital expenditure budget',    cat:'controlling', diff:2,exFi:'Investointibudjetti hyväksytään osana vuosisuunnittelua.',exEn:'The capital expenditure budget is approved as part of the annual planning process.',tip:'"Capex budget". Ero "opex" = käyttömenot.'},
+  {id:'c17', fi:'suorituskyky',            en:'performance',                   cat:'controlling', diff:1,exFi:'Liiketoimintayksikön suorituskykyä mitataan kuukausittain.',exEn:'Business unit performance is measured monthly.',                 tip:'"Performance management" = suorituskyvyn johtaminen.'},
+  {id:'c18', fi:'poikkeamaraportti',       en:'exception report',              cat:'controlling', diff:2,exFi:'Poikkeamaraportti nostaa esiin kaikki yli 5 % budjettierot.',exEn:'The exception report highlights all variances over 5% against budget.',tip:'"Management by exception" = johdetaan poikkeamien kautta.'},
+  {id:'c19', fi:'kustannusajuri',          en:'cost driver',                   cat:'controlling', diff:2,exFi:'Tuotantomäärä on tärkein kustannusajuri tässä liiketoiminnassa.',exEn:'Production volume is the main cost driver in this business.',   tip:'ABC-laskennassa tunnistetaan kustannusajurit.'},
+  {id:'p1',  fi:'Liitteessä on...',        en:'Please find attached...',       cat:'phrases',     diff:1,exFi:'Liitteessä on lokakuun raportti.',                       exEn:'Please find attached the October report.',                        tip:"Klassinen sähköpostifraasi. Modernimpi: \"I've attached...\"."},
+  {id:'p2',  fi:'Selvitämme asian',        en:'We will look into this',        cat:'phrases',     diff:1,exFi:'Kiitos viestistä — selvitämme asian.',                   exEn:'Thanks for the message — we will look into this.',                tip:"Myös \"We'll investigate this\" tai \"Let me check on this\"."},
+  {id:'p3',  fi:'Pyydän hyväksyntääsi',    en:'I am requesting your approval', cat:'phrases',     diff:2,exFi:'Pyydän hyväksyntääsi laskulle.',                         exEn:'I am requesting your approval for the invoice.',                  tip:'Vapaammin: "Could you please approve...?" AP-prosessissa tärkeä.'},
   {id:'p4',  fi:'Saanko nopean päivityksen?',en:'Could I get a quick update?', cat:'phrases',     diff:2,exFi:'Saanko nopean päivityksen sulkemisesta?',                exEn:'Could I get a quick update on the December close?',               tip:"Vapaammin: \"Any update on...?\" tai \"What's the status of...?\""},
-  {id:'p5',  fi:'tämän viestin perusteella',en:'as per this message',          cat:'phrases',     diff:2,exFi:'Tämän viestin perusteella jaksotamme 12 000 €.',          exEn:'As per this message, we will accrue 12,000 €.',                   tip:'Myös "based on this". "As per" muodollinen — sopii viestiketjuihin.'},
-  {id:'p6',  fi:'täsmäyttää',           en:'to reconcile',                     cat:'phrases',     diff:2,exFi:'Meidän täytyy täsmäyttää tilit ennen kuun loppua.',       exEn:'We need to reconcile the accounts before month-end.',             tip:'"RE + CONCILE" = sovittaa yhteen uudelleen = MATCHING. "Reconcile the bank account to the GL before month-end close." = verrataan kahta dokumenttia kunnes kaikki sopii yhteen.'},
-  {id:'p7',  fi:'seurata asian käsittelyä',en:'to follow up on',              cat:'phrases',     diff:2,exFi:'Seuraan asiaa tiimin kanssa huomenna.',                  exEn:"I'll follow up on this with the team tomorrow.",                  tip:'Kirjaimellisesti: seurata perässä.'},
-  {id:'p8',  fi:'ottaa yhteyttä',       en:'to reach out to',                  cat:'phrases',     diff:2,exFi:'Otan yhteyttä tilintarkastajaan tänään.',                exEn:"I'll reach out to the auditor today.",                            tip:'"REACH OUT" = kurottaa kätensä = ottaa kontakti. Slackissa/sähköpostissa: "I\'ll reach out to the auditor." Ystävällisempi ja epävirallisempi kuin "contact".'},
-  {id:'p9',  fi:'olla samalla sivulla', en:'to be on the same page',           cat:'phrases',     diff:2,exFi:'Varmistetaan, että olemme samalla sivulla budjetin suhteen.',exEn:"Let's make sure we're on the same page regarding the budget.", tip:'Kaikki lukevat samaa sivua.'},
-  {id:'p10', fi:'hyväksyä lopullisesti',en:'to sign off on',                   cat:'phrases',     diff:2,exFi:'CFO hyväksyi tilinpäätöksen eilen.',                    exEn:'The CFO signed off on the financial statements yesterday.',       tip:'"SIGN OFF" = hyväksyä virallisesti ja ottaa vastuu. "The CFO needs to sign off on the financials before board submission." Ero approve: sign off = johtaja ottaa vastuun.'},
-  {id:'p11', fi:'syventyä / analysoida',en:'to drill down into',               cat:'phrases',     diff:2,exFi:'Syvennetään kustannuseroihin tarkemmin.',                exEn:"Let's drill down into the cost variances.",                       tip:'"DRILL DOWN" = poraa syvemmälle = mene yksityiskohtiin. Analyysissa: "Let\'s drill down into the Q2 cost variance." = avataan Excel ja katsotaan rivi-rivi erittely.'},
-  {id:'p12', fi:'nostaa esiin',         en:'to flag (an issue)',                cat:'phrases',     diff:2,exFi:'Halusin nostaa esiin tämän poikkeaman.',                exEn:'I wanted to flag this discrepancy.',                              tip:'"FLAG" = nostaa punainen lippu = vetää huomiota ongelmaan. "I\'d like to flag the AP aging — invoices over 90 days unpaid." Neutraali huomio, ei kritiikki. Hyvin yleinen talouspuolella.'},
-  {id:'p13', fi:'palata asiaan',        en:'to circle back to',                cat:'phrases',     diff:2,exFi:'Palataan tähän kysymykseen kokouksen lopussa.',          exEn:"Let's circle back to this question at the end of the meeting.",   tip:'"CIRCLE" = piirtää ympyrä = palata samaan pisteeseen. Kokouksissa: "Let\'s circle back to budget variances after headcount." Ero follow up: circle back = palaa samaan asiaan, follow up = jatka eteenpäin.'},
-  {id:'p14', fi:'ydin on',              en:'the bottom line is',               cat:'phrases',     diff:2,exFi:'Ydin on, että kate ei riitä.',                           exEn:'The bottom line is that the margin is insufficient.',             tip:'"BOTTOM" = viimeinen rivi tuloslaskelmassa = lopputulos. Käytä kokouksissa johtopäätöksen vetämiseen: "The bottom line is: we need to cut costs by 10%" tai sähköpostissa yhteenveto-osioon.'},
-  {id:'p15', fi:'jäädyttää / laittaa odottamaan',en:'to put on hold',         cat:'phrases',     diff:2,exFi:'Projekti on toistaiseksi jäädytetty.',                  exEn:'The project has been put on hold for now.',                       tip:'Puhelin hold = odota.'},
-  {id:'p16', fi:'pitää kirjaa',         en:'to keep track of',                 cat:'phrases',     diff:2,exFi:'On tärkeää pitää kirjaa kaikista kuluista.',             exEn:"It's important to keep track of all expenses.",                   tip:'Track = jälki → seurataan jälkeä.'},
-  {id:'p17', fi:'edetä jonkin kanssa',  en:'to move forward with',             cat:'phrases',     diff:2,exFi:'Voidaan edetä hyväksytyn budjetin kanssa.',              exEn:'We can move forward with the approved budget.',                   tip:'"MOVE FORWARD" = ottaa seuraava askel päätöksen jälkeen. "We\'re approved to move forward with the implementation." Ero proceed: move forward = tiimi mukana, proceed = mennä eteenpäin yksin.'},
-  {id:'p18', fi:'ryhtyä toimiin',       en:'to take action on',                cat:'phrases',     diff:2,exFi:'Meidän täytyy ryhtyä toimiin tähän poikkeamaan.',        exEn:'We need to take action on this variance.',                        tip:'Otetaan toiminta käyttöön.'},
-  {id:'p19', fi:'päättää / saattaa loppuun',en:'to wrap up',                  cat:'phrases',     diff:2,exFi:'Päätetään tämä kvartaaliraportti tänään.',               exEn:"Let's wrap up this quarterly report today.",                      tip:'"WRAP UP" = kääriä paketti = lopettaa JA tehdä yhteenveto. "Before we wrap up, does anyone have final comments?" Ei vain lopetus — aina sisältää yhteenvedon.'},
-  {id:'p20', fi:'kuten sovittiin',      en:'as per our agreement',             cat:'phrases',     diff:2,exFi:'Kuten sovittiin, lasku lähetetään kuun lopussa.',        exEn:'As per our agreement, the invoice will be sent at month-end.',   tip:'"PER" = latinaa: mukaisesti. Hyvin virallinen. "As per our agreement, invoices paid within 30 days." Vain asiakirjoihin ja virallisiin sähköposteihin — ei Slackiin.'},
-  /* BASICS — b16–b23 */
-  {id:'b16',fi:'kahdenkertainen kirjanpito',en:'double-entry bookkeeping',     cat:'basics',      diff:2,exFi:'Kahdenkertainen kirjanpito tarkoittaa, että jokainen kirjaus tehdään kahdelle tilille.',exEn:'Double-entry bookkeeping means every entry is posted to two accounts.',tip:'"Double-entry" = debet ja kredit aina yhtä suuret. Luca Paciolin keksintö 1494. "Single-entry" on yksinkertaisempi (esim. kotitalousbudjetti).'},
-  {id:'b17',fi:'tilikartta',             en:'chart of accounts',                cat:'basics',      diff:2,exFi:'Kirjanpitäjä ylläpitää tilikarttaa, jossa on kaikki tilinumerot.',exEn:'The accountant maintains the chart of accounts with all account numbers.',tip:'"COA" on yleinen lyhenne. SAP:ssa jokaisella yhtiöllä on oma tilikarttansa.'},
-  {id:'b18',fi:'alustava tase',          en:'trial balance',                    cat:'basics',      diff:2,exFi:'Alustava tase tarkistetaan ennen tilinpäätöksen valmistumista.',exEn:'The trial balance is checked before the financial statements are finalised.',tip:'Varmistaa, että debet = kredit. "Pre-closing trial balance" = ennen sulkemia.'},
-  {id:'b19',fi:'ennakkomaksu',           en:'prepayment',                       cat:'basics',      diff:1,exFi:'Maksamme vakuutusmaksun ennakkoon koko vuodelle.',        exEn:'We pay the insurance premium in advance for the full year.',      tip:'Taseessa lyhytaikaisena saamisena. "Advance payment" voi myös tarkoittaa toimittajalle maksettua ennakkoa.'},
-  {id:'b20',fi:'sisäinen valvonta',      en:'internal control',                 cat:'basics',      diff:2,exFi:'Sisäinen valvonta estää virheitä ja väärinkäytöksiä.',    exEn:'Internal control prevents errors and misconduct.',                tip:'"Internal control framework" = COSO-malli. "Control environment" = valvontaympäristö.'},
-  {id:'b21',fi:'konserni',              en:'group',                             cat:'basics',      diff:1,exFi:'Konsernin tilinpäätös laaditaan konsolidoituina.',         exEn:'The group financial statements are prepared on a consolidated basis.',tip:'"Parent company" = emoyhtiö, "subsidiary" = tytäryhtiö. IFRS 10 määrää konsolidointivelvollisuuden.'},
-  {id:'b22',fi:'konsolidointi',         en:'consolidation',                     cat:'basics',      diff:2,exFi:'Tytäryhtiöiden luvut konsolidoidaan konsernitilinpäätökseen.',exEn:'Subsidiary figures are consolidated into the group financial statements.',tip:'IFRS 10. "Full consolidation" vs "equity method". Sisäiset erät eliminoidaan.'},
-  {id:'b23',fi:'arvostusperiaate',      en:'accounting policy',                 cat:'basics',      diff:2,exFi:'Liitetiedoissa kerrotaan käytetyt arvostusperiaatteet.',    exEn:'The notes disclose the accounting policies used.',                tip:'IAS 1. Miten erät arvostetaan ja esitetään. Muutos vaatii IAS 8 -käsittelyn.'},
-  /* BALANCE — bs13–bs20 */
-  {id:'bs13',fi:'käyttöoikeusomaisuuserä',en:'right-of-use asset',             cat:'balance',     diff:3,exFi:'Käyttöoikeusomaisuuserä kirjataan, kun vuokrasopimus alkaa.',exEn:'A right-of-use asset is recognised when a lease commences.',      tip:'IFRS 16 (2019-). ROU asset = diskontattujen vuokramaksujen nykyarvo. Pari: lease liability.'},
-  {id:'bs14',fi:'vuokravelka',           en:'lease liability',                  cat:'balance',     diff:3,exFi:'Vuokravelka vähenee maksettujen vuokrien myötä.',          exEn:'The lease liability decreases as lease payments are made.',       tip:'IFRS 16. = tulevien vuokramaksujen nykyarvo. "Finance lease" vs "operating lease" -jako hävisi IFRS 16:ssa.'},
-  {id:'bs15',fi:'laskennallinen verovelka',en:'deferred tax liability',         cat:'balance',     diff:3,exFi:'Laskennallinen verovelka syntyy kirjanpidon ja verotuksen väliaikaisesta erosta.',exEn:'A deferred tax liability arises from a temporary difference between accounting and tax values.',tip:'IAS 12. Veroja maksetaan tulevaisuudessa. Ero: "current tax" = tämän vuoden vero.'},
-  {id:'bs16',fi:'varaukset',            en:'provisions',                        cat:'balance',     diff:2,exFi:'Varaukset tehdään odotettavissa oleviin kuluihin.',         exEn:'Provisions are made for anticipated expenses.',                   tip:'IAS 37. Provision = todennäköinen velvoite, summa epävarma. "Contingent liability" = mahdollinen (ei kirjata). Esim. oikeudenkäyntivaraus.'},
-  {id:'bs17',fi:'pitkäaikaiset velat',  en:'non-current liabilities',           cat:'balance',     diff:1,exFi:'Pitkäaikaiset velat erääntyvät yli 12 kuukauden kuluttua.',exEn:'Non-current liabilities fall due after more than 12 months.',    tip:'Vastakohta: "current liabilities". Sisältää pitkäaikaiset lainat, vuokravelat, laskennalliset verovelat.'},
-  {id:'bs18',fi:'lyhytaikaiset velat',  en:'current liabilities',               cat:'balance',     diff:1,exFi:'Lyhytaikaiset velat erääntyvät 12 kuukauden sisällä.',     exEn:'Current liabilities fall due within 12 months.',                  tip:'Sisältää: trade payables, accrued expenses, lainojen lyhytaikaiset osat. Tärkeä maksuvalmiuden mittauksessa.'},
-  {id:'bs19',fi:'kertyneet voittovarat',en:'retained earnings',                 cat:'balance',     diff:2,exFi:'Kertyneet voittovarat sisältävät aiempien tilikausien voitot.',exEn:'Retained earnings include profits from previous financial years.',tip:'"Retained earnings" = oma pääoma miinus osakepääoma ja muut rahastot. Jakamattomat voitot.'},
-  {id:'bs20',fi:'vähemmistöosuus',      en:'non-controlling interest',          cat:'balance',     diff:3,exFi:'Vähemmistöosuus esitetään omana pääomana konsernitaseessa.',exEn:'Non-controlling interest is presented as equity in the consolidated balance sheet.',tip:'IFRS 10. Aiempi nimitys: "minority interest". Osuus tytäryhtiöstä jota emoyhtiö ei omista.'},
-  /* INCOME — is13–is19 */
-  {id:'is13',fi:'myytyjen tuotteiden kustannukset',en:'cost of goods sold',     cat:'income',      diff:2,exFi:'Myytyjen tuotteiden kustannukset olivat 60 % liikevaihdosta.',exEn:'Cost of goods sold was 60% of revenue.',                          tip:'Lyhenne "COGS". Gross profit = Revenue − COGS. IFRS-termi: "cost of sales".'},
-  {id:'is14',fi:'myynti- ja markkinointikulut',en:'selling and marketing expenses',cat:'income',  diff:2,exFi:'Myynti- ja markkinointikulut kasvoivat uuden kampanjan myötä.',exEn:'Selling and marketing expenses grew with the new campaign.',      tip:'Lyhenne "S&M". Osa "operating expenses". Kiinteä ja muuttuva osuus vaihtelee.'},
-  {id:'is15',fi:'hallinto- ja yleiskulut',en:'general and administrative expenses',cat:'income',  diff:2,exFi:'Hallinto- ja yleiskuluja leikattiin kustannussäästöohjelmassa.',exEn:'General and administrative expenses were cut in the cost-saving programme.',tip:'Lyhenne "G&A". Sisältää: HR, IT, johtoryhmä, vuokra. Kiinteä kuluerä.'},
-  {id:'is16',fi:'rahoitustuotot',        en:'financial income',                  cat:'income',      diff:2,exFi:'Rahoitustuotot koostuivat korkotuotoista ja osingoista.',  exEn:'Financial income consisted of interest income and dividends.',    tip:'Alla tuloslaskelmassa operating profit -rivin jälkeen. "Net financial items" = rahoitustuotot − rahoituskulut.'},
-  {id:'is17',fi:'rahoituskulut',         en:'finance costs',                     cat:'income',      diff:2,exFi:'Rahoituskulut nousivat korkojen noustua.',                 exEn:'Finance costs increased as interest rates rose.',                 tip:'Myös "financial expenses", "interest expense". IFRS:ssä "finance costs". Sisältää lainojen korot ja IFRS 16 -vuokravelan korot.'},
-  {id:'is18',fi:'verokulut',             en:'income tax expense',                cat:'income',      diff:2,exFi:'Verokulut olivat 22 % voitosta ennen veroja.',             exEn:'Income tax expense was 22% of profit before tax.',                tip:'IAS 12. Sisältää "current tax" + "deferred tax". "ETR" = effective tax rate = verokulut / EBT.'},
-  {id:'is19',fi:'osakekohtainen tulos',  en:'earnings per share',                cat:'income',      diff:3,exFi:'Osakekohtainen tulos parani 15 % edellisvuodesta.',        exEn:'Earnings per share improved by 15% from the previous year.',      tip:'Lyhenne "EPS". IAS 33. Basic EPS vs diluted EPS. P/E-luvun nimittäjä. Yksi keskeisimmistä sijoitusmittareista.'},
-  /* DAILY — d13–d22 */
-  {id:'d13', fi:'hyvityslasku',          en:'credit note',                       cat:'daily',       diff:1,exFi:'Lähetimme asiakkaalle hyvityslaskun virheellisestä laskusta.',exEn:'We sent the customer a credit note for the incorrect invoice.',  tip:'"Credit note" = negatiivinen lasku. Peruuttaa aiemman laskun osittain tai kokonaan. Kirjaus: Dr AR / Cr Revenue.'},
-  {id:'d14', fi:'maksuehto',             en:'payment terms',                     cat:'daily',       diff:1,exFi:'Sovimme 30 päivän maksuehdosta.',                         exEn:'We agreed on 30-day payment terms.',                              tip:'"Net 30" = maksu 30 päivässä laskun päivästä. "2/10 net 30" = 2% alennus jos maksetaan 10 päivässä.'},
-  {id:'d15', fi:'viivästyskorko',        en:'late payment interest',             cat:'daily',       diff:2,exFi:'Laskutamme viivästyskoron erääntyneistä laskuista.',       exEn:'We charge late payment interest on overdue invoices.',            tip:'EU-direktiivi: vähintään 8% + EKP:n viitekorko. SAP: "dunning" = koko perintäprosessi.'},
-  {id:'d16', fi:'perintä',               en:'debt collection',                   cat:'daily',       diff:2,exFi:'Lasku siirrettiin perintään maksamattomuuden vuoksi.',     exEn:'The invoice was sent to debt collection due to non-payment.',     tip:'"Debt collection agency" = perintätoimisto. "In-house collection" = sisäinen perintä.'},
-  {id:'d17', fi:'konserniyhtiöiden sisäiset tapahtumat',en:'intercompany transactions',cat:'daily',diff:2,exFi:'Sisäiset tapahtumat eliminoidaan konsolidoinnissa.',        exEn:'Intercompany transactions are eliminated in consolidation.',      tip:'Lyhenne "IC". "IC reconciliation" = sisäisten erien täsmäytys — kuukauden sulkemisen kriittinen vaihe.'},
-  {id:'d18', fi:'käyttöomaisuusrekisteri',en:'fixed asset register',             cat:'daily',       diff:2,exFi:'Käyttöomaisuusrekisteri sisältää kaikki pitkäaikaiset omaisuuserät.',exEn:'The fixed asset register contains all long-term assets.',    tip:'"FAR". SAP AA -moduuli. Sisältää: hankintahinta, poistoprosentti, jäännösarvo.'},
-  {id:'d19', fi:'palkanlaskenta',        en:'payroll',                           cat:'daily',       diff:1,exFi:'Palkanlaskenta ajetaan kuun lopussa.',                     exEn:'Payroll is run at the end of the month.',                         tip:'"Payroll run" = palkanmaksuajo. "Payroll accounting" = palkkakirjanpito. Usein ulkoistettu prosessi.'},
-  {id:'d20', fi:'kustannuskohdistus',    en:'account assignment',                cat:'daily',       diff:2,exFi:'Kustannuskohdistuksessa määritetään, mille tileille kulut kirjataan.',exEn:'Account assignment determines which accounts costs are allocated to.',tip:'SAP-termi: tili + kustannuspaikka + tilausviite. "Posting key" = kirjausavain (debet/kredit).'},
-  {id:'d21', fi:'tilinpäätöspaketti',    en:'reporting package',                 cat:'daily',       diff:2,exFi:'Lähetimme tilinpäätöspaketin emoyhtiölle.',                exEn:'We submitted the reporting package to the parent company.',       tip:'Konserniraportoinnin ydin — tietyn muodon mukaan laadittu tilinpäätöstietojen kokoelma.'},
-  {id:'d22', fi:'suljettu kausi',        en:'closed period',                     cat:'daily',       diff:2,exFi:'Suljetulle kaudelle ei voi enää tehdä kirjauksia.',         exEn:'No postings can be made to a closed period.',                     tip:'SAP: "posting period". "Period closing" = kauden sulkeminen. Uudelleenavaukseen tarvitaan hyväksyntä.'},
-  /* IFRS — i21–i29 */
-  {id:'i21', fi:'toimintasegmentti',     en:'operating segment',                 cat:'ifrs',        diff:2,exFi:'Yhtiöllä on kolme toimintasegmenttiä: kuluttaja, yritys ja viranomaiset.',exEn:'The company has three operating segments: consumer, corporate and public sector.',tip:'IFRS 8. Raportoitava segmentti = yli 10% tuloista/varoista/tuloksesta. Pakollinen listatuille.'},
-  {id:'i22', fi:'laskennalliset verot',  en:'deferred taxes',                    cat:'ifrs',        diff:3,exFi:'Laskennalliset verot syntyvät väliaikaisista eroista kirjanpidon ja verotuksen välillä.',exEn:'Deferred taxes arise from temporary differences between accounting and tax values.',tip:'IAS 12. "DTA" = deferred tax asset, "DTL" = deferred tax liability. Ei kirjata ei-väliaikaisista eroista.'},
-  {id:'i23', fi:'työsuhde-etuudet',      en:'employee benefits',                 cat:'ifrs',        diff:3,exFi:'Eläkevastuut ovat merkittävin työsuhde-etuuksien erä.',     exEn:'Pension obligations are the most significant employee benefit item.',tip:'IAS 19. "Defined benefit plan" (DB) = etuuspohjainen, työnantajan riski. "Defined contribution plan" (DC) = maksupohjainen, ei vastuuta.'},
-  {id:'i24', fi:'ehdolliset velat',      en:'contingent liabilities',            cat:'ifrs',        diff:3,exFi:'Ehdolliset velat esitetään liitetiedoissa, ei taseessa.',   exEn:'Contingent liabilities are disclosed in the notes, not on the balance sheet.',tip:'IAS 37. Contingent = mahdollinen velvoite, epävarma. Ero: "provision" = todennäköinen → kirjataan.'},
-  {id:'i25', fi:'muut laajan tuloksen erät',en:'other comprehensive income',     cat:'ifrs',        diff:3,exFi:'Muut laajan tuloksen erät esitetään tuloslaskelman jälkeen.',exEn:'Other comprehensive income is presented after the income statement.',tip:'IAS 1. Lyhenne "OCI". Erät jotka eivät kulje P&L:n kautta: suojauslaskenta, eläkevastuu, valuuttamuunnos. "Total comprehensive income" = P&L + OCI.'},
-  {id:'i26', fi:'investointikiinteistö', en:'investment property',               cat:'ifrs',        diff:2,exFi:'Vuokrattava toimistokiinteistö luokitellaan investointikiinteistöksi.',exEn:'A rented office building is classified as investment property.',tip:'IAS 40. "Cost model" tai "fair value model". Fair value -muutokset P&L:ään. Ero: "owner-occupied property" = PP&E (IAS 16).'},
-  {id:'i27', fi:'osakeperusteiset maksut',en:'share-based payments',             cat:'ifrs',        diff:3,exFi:'Johtoryhmälle myönnetyt optiot ovat osakeperusteisia maksuja.',exEn:'Share options granted to management are share-based payments.',  tip:'IFRS 2. "Equity-settled" (optiot) vs "cash-settled" (SARit). Kulut P&L:ään grant date -käyvällä arvolla jaksotettuna.'},
-  {id:'i28', fi:'rahoitusinstrumentit',  en:'financial instruments',             cat:'ifrs',        diff:2,exFi:'Lainat, johdannaiset ja sijoitukset ovat rahoitusinstrumentteja.',exEn:'Loans, derivatives and investments are financial instruments.',  tip:'IFRS 9 (korvasi IAS 39). Luokittelu: amortized cost / FVOCI / FVTPL. "Hedge accounting" = suojauslaskenta valinnainen malli.'},
-  {id:'i29', fi:'suojauslaskenta',       en:'hedge accounting',                  cat:'ifrs',        diff:3,exFi:'Valuuttariskiä suojataan termiineillä, joille sovelletaan suojauslaskentaa.',exEn:'Currency risk is hedged with forward contracts applying hedge accounting.',tip:'IFRS 9. "Cash flow hedge" (tulevat kassavirrat) vs "fair value hedge" (tase-erä). Tehokkuusvaatimus 80–125%. OCI-kirjaus ensin.'},
-  /* CONTROLLING — c9–c19 */
-  {id:'c9',  fi:'käyttöpääoma',          en:'working capital',                   cat:'controlling', diff:2,exFi:'Käyttöpääoma laski tehokkaamman ostovelanhallinnan ansiosta.',exEn:'Working capital decreased thanks to more efficient management of trade payables.',tip:'= Current assets − Current liabilities. "NWC" = nettokäyttöpääoma. Tärkeä kassanhallinnassa.'},
-  {id:'c10', fi:'velkaantumisaste',       en:'gearing',                          cat:'controlling', diff:2,exFi:'Velkaantumisaste on alle 30 %, mikä mahdollistaa lisäinvestoinnit.',exEn:'The gearing ratio is below 30%, which allows for further investment.',tip:'= Net debt / Equity. "Net debt" = korolliset velat − rahavarat. Usein kovenanttirajoitus rahoitussopimuksissa.'},
-  {id:'c11', fi:'sijoitetun pääoman tuotto',en:'return on invested capital',     cat:'controlling', diff:3,exFi:'Sijoitetun pääoman tuotto ylitti pääomakustannuksen.',        exEn:'Return on invested capital exceeded the cost of capital.',        tip:'Lyhenne "ROIC". = EBIT(1−t) / Invested capital. Parempi mittari kuin ROE — huomioi koko pääomarakenteen.'},
-  {id:'c12', fi:'oman pääoman tuotto',    en:'return on equity',                 cat:'controlling', diff:2,exFi:'Oman pääoman tuotto oli 18 %, yli tavoitteen.',              exEn:'Return on equity was 18%, above target.',                         tip:'Lyhenne "ROE". = Net income / Equity. DuPont-analyysi: ROE = marginaali × kiertonopeus × velkavipu.'},
-  {id:'c13', fi:'kokonaispääoman tuotto', en:'return on assets',                 cat:'controlling', diff:2,exFi:'Kokonaispääoman tuotto kertoo, kuinka tehokkaasti varoja käytetään.',exEn:'Return on assets shows how efficiently assets are used.',       tip:'Lyhenne "ROA". = Net income / Total assets. Ei huomioi rahoitusrakennetta — vertaa ROE:hen.'},
-  {id:'c14', fi:'rullaava ennuste',       en:'rolling forecast',                 cat:'controlling', diff:2,exFi:'Rullaava ennuste päivitetään kuukausittain 12 kuukauden horisontilla.',exEn:'The rolling forecast is updated monthly with a 12-month horizon.',tip:'Ero budjettiin: "budget" = kiinteä vuositavoite. "Rolling forecast" = jatkuvasti päivittyvä näkymä. Agile-taloushallinnon työkalu.'},
-  {id:'c15', fi:'pääomakustannus',        en:'cost of capital',                  cat:'controlling', diff:3,exFi:'Investoinnin tulee ylittää pääomakustannus ollakseen kannattava.',exEn:'An investment must exceed the cost of capital to be profitable.',tip:'"WACC" = weighted average cost of capital = painotettu pääomakustannus. NPV- ja DCF-laskelmien diskonttauskorko.'},
-  {id:'c16', fi:'investointibudjetti',    en:'capital expenditure budget',       cat:'controlling', diff:2,exFi:'Investointibudjetti hyväksytään osana vuosisuunnittelua.',   exEn:'The capital expenditure budget is approved as part of the annual planning process.',tip:'"Capex budget". "Capex" = investointimenot. Ero "opex" = käyttömenot. "Capex vs opex" -päätös tärkeä IT-investoinneissa.'},
-  {id:'c17', fi:'suorituskyky',           en:'performance',                      cat:'controlling', diff:1,exFi:'Liiketoimintayksikön suorituskykyä mitataan kuukausittain.', exEn:'Business unit performance is measured monthly.',                  tip:'"Performance management" = suorituskyvyn johtaminen. "KPI" = suorituskykymittari. "Scorecard" = mittaristo.'},
-  {id:'c18', fi:'poikkeamaraportti',      en:'exception report',                 cat:'controlling', diff:2,exFi:'Poikkeamaraportti nostaa esiin kaikki yli 5 % budjettierot.',exEn:'The exception report highlights all variances over 5% against budget.',tip:'"Exception reporting" = raportoidaan vain poikkeamat. "Management by exception" = johdetaan poikkeamien kautta.'},
-  {id:'c19', fi:'kustannusajuri',         en:'cost driver',                      cat:'controlling', diff:2,exFi:'Tuotantomäärä on tärkein kustannusajuri tässä liiketoiminnassa.',exEn:'Production volume is the main cost driver in this business.',    tip:'ABC-laskennassa tunnistetaan kustannusajurit. "Driver-based budgeting" = ennuste perustuu ajureihin, ei historiaan.'},
-  /* PHRASES — p21–p31 */
-  {id:'p21', fi:'tiivistettynä',          en:'in a nutshell',                    cat:'phrases',     diff:1,exFi:'Tiivistettynä: liikevaihto kasvoi mutta marginaalit heikkenivät.',exEn:'In a nutshell: revenue grew but margins declined.',            tip:'"IN A NUTSHELL" = pähkinänkuoressa. "So, in a nutshell, we are behind on collections." Sopii kokoukseen ja sähköpostiin.'},
-  {id:'p22', fi:'pohjimmiltaan',          en:'the bottom line is',               cat:'phrases',     diff:1,exFi:'Pohjimmiltaan budjetti ei tule täyttymään.',                exEn:'The bottom line is that the budget will not be met.',             tip:'"BOTTOM LINE" = alin rivi = tärkein johtopäätös. "The bottom line is we need to cut costs by 10%." Päättyy aina konkreettiseen toimenpiteeseen.'},
-  {id:'p23', fi:'pidetään sinut ajan tasalla',en:'I will keep you posted',       cat:'phrases',     diff:1,exFi:'Pidetään sinut ajan tasalla tilintarkastuksen etenemisestä.',exEn:'I will keep you posted on the progress of the audit.',          tip:'"KEEP POSTED" = pidä ajan tasalla. Sähköpostiin: "I\'ll keep you posted as things develop." Proaktiivinen ja huomaavainen sävy.'},
-  {id:'p24', fi:'viedään tämä erikseen', en:'let\'s take this offline',          cat:'phrases',     diff:2,exFi:'Viedään tämä yksityiskohta erikseen — jatketaan kokousta.',  exEn:'Let\'s take this offline — let\'s continue with the meeting.',   tip:'"TAKE OFFLINE" = hoidetaan kahden kesken kokouksen jälkeen. "Let\'s take this offline after the call." Estää kokouksen rönsyilemisen.'},
-  {id:'p25', fi:'vastaan tähän myöhemmin',en:'I will get back to you on that',  cat:'phrases',     diff:1,exFi:'Vastaan tähän myöhemmin — tarvitsen ensin luvut.',          exEn:'I will get back to you on that — I need the figures first.',     tip:'"GET BACK TO" = palata asiaan myöhemmin. "I\'ll get back to you by end of day." Älä lupaa enemmän kuin pystyt toimittamaan.'},
-  {id:'p26', fi:'merkitään seurantaan',   en:'let\'s flag this for follow-up',   cat:'phrases',     diff:2,exFi:'Merkitään tämä poikkeama seurantaan seuraavaan kokoukseen.', exEn:'Let\'s flag this variance for follow-up in the next meeting.',   tip:'"FLAG" = liputtaa = nostaa esiin seurattavaksi. "I\'ll flag this in our action tracker." "Red flag" = vakava varoitusmerkki.'},
-  {id:'p27', fi:'edelleen auki',          en:'still outstanding',                cat:'phrases',     diff:1,exFi:'Kaksi laskua on edelleen maksamatta — lähetetään muistutus.',exEn:'Two invoices are still outstanding — let\'s send a reminder.',   tip:'"OUTSTANDING" = avoin / maksamatta. "Outstanding invoices" = maksamattomat laskut. "Outstanding items" = avoimet asiat kokouksessa.'},
-  {id:'p28', fi:'samalla sivulla',        en:'on the same page',                 cat:'phrases',     diff:1,exFi:'Varmistetaan, että olemme samalla sivulla ennen esitystä.',  exEn:'Let\'s make sure we are on the same page before the presentation.',tip:'"ON THE SAME PAGE" = sama ymmärrys. "Are we all on the same page with the Q3 numbers?" Tärkeä ennen kokouksia.'},
-  {id:'p29', fi:'palataan tähän',         en:'shall we revisit this',            cat:'phrases',     diff:1,exFi:'Palataan tähän ensi kuussa, kun Q3-luvut ovat valmistuneet?',exEn:'Shall we revisit this next month once the Q3 figures are available?',tip:'"REVISIT" = tarkastella uudelleen. "I\'d suggest we revisit this after the audit." Neutraali tapa siirtää päätös.'},
-  {id:'p30', fi:'vedetään raja',          en:'draw the line',                    cat:'phrases',     diff:2,exFi:'Vedämme rajan tähän — lisää kustannuksia ei hyväksytä.',     exEn:'We need to draw the line here — no further costs will be approved.',tip:'"DRAW THE LINE" = asettaa raja. "We have to draw the line somewhere on discretionary spend." Päättäväinen ja selkeä sävy.'},
-  {id:'p31', fi:'näin etenemme',          en:'here is how we will proceed',      cat:'phrases',     diff:1,exFi:'Näin etenemme: ensin täsmäytetään, sitten raportoidaan johdolle.',exEn:'Here is how we will proceed: first we reconcile, then we report to management.',tip:'Selkeä toimintasuunnitelman aloitusfraasi. Korvaa epäselvän "so what do we do now?" — antaa suunnan heti.'}
+  {id:'p5',  fi:'tämän viestin perusteella',en:'as per this message',          cat:'phrases',     diff:2,exFi:'Tämän viestin perusteella jaksotamme 12 000 €.',          exEn:'As per this message, we will accrue 12,000 EUR.',                 tip:'Myös "based on this". "As per" muodollinen — sopii viestiketjuihin.'},
+  {id:'p6',  fi:'täsmäyttää',              en:'to reconcile',                  cat:'phrases',     diff:2,exFi:'Meidän täytyy täsmäyttää tilit ennen kuun loppua.',       exEn:'We need to reconcile the accounts before month-end.',             tip:'"Reconcile the bank account to the GL before month-end close."'},
+  {id:'p7',  fi:'seurata asian käsittelyä',en:'to follow up on',               cat:'phrases',     diff:2,exFi:'Seuraan asiaa tiimin kanssa huomenna.',                  exEn:"I'll follow up on this with the team tomorrow.",                  tip:'Kirjaimellisesti: seurata perässä.'},
+  {id:'p8',  fi:'ottaa yhteyttä',          en:'to reach out to',               cat:'phrases',     diff:2,exFi:'Otan yhteyttä tilintarkastajaan tänään.',                exEn:"I'll reach out to the auditor today.",                            tip:'Ystävällisempi ja epävirallisempi kuin "contact".'},
+  {id:'p9',  fi:'olla samalla sivulla',    en:'to be on the same page',        cat:'phrases',     diff:2,exFi:'Varmistetaan, että olemme samalla sivulla budjetin suhteen.',exEn:"Let's make sure we're on the same page regarding the budget.", tip:'Kaikki lukevat samaa sivua.'},
+  {id:'p10', fi:'hyväksyä lopullisesti',   en:'to sign off on',                cat:'phrases',     diff:2,exFi:'CFO hyväksyi tilinpäätöksen eilen.',                    exEn:'The CFO signed off on the financial statements yesterday.',       tip:'"SIGN OFF" = hyväksyä virallisesti ja ottaa vastuu.'},
+  {id:'p11', fi:'syventyä / analysoida',   en:'to drill down into',            cat:'phrases',     diff:2,exFi:'Syvennetään kustannuseroihin tarkemmin.',                exEn:"Let's drill down into the cost variances.",                       tip:'"DRILL DOWN" = poraa syvemmälle = mene yksityiskohtiin.'},
+  {id:'p12', fi:'nostaa esiin',            en:'to flag (an issue)',             cat:'phrases',     diff:2,exFi:'Halusin nostaa esiin tämän poikkeaman.',                exEn:'I wanted to flag this discrepancy.',                              tip:'"FLAG" = nostaa punainen lippu = vetää huomiota ongelmaan.'},
+  {id:'p13', fi:'palata asiaan',           en:'to circle back to',             cat:'phrases',     diff:2,exFi:'Palataan tähän kysymykseen kokouksen lopussa.',          exEn:"Let's circle back to this question at the end of the meeting.",   tip:'"CIRCLE BACK" = palata samaan pisteeseen.'},
+  {id:'p14', fi:'ydin on',                 en:'the bottom line is',            cat:'phrases',     diff:2,exFi:'Ydin on, että kate ei riitä.',                           exEn:'The bottom line is that the margin is insufficient.',             tip:'"BOTTOM LINE" = viimeinen rivi tuloslaskelmassa = lopputulos.'},
+  {id:'p15', fi:'jäädyttää / laittaa odottamaan',en:'to put on hold',          cat:'phrases',     diff:2,exFi:'Projekti on toistaiseksi jäädytetty.',                  exEn:'The project has been put on hold for now.',                       tip:'Puhelin hold = odota.'},
+  {id:'p16', fi:'pitää kirjaa',            en:'to keep track of',              cat:'phrases',     diff:2,exFi:'On tärkeää pitää kirjaa kaikista kuluista.',             exEn:"It's important to keep track of all expenses.",                   tip:'Track = jälki → seurataan jälkeä.'},
+  {id:'p17', fi:'edetä jonkin kanssa',     en:'to move forward with',          cat:'phrases',     diff:2,exFi:'Voidaan edetä hyväksytyn budjetin kanssa.',              exEn:'We can move forward with the approved budget.',                   tip:'"MOVE FORWARD" = ottaa seuraava askel päätöksen jälkeen.'},
+  {id:'p18', fi:'ryhtyä toimiin',          en:'to take action on',             cat:'phrases',     diff:2,exFi:'Meidän täytyy ryhtyä toimiin tähän poikkeamaan.',        exEn:'We need to take action on this variance.',                        tip:'Otetaan toiminta käyttöön.'},
+  {id:'p19', fi:'päättää / saattaa loppuun',en:'to wrap up',                   cat:'phrases',     diff:2,exFi:'Päätetään tämä kvartaaliraportti tänään.',               exEn:"Let's wrap up this quarterly report today.",                      tip:'"WRAP UP" = kääriä paketti = lopettaa ja tehdä yhteenveto.'},
+  {id:'p20', fi:'kuten sovittiin',         en:'as per our agreement',          cat:'phrases',     diff:2,exFi:'Kuten sovittiin, lasku lähetetään kuun lopussa.',        exEn:'As per our agreement, the invoice will be sent at month-end.',   tip:'"PER" = latinaa: mukaisesti. Vain asiakirjoihin ja virallisiin sähköposteihin.'},
+  {id:'p21', fi:'tiivistettynä',           en:'in a nutshell',                 cat:'phrases',     diff:1,exFi:'Tiivistettynä: liikevaihto kasvoi mutta marginaalit heikkenivät.',exEn:'In a nutshell: revenue grew but margins declined.',           tip:'"IN A NUTSHELL" = pähkinänkuoressa. Sopii kokoukseen ja sähköpostiin.'},
+  {id:'p22', fi:'pohjimmiltaan',           en:'the bottom line is',            cat:'phrases',     diff:1,exFi:'Pohjimmiltaan budjetti ei tule täyttymään.',                exEn:'The bottom line is that the budget will not be met.',             tip:'"BOTTOM LINE" = alin rivi = tärkein johtopäätös.'},
+  {id:'p23', fi:'pidetään sinut ajan tasalla',en:'I will keep you posted',     cat:'phrases',     diff:1,exFi:'Pidetään sinut ajan tasalla tilintarkastuksen etenemisestä.',exEn:'I will keep you posted on the progress of the audit.',         tip:'"KEEP POSTED" = pidä ajan tasalla. Proaktiivinen sävy.'},
+  {id:'p24', fi:'viedään tämä erikseen',   en:'let\'s take this offline',      cat:'phrases',     diff:2,exFi:'Viedään tämä yksityiskohta erikseen — jatketaan kokousta.',  exEn:'Let\'s take this offline — let\'s continue with the meeting.',   tip:'"TAKE OFFLINE" = hoidetaan kahden kesken kokouksen jälkeen.'},
+  {id:'p25', fi:'vastaan tähän myöhemmin', en:'I will get back to you on that',cat:'phrases',     diff:1,exFi:'Vastaan tähän myöhemmin — tarvitsen ensin luvut.',          exEn:'I will get back to you on that — I need the figures first.',     tip:'"GET BACK TO" = palata asiaan myöhemmin.'},
+  {id:'p26', fi:'merkitään seurantaan',    en:'let\'s flag this for follow-up',cat:'phrases',     diff:2,exFi:'Merkitään tämä poikkeama seurantaan seuraavaan kokoukseen.', exEn:'Let\'s flag this variance for follow-up in the next meeting.',   tip:'"FLAG" = liputtaa = nostaa esiin seurattavaksi.'},
+  {id:'p27', fi:'edelleen auki',           en:'still outstanding',             cat:'phrases',     diff:1,exFi:'Kaksi laskua on edelleen maksamatta.',                    exEn:'Two invoices are still outstanding — let\'s send a reminder.',   tip:'"OUTSTANDING" = avoin / maksamatta.'},
+  {id:'p28', fi:'samalla sivulla',         en:'on the same page',              cat:'phrases',     diff:1,exFi:'Varmistetaan, että olemme samalla sivulla ennen esitystä.',  exEn:'Let\'s make sure we are on the same page before the presentation.',tip:'"ON THE SAME PAGE" = sama ymmärrys. Tärkeä ennen kokouksia.'},
+  {id:'p29', fi:'palataan tähän',          en:'shall we revisit this',         cat:'phrases',     diff:1,exFi:'Palataan tähän ensi kuussa, kun Q3-luvut ovat valmistuneet?',exEn:'Shall we revisit this next month once the Q3 figures are available?',tip:'"REVISIT" = tarkastella uudelleen. Neutraali tapa siirtää päätös.'},
+  {id:'p30', fi:'vedetään raja',           en:'draw the line',                 cat:'phrases',     diff:2,exFi:'Vedämme rajan tähän — lisää kustannuksia ei hyväksytä.',     exEn:'We need to draw the line here — no further costs will be approved.',tip:'"DRAW THE LINE" = asettaa raja. Päättäväinen ja selkeä sävy.'},
+  {id:'p31', fi:'näin etenemme',           en:'here is how we will proceed',   cat:'phrases',     diff:1,exFi:'Näin etenemme: ensin täsmäytetään, sitten raportoidaan johdolle.',exEn:'Here is how we will proceed: first we reconcile, then we report to management.',tip:'Selkeä toimintasuunnitelman aloitusfraasi.'},
 ];
 
-/* ── Helpers ─────────────────────────────────────────────────────────────── */
-const todayKey    = () => new Date().toISOString().slice(0,10);
-const daysBetween = (a,b) => Math.floor((new Date(a)-new Date(b))/86400000);
-const addDays     = (d,n) => { const r=new Date(d); r.setDate(r.getDate()+n); return r.toISOString(); };
-const getLevel    = xp => {
-  let cur=LEVELS[0];
-  for(const l of LEVELS) if(xp>=l.min) cur=l;
-  const next=LEVELS[LEVELS.indexOf(cur)+1];
-  return {current:cur,next,progress:next?(xp-cur.min)/(next.min-cur.min):1};
-};
-const defaultState = () => ({
-  xp:0,totalCorrect:0,totalWrong:0,streak:0,lastSessionDate:null,
-  dailyGoal:250,todayXp:0,todayDate:todayKey(),achievements:[],
-  wordProgress:{},customWords:[],totalSessions:0,sessionHistory:[]
-});
-const wordSize = t => t.length > 22 ? 'text-xl' : t.length > 14 ? 'text-2xl' : 'text-3xl';
-const makeOptions = (word,pool) => {
-  const others=pool.filter(w=>w.id!==word.id);
-  const same=others.filter(w=>w.cat===word.cat);
-  const src=same.length>=3?same:[...same,...others.filter(w=>w.cat!==word.cat)];
-  return [...[...src].sort(()=>Math.random()-.5).slice(0,3),word].sort(()=>Math.random()-.5);
-};
+/* ── HELPERS ────────────────────────────────────────────────────────────────── */
+function todayKey() { return new Date().toISOString().slice(0,10); }
+function addDays(d, n) { const dt = new Date(d); dt.setDate(dt.getDate()+n); return dt.toISOString().slice(0,10); }
+function getLevel(xp) { let lv=LEVELS[0]; for(const l of LEVELS){if(xp>=l.min)lv=l;else break;} return lv; }
+function getLevelIdx(xp) { let i=0; for(let j=0;j<LEVELS.length;j++){if(xp>=LEVELS[j].min)i=j;} return i; }
+function getMastered(state) { return VOCAB.filter(w=>state.words[w.id]&&state.words[w.id].box>=3).length; }
+function makeOptions(word, dir) {
+  const key = dir==='en2fi'?'fi':'en';
+  const correct = word[key];
+  const pool = VOCAB.filter(w=>w.id!==word.id).map(w=>w[key]).sort(()=>Math.random()-0.5).slice(0,3);
+  return [correct,...pool].sort(()=>Math.random()-0.5);
+}
+function defaultWord() { return {box:0,nextReview:todayKey(),correct:0,wrong:0,seen:false}; }
+function defaultState() {
+  const words={};
+  VOCAB.forEach(w=>{words[w.id]=defaultWord();});
+  return {words,xp:0,sessions:0,streak:0,lastSession:null,achievements:[],totalCorrect:0,totalWrong:0,maxCombo:0};
+}
+function loadState() {
+  try {
+    const raw=localStorage.getItem(SK);
+    if(!raw) return defaultState();
+    const s=JSON.parse(raw);
+    if(!s.words) s.words={};
+    VOCAB.forEach(w=>{if(!s.words[w.id])s.words[w.id]=defaultWord();});
+    if(!s.achievements) s.achievements=[];
+    if(s.maxCombo==null) s.maxCombo=0;
+    if(s.totalCorrect==null) s.totalCorrect=0;
+    if(s.totalWrong==null) s.totalWrong=0;
+    return s;
+  } catch(e) { return defaultState(); }
+}
+function saveState(s) { try{localStorage.setItem(SK,JSON.stringify(s));}catch(e){} }
+function checkAchievements(s) {
+  const earned=new Set(s.achievements||[]);
+  const mastered=getMastered(s);
+  const newA=[];
+  const chk=(id,cond)=>{if(cond&&!earned.has(id))newA.push(id);};
+  chk('first_session',s.sessions>=1);
+  chk('sessions_10',s.sessions>=10);
+  chk('sessions_50',s.sessions>=50);
+  chk('sessions_100',s.sessions>=100);
+  chk('streak_3',s.streak>=3);
+  chk('streak_7',s.streak>=7);
+  chk('streak_14',s.streak>=14);
+  chk('streak_30',s.streak>=30);
+  chk('streak_60',s.streak>=60);
+  chk('words_25',mastered>=25);
+  chk('words_50',mastered>=50);
+  chk('words_75',mastered>=75);
+  chk('words_all',mastered>=VOCAB.length);
+  chk('combo_10',s.maxCombo>=10);
+  chk('combo_20',s.maxCombo>=20);
+  chk('ifrs_master',VOCAB.filter(w=>w.cat==='ifrs').every(w=>s.words[w.id]?.box>=3));
+  chk('controlling_master',VOCAB.filter(w=>w.cat==='controlling').every(w=>s.words[w.id]?.box>=3));
+  chk('balance_master',VOCAB.filter(w=>w.cat==='balance').every(w=>s.words[w.id]?.box>=3));
+  chk('income_master',VOCAB.filter(w=>w.cat==='income').every(w=>s.words[w.id]?.box>=3));
+  chk('phrases_master',VOCAB.filter(w=>w.cat==='phrases').every(w=>s.words[w.id]?.box>=3));
+  return newA;
+}
 
-/* ── localStorage ────────────────────────────────────────────────────────── */
-const loadState = () => {
-  try { const d=localStorage.getItem(SK); if(d) return {...defaultState(),...JSON.parse(d)}; }
-  catch(_){}
-  return defaultState();
-};
-const saveState = s => { try { localStorage.setItem(SK,JSON.stringify(s)); } catch(_){} };
-
-/* ── Pure UI components ──────────────────────────────────────────────────── */
-const Pill = ({color,children}) => (
-  <span className={`text-xs px-3 py-1 rounded-full bg-gradient-to-r ${color} text-white font-medium`}>{children}</span>
-);
-const TopBar = ({title,back}) => (
-  <div className="sticky top-0 z-30 bg-slate-950/90 backdrop-blur-lg border-b border-slate-800/70 px-4 py-3 flex items-center gap-3">
-    {back&&<button onClick={back} className="p-1.5 -ml-1.5 rounded-lg hover:bg-slate-800 active:bg-slate-700"><ArrowL className="w-5 h-5 text-slate-300"/></button>}
-    <h1 className="text-base font-semibold text-slate-100">{title}</h1>
-  </div>
-);
-const KCard = ({icon:Icon,label,value,sub}) => (
-  <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
-    <Icon className="w-4 h-4 text-slate-500 mb-2"/>
-    <div className="text-xs text-slate-400">{label}</div>
-    <div className="flex items-baseline gap-1.5 mt-0.5">
-      <span className="text-xl font-semibold text-slate-100">{value}</span>
-      {sub&&<span className="text-xs text-slate-500">{sub}</span>}
-    </div>
-  </div>
-);
-const CatPill = ({active,onClick,children}) => (
-  <button onClick={onClick} className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition ${active?'bg-violet-500/20 border border-violet-500/40 text-violet-300':'bg-slate-900 border border-slate-800 text-slate-400'}`}>{children}</button>
-);
-const Dots = ({box}) => (
-  <div className="flex gap-0.5 shrink-0">{[0,1,2,3,4].map(i=><div key={i} className={`w-1.5 h-1.5 rounded-full ${i<box?'bg-emerald-500':'bg-slate-700'}`}/>)}</div>
-);
-const Field = ({label,value,onChange,area}) => (
-  <div>
-    <label className="text-xs text-slate-400 block mb-1">{label}</label>
-    {area?<textarea value={value} onChange={e=>onChange(e.target.value)} rows={2} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100 resize-none"/>
-         :<input type="text" value={value} onChange={e=>onChange(e.target.value)} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100"/>}
-  </div>
-);
-const Nav = ({view,setView}) => (
-  <div className="fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-lg border-t border-slate-800 nav-safe">
-    <div className="grid grid-cols-5 max-w-md mx-auto">
-      {[{id:'home',icon:HomeIco,label:'Etusivu'},{id:'library',icon:LibraryIco,label:'Sanasto'},
-        {id:'stats',icon:BarChart,label:'Edistyminen'},{id:'guide',icon:LightbulbIco,label:'Ohjeet'},{id:'settings',icon:SettingsIco,label:'Asetukset'}
-      ].map(t=>(
-        <button key={t.id} onClick={()=>setView(t.id)} className={`py-3 flex flex-col items-center gap-1 transition ${view===t.id?'text-violet-400':'text-slate-500 hover:text-slate-300'}`}>
-          <t.icon className="w-5 h-5"/><span className="text-[10px] font-medium">{t.label}</span>
-        </button>
-      ))}
-    </div>
-  </div>
-);
-
-/* ── Flashcard ───────────────────────────────────────────────────────────── */
-const Flashcard = ({word,flipped,answered,idx,qLen,onFlip,onAnswer,onNext}) => {
-  const cat=CATEGORIES[word.cat];
+/* ── UI PERUSKOMPONENTIT ────────────────────────────────────────────────────── */
+function Shell({children}) {
   return (
-    <>
-      <div className="mb-4 flex justify-center"><Pill color={cat.color}>{cat.short}</Pill></div>
-      <button onClick={onFlip} className="w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 min-h-[260px] flex flex-col items-center justify-center text-center active:scale-[0.99] transition shadow-xl">
-        {!flipped?(<>
-          <div className="text-xs uppercase tracking-wider text-slate-500 mb-3">Suomi</div>
-          <div className={`${wordSize(word.fi)} font-semibold text-slate-100 mb-4 leading-tight`}>{word.fi}</div>
-          <div className="text-sm text-slate-500 italic">{word.exFi}</div>
-          <div className="mt-6 text-xs text-slate-600">Napauta nähdäksesi vastaus</div>
-        </>):(<>
-          <div className="text-xs uppercase tracking-wider text-violet-400 mb-3">English</div>
-          <div className="text-3xl font-semibold text-slate-100 mb-3">{word.en}</div>
-          <div className="text-sm text-slate-400 italic mb-4">{word.exEn}</div>
-          <div className="pt-4 border-t border-slate-800 w-full">
-            <div className="flex items-start gap-2 text-left">
-              <LightbulbIco className="w-4 h-4 text-amber-400 shrink-0 mt-0.5"/>
-              <div className="text-xs text-slate-300 leading-relaxed">{word.tip}</div>
-            </div>
-          </div>
-        </>)}
-      </button>
-      {flipped&&!answered&&(
-        <div className="grid grid-cols-2 gap-3 mt-5">
-          <button onClick={()=>onAnswer(false)} className="py-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 font-medium active:scale-[0.97] transition">En osannut</button>
-          <button onClick={()=>onAnswer(true)}  className="py-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-medium active:scale-[0.97] transition">Osasin</button>
-        </div>
-      )}
-      {answered&&<button onClick={onNext} className="mt-5 w-full py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold active:scale-[0.97] transition">{idx+1>=qLen?'Päätä sessio':'Seuraava'}</button>}
-    </>
+    <div style={{position:'fixed',inset:0,background:C.bg,display:'flex',flexDirection:'column',fontFamily:FU,overflow:'hidden'}}>
+      {children}
+    </div>
   );
-};
+}
 
-/* ── Quiz ────────────────────────────────────────────────────────────────── */
-const Quiz = ({word,options,selAns,answered,idx,qLen,onSelect,onNext}) => {
-  const cat=CATEGORIES[word.cat];
+const holeS = {width:11,height:11,borderRadius:'50%',background:'#0d0a07',boxShadow:'inset 0 1px 3px rgba(0,0,0,0.7)',flexShrink:0};
+
+function IndexCard({cat,children,style,onClick}) {
+  const col = catColor(cat||'basics');
   return (
-    <>
-      <div className="mb-4 flex justify-center"><Pill color={cat.color}>{cat.short}</Pill></div>
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 mb-5 text-center">
-        <div className="text-xs uppercase tracking-wider text-slate-500 mb-3">Mitä on englanniksi?</div>
-        <div className={`${wordSize(word.fi)} font-semibold text-slate-100 leading-tight`}>{word.fi}</div>
-        {word.cat==='phrases'&&<div className="text-xs text-slate-500 italic mt-2">"{word.exFi}"</div>}
+    <div onClick={onClick} style={{
+      ...paperBg,...paperGrain,
+      borderRadius:8,overflow:'hidden',position:'relative',
+      boxShadow:'0 4px 20px rgba(0,0,0,0.5),0 2px 6px rgba(0,0,0,0.3)',
+      cursor:onClick?'pointer':'default',
+      ...style,
+    }}>
+      <div style={{height:6,background:col,width:'100%'}} />
+      <div style={{display:'flex',gap:0}}>
+        <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:8,padding:'12px 6px',borderRight:`1px solid ${C.paperEdge}`}}>
+          <div style={holeS}/><div style={holeS}/>
+        </div>
+        <div style={{flex:1,padding:'12px 14px 14px'}}>{children}</div>
       </div>
-      <div className="space-y-2.5">
-        {options.map(opt=>{
-          const isSel=selAns===opt.id,isRight=opt.id===word.id;
-          return (
-            <button key={opt.id} onClick={()=>!answered&&onSelect(opt)} disabled={answered}
-              className={`w-full p-4 rounded-xl border text-left transition ${!answered?'bg-slate-900 border-slate-800 hover:border-slate-700 active:scale-[0.99]':isRight?'bg-emerald-500/10 border-emerald-500/40':isSel?'bg-rose-500/10 border-rose-500/40':'bg-slate-900 border-slate-800 opacity-50'}`}>
-              <div className="flex items-center justify-between">
-                <span className={`text-sm ${answered&&isRight?'text-emerald-300':answered&&isSel?'text-rose-300':'text-slate-200'}`}>{opt.en}</span>
-                {answered&&isRight&&<CheckIco className="w-4 h-4 text-emerald-400"/>}
-                {answered&&isSel&&!isRight&&<XIco className="w-4 h-4 text-rose-400"/>}
+    </div>
+  );
+}
+
+function LevelBadge({xp,size=48}) {
+  const idx=Math.min(getLevelIdx(xp||0),TIER_GLYPHS.length-1);
+  return (
+    <div style={{width:size,height:size,border:`2px solid ${C.accentDark}`,borderRadius:6,background:C.bgGlow,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+      <svg viewBox="0 0 40 40" width={size*0.68} height={size*0.68}>{TIER_GLYPHS[idx](C.accent)}</svg>
+    </div>
+  );
+}
+
+function BottomNav({view,setView}) {
+  const tabs=[
+    {id:'home',label:'Etusivu',path:'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10'},
+    {id:'library',label:'Sanasto',path:'m16 6 4 14 M12 6v14 M8 8v12 M4 4v16'},
+    {id:'stats',label:'Edistyminen',path:'M3 3v18h18 M18 17V9 M13 17V5 M8 17v-3'},
+    {id:'settings',label:'Asetukset',path:'M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z M9 12a3 3 0 1 0 6 0 3 3 0 0 0-6 0'},
+  ];
+  return (
+    <div style={{display:'flex',borderTop:`1px solid #1a1410`,background:'#0d0a07',paddingBottom:'env(safe-area-inset-bottom)'}}>
+      {tabs.map(t=>{
+        const active=view===t.id;
+        return (
+          <button key={t.id} onClick={()=>setView(t.id)} style={{flex:1,padding:'10px 0 8px',background:'none',border:'none',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:3}}>
+            <svg viewBox="0 0 24 24" width={22} height={22} fill="none" stroke={active?C.accent:C.inkMute} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              {t.path.split(' M').map((p,i)=><path key={i} d={i===0?p:'M'+p}/>)}
+            </svg>
+            <span style={{fontSize:10,fontFamily:FU,fontWeight:500,color:active?C.accent:C.inkMute}}>{t.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ── PRACTICE ───────────────────────────────────────────────────────────────── */
+function Practice({mode,words,onFinish}) {
+  const [idx,setIdx]=useState(0);
+  const [flipped,setFlipped]=useState(false);
+  const [selected,setSelected]=useState(null);
+  const [options,setOptions]=useState([]);
+  const [results,setResults]=useState([]);
+  const [dir]=useState(()=>Math.random()<0.5?'fi2en':'en2fi');
+  const word=words[idx];
+
+  useEffect(()=>{
+    if(word&&mode==='quiz') setOptions(makeOptions(word,dir));
+    setFlipped(false); setSelected(null);
+  },[idx]);
+
+  function answer(correct) {
+    const r=[...results,{id:word.id,correct}];
+    setResults(r);
+    setTimeout(()=>setIdx(i=>i+1),correct?400:700);
+  }
+
+  if(!word) {
+    const ok=results.filter(r=>r.correct).length;
+    const pct=results.length>0?Math.round((ok/results.length)*100):0;
+    return (
+      <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:20,padding:24}}>
+        <div style={{fontFamily:FM,fontSize:56,color:pct>=80?'#4ade80':pct>=60?C.accent:'#f87171'}}>{pct}%</div>
+        <div style={{fontFamily:FU,fontSize:15,color:C.inkMute}}>{ok} / {results.length} oikein</div>
+        <div style={{display:'flex',flexDirection:'column',gap:8,width:'100%',maxWidth:320}}>
+          {results.map((r,i)=>{
+            const w=VOCAB.find(v=>v.id===r.id);
+            return w?(
+              <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',background:C.bgGlow,borderRadius:8,borderLeft:`3px solid ${r.correct?'#4ade80':'#f87171'}`}}>
+                <span style={{fontFamily:FS,fontSize:15,color:C.paper,flex:1}}>{w.en}</span>
+                <span style={{fontFamily:FU,fontSize:11,color:C.inkMute}}>{w.fi}</span>
               </div>
+            ):null;
+          })}
+        </div>
+        <button onClick={()=>onFinish(results)} style={{padding:'14px 48px',border:'none',borderRadius:10,cursor:'pointer',background:`linear-gradient(135deg,${C.accentDark},${C.accent})`,color:'#fff',fontFamily:FS,fontSize:18,fontWeight:600,boxShadow:`0 4px 16px rgba(201,122,60,0.3)`}}>Valmis</button>
+      </div>
+    );
+  }
+
+  const prompt=dir==='fi2en'?word.fi:word.en;
+  const answer2=dir==='fi2en'?word.en:word.fi;
+  const correctOpt=dir==='fi2en'?word.en:word.fi;
+  const prog=idx/words.length;
+
+  if(mode==='flash') {
+    return (
+      <div style={{flex:1,overflow:'auto',padding:16}}>
+        <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:16}}>
+          <span style={{fontFamily:FM,fontSize:12,color:C.inkMute}}>{idx+1}/{words.length}</span>
+          <div style={{flex:1,height:3,background:C.bgGlow,borderRadius:2}}>
+            <div style={{height:'100%',width:`${prog*100}%`,background:C.accent,borderRadius:2,transition:'width 0.3s'}}/>
+          </div>
+        </div>
+        <IndexCard cat={word.cat} style={{marginBottom:12}} onClick={()=>setFlipped(f=>!f)}>
+          <div style={{minHeight:110,display:'flex',flexDirection:'column',justifyContent:'center',gap:8}}>
+            <div style={{fontSize:10,fontFamily:FM,color:catColor(word.cat),textTransform:'uppercase',letterSpacing:'0.1em'}}>{CATS[word.cat]?.short} · {'★'.repeat(word.diff)}</div>
+            <div style={{fontFamily:FS,fontSize:28,color:C.ink,fontWeight:600,lineHeight:1.2}}>{prompt}</div>
+            {!flipped&&<div style={{fontFamily:FU,fontSize:11,color:C.inkFaint}}>Napauta kääntääksesi</div>}
+            {flipped&&<>
+              <div style={{fontFamily:FS,fontSize:22,color:C.inkLight,fontStyle:'italic',borderTop:`1px solid ${C.paperEdge}`,paddingTop:8}}>{answer2}</div>
+              {word.exEn&&<div style={{fontFamily:FU,fontSize:11,color:C.inkMute}}>{word.exEn}</div>}
+              {word.tip&&<div style={{fontFamily:FU,fontSize:10,color:C.inkFaint,marginTop:2}}>{word.tip}</div>}
+            </>}
+          </div>
+        </IndexCard>
+        {flipped&&(
+          <div style={{display:'flex',gap:10}}>
+            <button onClick={()=>answer(false)} style={{flex:1,padding:'14px 0',border:'none',borderRadius:8,cursor:'pointer',background:'#2a1010',color:'#f87171',fontFamily:FU,fontSize:14,fontWeight:600}}>✗ En tiennyt</button>
+            <button onClick={()=>answer(true)} style={{flex:1,padding:'14px 0',border:'none',borderRadius:8,cursor:'pointer',background:'#102a10',color:'#4ade80',fontFamily:FU,fontSize:14,fontWeight:600}}>✓ Tiesin</button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div style={{flex:1,overflow:'auto',padding:16}}>
+      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:16}}>
+        <span style={{fontFamily:FM,fontSize:12,color:C.inkMute}}>{idx+1}/{words.length}</span>
+        <div style={{flex:1,height:3,background:C.bgGlow,borderRadius:2}}>
+          <div style={{height:'100%',width:`${prog*100}%`,background:C.accent,borderRadius:2,transition:'width 0.3s'}}/>
+        </div>
+      </div>
+      <IndexCard cat={word.cat} style={{marginBottom:12}}>
+        <div style={{minHeight:80,display:'flex',flexDirection:'column',justifyContent:'center',gap:6}}>
+          <div style={{fontSize:10,fontFamily:FM,color:catColor(word.cat),textTransform:'uppercase',letterSpacing:'0.1em'}}>{CATS[word.cat]?.short} · {'★'.repeat(word.diff)}</div>
+          <div style={{fontFamily:FS,fontSize:28,color:C.ink,fontWeight:600}}>{prompt}</div>
+          <div style={{fontFamily:FU,fontSize:11,color:C.inkMute}}>{dir==='fi2en'?'Valitse englanninkielinen vastine':'Valitse suomenkielinen vastine'}</div>
+        </div>
+      </IndexCard>
+      <div style={{display:'flex',flexDirection:'column',gap:8}}>
+        {options.map((opt,i)=>{
+          const isCorrect=opt===correctOpt, isSel=selected===opt;
+          let bg=C.bgGlow,col2=C.paper,border=`1px solid #2a201a`;
+          if(selected){
+            if(isCorrect){bg='#102a10';col2='#4ade80';border='1px solid #4ade80';}
+            else if(isSel){bg='#2a1010';col2='#f87171';border='1px solid #f87171';}
+          }
+          return (
+            <button key={i} onClick={()=>{
+              if(selected) return;
+              setSelected(opt);
+              setTimeout(()=>answer(opt===correctOpt),700);
+            }} style={{padding:'13px 14px',border,borderRadius:8,cursor:selected?'default':'pointer',background:bg,color:col2,fontFamily:FU,fontSize:14,textAlign:'left',transition:'all 0.2s'}}>
+              {opt}
             </button>
           );
         })}
       </div>
-      {answered&&(<>
-        <div className="mt-5 p-4 rounded-xl bg-slate-900 border border-slate-800">
-          <div className="flex items-start gap-2">
-            <LightbulbIco className="w-4 h-4 text-amber-400 shrink-0 mt-0.5"/>
-            <div><div className="text-xs text-slate-400 mb-1">"{word.exEn}"</div><div className="text-xs text-slate-300 leading-relaxed">{word.tip}</div></div>
-          </div>
+      {selected&&word.tip&&(
+        <div style={{marginTop:12,padding:'10px 12px',background:C.bgGlow,borderRadius:8,borderLeft:`3px solid ${C.accent}`}}>
+          <div style={{fontFamily:FU,fontSize:11,color:C.inkFaint}}>{word.tip}</div>
         </div>
-        <button onClick={onNext} className="mt-4 w-full py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold active:scale-[0.97] transition">{idx+1>=qLen?'Päätä sessio':'Seuraava'}</button>
-      </>)}
-    </>
+      )}
+    </div>
   );
-};
+}
 
-/* ── App ─────────────────────────────────────────────────────────────────── */
-function App() {
-  const [st,  setSt]  = useState(()=>{
-    const s=loadState(); const today=todayKey();
-    if(s.todayDate!==today){
-      if(s.lastSessionDate&&daysBetween(today,s.lastSessionDate)>1) s.streak=0;
-      s.todayDate=today; s.todayXp=0;
-    }
-    return s;
-  });
-  const [view, setView]= useState('home');
-  const [sess, setSess]= useState(null);
-  const [cat,  setCat] = useState('all');
-  const [addW, setAddW]= useState(false);
-  const [nw,   setNw]  = useState({fi:'',en:'',cat:'basics',exFi:'',exEn:'',tip:''});
-  const [exp,  setExp] = useState(null);
-  const [pop,  setPop] = useState(null);
-  const [openTip,setOpenTip]=useState(null);
-  const [detailWord,setDetailWord]=useState(null);
+/* ── HOME VIEW ──────────────────────────────────────────────────────────────── */
+function HomeView({state,onPractice}) {
+  const [showModes,setShowModes]=useState(false);
+  const [selCat,setSelCat]=useState('all');
+  const xp=state.xp||0;
+  const lv=getLevel(xp), lvIdx=getLevelIdx(xp), next=LEVELS[lvIdx+1];
+  const xpIn=xp-lv.min, xpNeed=next?next.min-lv.min:1;
+  const pct=Math.min(100,Math.round((xpIn/xpNeed)*100));
+  const mastered=getMastered(state);
+  const today=todayKey();
+  const due=VOCAB.filter(w=>!state.words[w.id]||state.words[w.id].nextReview<=today).length;
+  const tot=(state.totalCorrect||0)+(state.totalWrong||0);
+  const acc=tot>0?Math.round(((state.totalCorrect||0)/tot)*100):0;
 
-  useEffect(()=>{ saveState(st); },[st]);
-
-  const allWords=[...VOCAB,...st.customWords];
-  const lv=getLevel(st.xp);
-
-  const startSession=mode=>{
-    const due=allWords.filter(w=>{const p=st.wordProgress[w.id];return p?.nextReview&&new Date(p.nextReview)<=new Date();});
-    const lvIdx=LEVELS.indexOf(lv.current);
-    const tDiff=Math.min(3,Math.max(1,Math.floor(lvIdx/2)+1));
-    const fresh=allWords.filter(w=>!st.wordProgress[w.id]).sort((a,b)=>Math.abs(a.diff-tDiff)-Math.abs(b.diff-tDiff));
-    let q=[...due]; let i=0;
-    while(q.length<15&&i<fresh.length) q.push(fresh[i++]);
-    if(!q.length) q=[...allWords].sort(()=>Math.random()-.5).slice(0,15);
-    q.sort(()=>Math.random()-.5);
-    const opts=mode==='quiz'?q.map(w=>makeOptions(w,allWords)):q.map(()=>[]);
-    setSess({mode,queue:q,opts,idx:0,correct:0,wrong:0,combo:0,maxCombo:0,xp:0,flipped:false,answered:false,selAns:null,start:Date.now(),done:false,unlocked:[]});
-    setView('practice');
-  };
-
-  const answer=correct=>{
-    if(!sess||sess.answered) return;
-    const word=sess.queue[sess.idx];
-    const prev=st.wordProgress[word.id]||{box:0,correct:0,wrong:0};
-    const box=correct?Math.min(5,prev.box+1):Math.max(0,prev.box-1);
-    const xpGain=correct?5+Math.min(15,sess.combo)+(word.diff-1)*2:1;
-    setSt(s=>({...s,totalCorrect:s.totalCorrect+(correct?1:0),totalWrong:s.totalWrong+(correct?0:1),
-      wordProgress:{...s.wordProgress,[word.id]:{box,nextReview:addDays(new Date(),BOX_INTERVALS[box]),correct:prev.correct+(correct?1:0),wrong:prev.wrong+(correct?0:1),lastSeen:new Date().toISOString()}}}));
-    setSess(s=>({...s,answered:true,correct:s.correct+(correct?1:0),wrong:s.wrong+(correct?0:1),
-      combo:correct?s.combo+1:0,maxCombo:correct?Math.max(s.maxCombo,s.combo+1):s.maxCombo,xp:s.xp+xpGain}));
-  };
-
-  const selectOpt=opt=>{
-    if(!sess||sess.answered) return;
-    const correct=opt.id===sess.queue[sess.idx].id;
-    setSess(s=>({...s,selAns:opt.id}));
-    answer(correct);
-  };
-
-  const next=()=>{
-    if(!sess) return;
-    if(sess.idx+1>=sess.queue.length){finish();return;}
-    setSess(s=>({...s,idx:s.idx+1,flipped:false,answered:false,selAns:null}));
-  };
-
-  const finish=()=>{
-    if(!sess) return;
-    const today=todayKey(); const isNew=st.lastSessionDate!==today;
-    let streak=st.streak;
-    if(isNew) streak=st.lastSessionDate&&daysBetween(today,st.lastSessionDate)===1?st.streak+1:1;
-    const ach=[...st.achievements];
-    const u=id=>{if(!ach.includes(id))ach.push(id);};
-    if(!st.totalSessions)u('first_session');
-    if(st.totalSessions>=9)u('sessions_10'); if(st.totalSessions>=49)u('sessions_50'); if(st.totalSessions>=99)u('sessions_100');
-    if(streak>=3)u('streak_3'); if(streak>=7)u('streak_7'); if(streak>=14)u('streak_14'); if(streak>=30)u('streak_30'); if(streak>=60)u('streak_60');
-    if(sess.maxCombo>=10)u('combo_10'); if(sess.maxCombo>=20)u('combo_20');
-    if(sess.queue.length>=20&&sess.wrong===0)u('perfect');
-    setSt(s=>{
-      const wp=s.wordProgress; const m=Object.values(wp).filter(p=>p.box>=3).length;
-      if(m>=25)u('words_25'); if(m>=50)u('words_50'); if(m>=75)u('words_75');
-      if(VOCAB.every(w=>(wp[w.id]?.box||0)>=3))u('words_all');
-      if(allWords.filter(w=>w.cat==='ifrs').every(w=>(wp[w.id]?.box||0)>=4))u('ifrs_master');
-      if(allWords.filter(w=>w.cat==='controlling').every(w=>(wp[w.id]?.box||0)>=3))u('controlling_master');
-      if(allWords.filter(w=>w.cat==='balance').every(w=>(wp[w.id]?.box||0)>=3))u('balance_master');
-      if(allWords.filter(w=>w.cat==='income').every(w=>(wp[w.id]?.box||0)>=3))u('income_master');
-      if(allWords.filter(w=>w.cat==='phrases').every(w=>(wp[w.id]?.box||0)>=3))u('phrases_master');
-      return {...s,xp:s.xp+sess.xp,todayXp:s.todayXp+sess.xp,lastSessionDate:today,streak,achievements:ach,
-        totalSessions:s.totalSessions+1,
-        sessionHistory:[{date:today,mode:sess.mode,correct:sess.correct,wrong:sess.wrong,xp:sess.xp,words:sess.queue.length,maxCombo:sess.maxCombo,dur:Math.round((Date.now()-sess.start)/1000)},...s.sessionHistory.slice(0,49)]};
-    });
-    setSess(s=>({...s,done:true,unlocked:ach.filter(a=>!st.achievements.includes(a)),newStreak:streak}));
-  };
-
-  const buildExport=()=>{
-    const ws=Object.entries(st.wordProgress).map(([id,p])=>{const w=allWords.find(x=>x.id===id);return w?{fi:w.fi,en:w.en,cat:w.cat,box:p.box,correct:p.correct,wrong:p.wrong,acc:p.correct+p.wrong>0?Math.round(100*p.correct/(p.correct+p.wrong)):null}:null;}).filter(Boolean);
-    const cs={}; Object.keys(CATEGORIES).forEach(k=>{const cws=ws.filter(w=>w.cat===k);cs[k]={studied:cws.length,mastered:cws.filter(w=>w.box>=3).length,avgAcc:cws.length?Math.round(cws.reduce((s,w)=>s+(w.acc||0),0)/cws.length):null};});
-    setExp(JSON.stringify({exportDate:new Date().toISOString(),xp:st.xp,level:lv.current.title,streak:st.streak,sessions:st.totalSessions,overallAccuracy:st.totalCorrect+st.totalWrong>0?Math.round(100*st.totalCorrect/(st.totalCorrect+st.totalWrong)):null,achievements:st.achievements,categories:cs,weakWords:ws.filter(w=>w.wrong>=2&&w.box<=2).slice(0,10),strongWords:ws.filter(w=>w.box>=4).map(w=>`${w.fi}/${w.en}`),recent:st.sessionHistory.slice(0,10)},null,2));
-  };
-
-  const W='max-w-md mx-auto min-h-screen';
-
-  /* HOME */
-  if(view==='home'){
-    const learned=Object.values(st.wordProgress).filter(p=>p.box>=3).length;
-    const acc=st.totalCorrect+st.totalWrong>0?Math.round(100*st.totalCorrect/(st.totalCorrect+st.totalWrong)):0;
-    const lastA=ACHIEVEMENTS.find(a=>a.id===st.achievements[st.achievements.length-1]);
-    return (
-      <div className={`${W} pb-28`}>
-        <div className="px-5 pt-6 pb-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="text-4xl">{lv.current.icon}</div>
-              <div><div className="text-xs text-slate-400 uppercase tracking-wider">Tasosi</div><div className="text-lg font-semibold text-slate-100">{lv.current.title}</div></div>
-            </div>
-            <div className="flex items-center gap-1.5 bg-orange-500/10 border border-orange-500/30 px-3 py-1.5 rounded-full">
-              <Flame className={`w-4 h-4 ${st.streak>0?'text-orange-400':'text-slate-500'}`}/><span className="text-sm font-semibold text-orange-400">{st.streak}</span>
-            </div>
-          </div>
-          <div className="mb-1 flex justify-between text-xs"><span className="text-slate-400">{st.xp} XP</span>{lv.next&&<span className="text-slate-500">{lv.next.min-st.xp} XP → {lv.next.title}</span>}</div>
-          <div className="h-2 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-gradient-to-r from-violet-500 to-fuchsia-500 transition-all" style={{width:`${lv.progress*100}%`}}/></div>
-        </div>
-        <div className="mx-5 mb-5 p-5 rounded-2xl bg-slate-900 border border-slate-800">
-          <div className="flex items-center justify-between mb-3"><div className="flex items-center gap-2"><TargetIco className="w-4 h-4 text-violet-400"/><span className="text-sm font-medium text-slate-200">Päivän tavoite</span></div><span className="text-sm text-slate-400">{st.todayXp}/{st.dailyGoal} XP</span></div>
-          <div className="h-2.5 bg-slate-800 rounded-full overflow-hidden mb-2"><div className="h-full bg-gradient-to-r from-emerald-500 to-teal-500" style={{width:`${Math.min(1,st.todayXp/st.dailyGoal)*100}%`}}/></div>
-          {st.todayXp>=st.dailyGoal?<div className="text-xs text-emerald-400 flex items-center gap-1.5"><CheckIco className="w-3.5 h-3.5"/>Tavoite saavutettu!</div>:<div className="text-xs text-slate-500">~15 min harjoittelua riittää</div>}
-        </div>
-        <div className="px-5 mb-5">
-          <button onClick={()=>setView('modes')} className="w-full p-5 rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 active:scale-[0.98] transition shadow-lg shadow-violet-500/20">
-            <div className="flex items-center justify-between"><div><div className="text-xs uppercase tracking-wider text-violet-100/80 mb-0.5">Aloita harjoitus</div><div className="text-lg font-semibold text-white">Aloita päivän harjoitus</div></div><ChevronR className="w-6 h-6 text-white"/></div>
-          </button>
-        </div>
-        <div className="px-5 grid grid-cols-2 gap-3 mb-5">
-          <KCard icon={BookOpen} label="Sanoja opittu" value={learned} sub={`/ ${allWords.length}`}/>
-          <KCard icon={TrendUp} label="Tarkkuus" value={`${acc}%`} sub="kaikki sessiot"/>
-          <KCard icon={SparklesIco} label="Sessiot" value={st.totalSessions} sub="yhteensä"/>
-          <KCard icon={AwardIco} label="Saavutukset" value={st.achievements.length} sub={`/ ${ACHIEVEMENTS.length}`}/>
-        </div>
-        {lastA&&<div className="px-5 mb-5"><div className="text-xs uppercase tracking-wider text-slate-500 mb-2 px-1">Viimeisin saavutus</div><div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-3"><div className="text-3xl">{lastA.icon}</div><div><div className="font-semibold text-sm text-slate-100">{lastA.title}</div><div className="text-xs text-slate-400">{lastA.desc}</div></div></div></div>}
-        <Nav view={view} setView={setView}/>
-      </div>
-    );
-  }
-
-  /* MODES */
-  if(view==='modes') return (
-    <div className={W}>
-      <TopBar title="Valitse harjoitustyyppi" back={()=>setView('home')}/>
-      <div className="p-5 space-y-3">
-        {[{icon:BrainIco,title:'Muistikortit',desc:'Katso sana, mieti vastaus, käännä kortti',color:'from-violet-500 to-fuchsia-500',mode:'flashcard'},
-          {icon:TargetIco,title:'Monivalintatesti',desc:'Valitse oikea käännös neljästä vaihtoehdosta',color:'from-emerald-500 to-teal-500',mode:'quiz'}
-        ].map(({icon:Icon,title,desc,color,mode})=>(
-          <button key={mode} onClick={()=>startSession(mode)} className="w-full p-5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 active:scale-[0.98] transition text-left">
-            <div className="flex items-start gap-4">
-              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center shrink-0`}><Icon className="w-6 h-6 text-white"/></div>
-              <div className="flex-1"><div className="font-semibold text-slate-100 mb-0.5">{title}</div><div className="text-sm text-slate-400">{desc}</div></div>
-              <ChevronR className="w-5 h-5 text-slate-600 mt-3"/>
-            </div>
+  if(showModes) return (
+    <div style={{padding:16}}>
+      <button onClick={()=>setShowModes(false)} style={{background:'none',border:'none',color:C.inkMute,cursor:'pointer',fontFamily:FU,fontSize:13,marginBottom:16,padding:0}}>← Takaisin</button>
+      <div style={{fontFamily:FS,fontSize:26,color:C.paper,marginBottom:16}}>Valitse harjoitus</div>
+      <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:8}}>Kategoria</div>
+      <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:20}}>
+        {['all',...Object.keys(CATS)].map(k=>(
+          <button key={k} onClick={()=>setSelCat(k)} style={{padding:'6px 12px',borderRadius:20,border:'none',cursor:'pointer',background:selCat===k?C.accent:C.bgGlow,color:selCat===k?'#fff':C.inkMute,fontFamily:FU,fontSize:12,fontWeight:500}}>
+            {k==='all'?'Kaikki':CATS[k].fi}
           </button>
         ))}
-        <div className="text-xs text-slate-500 px-1 pt-2">SRS valitsee sanat automaattisesti taitojesi mukaan.</div>
+      </div>
+      <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:8}}>Harjoitusmuoto</div>
+      <div style={{display:'flex',flexDirection:'column',gap:10}}>
+        {[{id:'flash',title:'Korttipakka',desc:'Kääntele kortteja omaan tahtiin'},{id:'quiz',title:'Monivalinta',desc:'Valitse oikea vastaus neljästä'}].map(m=>(
+          <button key={m.id} onClick={()=>{setShowModes(false);onPractice(m.id,selCat);}} style={{padding:'16px',border:`1px solid #2a201a`,borderRadius:10,cursor:'pointer',background:C.bgGlow,textAlign:'left'}}>
+            <div style={{fontFamily:FS,fontSize:20,color:C.paper,marginBottom:4}}>{m.title}</div>
+            <div style={{fontFamily:FU,fontSize:12,color:C.inkMute}}>{m.desc}</div>
+          </button>
+        ))}
       </div>
     </div>
   );
 
-  /* PRACTICE */
-  if(view==='practice'&&sess){
-    if(sess.done){
-      const acc2=sess.correct+sess.wrong>0?Math.round(100*sess.correct/(sess.correct+sess.wrong)):0;
-      const wp=st.wordProgress;
-      const weakInSess=sess.queue.filter(w=>(wp[w.id]?.box??0)<=1).sort((a,b)=>(wp[b.id]?.wrong||0)-(wp[a.id]?.wrong||0));
-      const newInSess=sess.queue.filter(w=>!wp[w.id]||(wp[w.id].correct+wp[w.id].wrong)<=1);
-      const prevBestCombo=st.sessionHistory.slice(1).reduce((m,s)=>Math.max(m,s.maxCombo||0),0);
-      const ins=
-        sess.maxCombo>=12&&sess.maxCombo>prevBestCombo?`Sessioennätys: ${sess.maxCombo}x combo-putki — erinomainen!`
-        :weakInSess.length>0?`"${weakInSess[0].en}" kaipaa vielä toistoja (boksi ${wp[weakInSess[0].id]?.box??0}). Avaa sen tippi Sanasto-välilehdeltä.`
-        :newInSess.length>=4?`${newInSess.length} uutta sanaa tuli tutuksi — ne palaavat 1–3 päivässä SRS:n kautta.`
-        :acc2>=95?'Täydellinen tarkkuus! Sanat siirtyvät boksissa ylöspäin ja palaavat myöhemmin.'
-        :acc2>=80?'Hyvää työtä — epävarmat sanat palaavat SRS:n optimaalisin välein.'
-        :acc2>=60?'Toistot tekevät mestarin. Vaikeat sanat palaavat huomenna.'
-        :'Haastava sessio — selaa Sanasto-välilehdeltä vaikeiden sanojen tippejä ennen seuraavaa kertaa.';
-      return (
-        <div className={`${W} px-5 pt-8 pb-10`}>
-          <div className="text-center mb-8"><div className="text-6xl mb-3">{acc2>=80?'🎉':acc2>=60?'💪':'🌱'}</div><div className="text-2xl font-bold text-slate-100 mb-1">Sessio valmis!</div><div className="text-sm text-slate-400">+{sess.xp} XP</div></div>
-          <div className="grid grid-cols-3 gap-3 mb-6">
-            {[['text-emerald-400',sess.correct,'Oikein'],['text-rose-400',sess.wrong,'Väärin'],['text-amber-400',sess.maxCombo+'x','Max combo']].map(([c,v,l])=>(
-              <div key={l} className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-center"><div className={`text-2xl font-semibold ${c}`}>{v}</div><div className="text-xs text-slate-500 mt-0.5">{l}</div></div>
-            ))}
-          </div>
-          <div className="p-4 rounded-xl bg-violet-500/5 border border-violet-500/20 mb-5"><div className="flex items-start gap-2"><SparklesIco className="w-4 h-4 text-violet-400 shrink-0 mt-0.5"/><div><div className="text-xs uppercase tracking-wider text-violet-400 mb-1">Päivän vinkki</div><div className="text-sm text-slate-200 leading-relaxed">{ins}</div></div></div></div>
-          {sess.newStreak>1&&<div className="p-4 rounded-xl bg-orange-500/5 border border-orange-500/20 mb-5 flex items-center gap-3"><Flame className="w-6 h-6 text-orange-400"/><div><div className="font-semibold text-orange-400">{sess.newStreak} päivän streak! 🔥</div><div className="text-xs text-slate-400">Pidä yllä huomennakin!</div></div></div>}
-          {sess.unlocked?.length>0&&<div className="space-y-2 mb-5"><div className="text-xs uppercase tracking-wider text-slate-500 px-1">Uudet saavutukset</div>{sess.unlocked.map(id=>{const a=ACHIEVEMENTS.find(x=>x.id===id);return a?<div key={id} className="p-4 rounded-xl bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/30 flex items-center gap-3"><div className="text-3xl">{a.icon}</div><div><div className="font-semibold text-amber-300">{a.title}</div><div className="text-xs text-slate-400">{a.desc}</div></div></div>:null;})}</div>}
-          <button onClick={()=>{setSess(null);setView('home');}} className="w-full py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold active:scale-[0.97] transition">Takaisin etusivulle</button>
-        </div>
-      );
-    }
-    const word=sess.queue[sess.idx]; const pct=(sess.idx+1)/sess.queue.length;
-    return (
-      <div className={`${W} flex flex-col min-h-screen`}>
-        <div className="px-4 pt-4 pb-3">
-          <div className="flex items-center justify-between mb-3">
-            <button onClick={()=>{if(window.confirm('Keskeyttää sessio?')){setSess(null);setView('home');}}} className="p-2 -ml-2 rounded-lg hover:bg-slate-800"><XIco className="w-5 h-5 text-slate-400"/></button>
-            <div className="flex items-center gap-3 text-sm">
-              {sess.combo>=3&&<div className="flex items-center gap-1 bg-orange-500/10 border border-orange-500/30 px-2 py-0.5 rounded-full"><ZapIco className="w-3.5 h-3.5 text-orange-400"/><span className="text-orange-400 font-semibold">{sess.combo}x</span></div>}
-              <span className="text-slate-400">{sess.idx+1}/{sess.queue.length}</span>
-            </div>
-          </div>
-          <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-gradient-to-r from-violet-500 to-fuchsia-500 transition-all" style={{width:`${pct*100}%`}}/></div>
-        </div>
-        <div className="flex-1 px-5 pb-5 flex flex-col justify-center">
-          {sess.mode==='flashcard'
-            ?<Flashcard word={word} flipped={sess.flipped} answered={sess.answered} idx={sess.idx} qLen={sess.queue.length} onFlip={()=>setSess(s=>({...s,flipped:!s.flipped}))} onAnswer={answer} onNext={next}/>
-            :<Quiz word={word} options={sess.opts[sess.idx]||[]} selAns={sess.selAns} answered={sess.answered} idx={sess.idx} qLen={sess.queue.length} onSelect={selectOpt} onNext={next}/>
-          }
-        </div>
-      </div>
-    );
-  }
-
-  /* LIBRARY */
-  if(view==='library'){
-    const catOrder=Object.keys(CATEGORIES);
-    const filtered=(cat==='all'?allWords:allWords.filter(w=>w.cat===cat)).slice().sort((a,b)=>{
-      const cd=catOrder.indexOf(a.cat)-catOrder.indexOf(b.cat);
-      if(cd!==0)return cd;
-      return parseInt(a.id.replace(/\D/g,''))-parseInt(b.id.replace(/\D/g,''));
-    });
-    return (
-      <div className={`${W} pb-28`}>
-        <TopBar title="Sanasto"/>
-        <div className="px-4 pt-3 pb-2 overflow-x-auto"><div className="flex gap-2 pb-2">
-          <CatPill active={cat==='all'} onClick={()=>setCat('all')}>Kaikki ({allWords.length})</CatPill>
-          {Object.entries(CATEGORIES).map(([k,v])=><CatPill key={k} active={cat===k} onClick={()=>setCat(k)}>{v.short} ({allWords.filter(w=>w.cat===k).length})</CatPill>)}
-        </div></div>
-        <div className="px-5 mb-4">
-          <button onClick={()=>setAddW(true)} className="w-full py-3 rounded-xl border border-dashed border-slate-700 text-slate-400 hover:border-slate-600 transition flex items-center justify-center gap-2"><PlusIco className="w-4 h-4"/><span className="text-sm">Lisää oma sana</span></button>
-        </div>
-        <div className="px-5 space-y-2">
-          {filtered.map(w=>{const box=st.wordProgress[w.id]?.box||0;return(
-            <button key={w.id} onClick={()=>setDetailWord(w)} className="w-full text-left p-4 rounded-xl bg-slate-900 border border-slate-800 active:scale-[0.98] transition">
-              <div className="flex items-start justify-between gap-3 mb-1"><div className="flex-1 min-w-0"><div className="text-sm font-medium text-slate-100">{w.fi}</div><div className="text-sm text-slate-400">{w.en}</div></div><Dots box={box}/></div>
-              <span className={`inline-block text-[10px] uppercase tracking-wider px-2 py-0.5 rounded mt-1 bg-gradient-to-r ${CATEGORIES[w.cat].color} text-white`}>{CATEGORIES[w.cat].short}</span>
-            </button>
-          );})}
-        </div>
-        {detailWord&&(()=>{
-          const dw=detailWord; const dp=st.wordProgress[dw.id]||{box:0,correct:0,wrong:0,nextReview:null};
-          const boxLabels=['Uusi','Opettelussa','Kertaus','Tuttu','Hallittu','Mestari'];
-          const total=dp.correct+dp.wrong;
-          const acc=total>0?Math.round(100*dp.correct/total):null;
-          const nxt=dp.nextReview?Math.max(0,Math.round((new Date(dp.nextReview)-new Date())/(1000*60*60*24))):null;
-          return(
-            <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-4" onClick={()=>setDetailWord(null)}>
-              <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-2xl overflow-hidden max-h-[85vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
-                <div className="p-5 border-b border-slate-800 flex items-start justify-between gap-3">
-                  <div><div className="text-xl font-bold text-slate-100">{dw.fi}</div><div className="text-base text-slate-400 mt-0.5">{dw.en}</div><span className={`inline-block text-[10px] uppercase tracking-wider px-2 py-0.5 rounded mt-2 bg-gradient-to-r ${CATEGORIES[dw.cat].color} text-white`}>{CATEGORIES[dw.cat].label}</span></div>
-                  <button onClick={()=>setDetailWord(null)} className="p-1.5 rounded-lg hover:bg-slate-800 shrink-0"><XIco className="w-5 h-5 text-slate-400"/></button>
-                </div>
-                <div className="p-5 space-y-4">
-                  <div className="flex items-center justify-between p-3 rounded-xl bg-slate-800/50">
-                    <div><div className="text-xs text-slate-500 mb-0.5">SRS-taso</div><div className="text-sm font-semibold text-slate-200">{boxLabels[Math.min(dp.box,5)]}</div></div>
-                    <Dots box={dp.box}/>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2 text-center">
-                    <div className="p-2 rounded-xl bg-slate-800/50"><div className="text-lg font-bold text-emerald-400">{dp.correct}</div><div className="text-[10px] text-slate-500">Oikein</div></div>
-                    <div className="p-2 rounded-xl bg-slate-800/50"><div className="text-lg font-bold text-rose-400">{dp.wrong}</div><div className="text-[10px] text-slate-500">Väärin</div></div>
-                    <div className="p-2 rounded-xl bg-slate-800/50"><div className="text-lg font-bold text-slate-200">{acc!==null?acc+'%':'—'}</div><div className="text-[10px] text-slate-500">Tarkkuus</div></div>
-                  </div>
-                  {nxt!==null&&<div className="text-xs text-slate-500 text-center">{nxt===0?'Palaa tänään kertaukseen':nxt===1?'Palaa huomenna':`Palaa ${nxt} päivässä`}</div>}
-                  {(dw.exFi||dw.exEn)&&<div className="p-3 rounded-xl bg-slate-800/50"><div className="text-[10px] uppercase tracking-wider text-slate-500 mb-2">Esimerkkilause</div>{dw.exFi&&<div className="text-xs text-slate-400 mb-1">{dw.exFi}</div>}{dw.exEn&&<div className="text-xs text-slate-200 italic">{dw.exEn}</div>}</div>}
-                  {dw.tip&&<div className="p-3 rounded-xl bg-violet-500/5 border border-violet-500/20"><div className="text-[10px] uppercase tracking-wider text-violet-400 mb-2">Muistivinkki</div><div className="text-xs text-slate-300 leading-relaxed">{dw.tip}</div></div>}
-                </div>
-              </div>
-            </div>
-          );
-        })()}
-        {addW&&(
-          <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
-            <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-5 max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-4"><h3 className="font-semibold text-slate-100">Lisää oma sana</h3><button onClick={()=>setAddW(false)} className="p-1 rounded-lg hover:bg-slate-800"><XIco className="w-4 h-4 text-slate-400"/></button></div>
-              <div className="space-y-3">
-                <Field label="Suomeksi *" value={nw.fi} onChange={v=>setNw({...nw,fi:v})}/>
-                <Field label="Englanniksi *" value={nw.en} onChange={v=>setNw({...nw,en:v})}/>
-                <div><label className="text-xs text-slate-400 block mb-1">Kategoria</label><select value={nw.cat} onChange={e=>setNw({...nw,cat:e.target.value})} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-100">{Object.entries(CATEGORIES).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}</select></div>
-                <Field label="Esimerkki (FI)" value={nw.exFi} onChange={v=>setNw({...nw,exFi:v})}/>
-                <Field label="Esimerkki (EN)" value={nw.exEn} onChange={v=>setNw({...nw,exEn:v})}/>
-                <Field label="Vinkki" value={nw.tip} onChange={v=>setNw({...nw,tip:v})} area/>
-                <button onClick={()=>{if(!nw.fi.trim()||!nw.en.trim())return;setSt(s=>({...s,customWords:[...s.customWords,{...nw,id:'c'+Date.now(),diff:2}]}));setNw({fi:'',en:'',cat:'basics',exFi:'',exEn:'',tip:''});setAddW(false);}} disabled={!nw.fi.trim()||!nw.en.trim()} className="w-full py-3 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold disabled:opacity-40 disabled:cursor-not-allowed">Tallenna</button>
-              </div>
-            </div>
-          </div>
-        )}
-        <Nav view={view} setView={setView}/>
-      </div>
-    );
-  }
-
-  /* STATS */
-  if(view==='stats'){
-    const wp=st.wordProgress;
-    const catStats=Object.entries(CATEGORIES).map(([k,v])=>{
-      const cws=allWords.filter(w=>w.cat===k);
-      const tc=cws.reduce((s,w)=>s+(wp[w.id]?.correct||0),0);
-      const tw=cws.reduce((s,w)=>s+(wp[w.id]?.wrong||0),0);
-      return{k,...v,total:cws.length,mastered:cws.filter(w=>(wp[w.id]?.box||0)>=3).length,acc:tc+tw>0?Math.round(100*tc/(tc+tw)):null};
-    });
-    const weak=Object.entries(wp).filter(([,p])=>p.wrong>=2&&p.box<=2).sort((a,b)=>b[1].wrong-a[1].wrong).slice(0,5).map(([id,p])=>({word:allWords.find(w=>w.id===id),p})).filter(x=>x.word);
-    return (
-      <div className={`${W} pb-28`}>
-        <TopBar title="Edistyminen"/>
-        <div className="px-5 pt-4">
-          <div className="mb-6"><div className="text-xs uppercase tracking-wider text-slate-500 mb-3 px-1">Hallinta kategorioittain</div>
-            <div className="space-y-2">{catStats.map(s=>(
-              <div key={s.k} className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                <div className="flex items-center justify-between mb-2"><span className="text-sm text-slate-200">{s.label}</span><span className="text-xs text-slate-400">{s.mastered}/{s.total}</span></div>
-                <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden"><div className={`h-full bg-gradient-to-r ${s.color}`} style={{width:`${s.total?s.mastered/s.total*100:0}%`}}/></div>
-                {s.acc!==null&&<div className="text-[10px] text-slate-500 mt-1.5">Tarkkuus: {s.acc}%</div>}
-              </div>
-            ))}</div>
-          </div>
-          {weak.length>0&&<div className="mb-6"><div className="text-xs uppercase tracking-wider text-slate-500 mb-3 px-1">Kehitettävää</div>
-            <div className="space-y-2">{weak.map(({word,p})=>(
-              <div key={word.id} className="rounded-xl bg-rose-500/5 border border-rose-500/20 overflow-hidden">
-                <button className="w-full p-3 text-left" onClick={()=>setOpenTip(openTip===word.id?null:word.id)}>
-                  <div className="flex items-center justify-between"><div><div className="text-sm text-slate-200">{word.fi}</div><div className="text-xs text-slate-400">{word.en}</div></div><div className="flex items-center gap-2"><div className="text-xs text-rose-400">{p.wrong} virhettä</div><div className="text-slate-500 text-xs">{openTip===word.id?'▲':'▼'}</div></div></div>
-                </button>
-                {openTip===word.id&&word.tip&&<div className="px-3 pb-3 text-xs text-slate-400 border-t border-rose-500/10 pt-2">{word.tip}</div>}
-              </div>
-            ))}</div>
-          </div>}
-          <div className="mb-6"><div className="text-xs uppercase tracking-wider text-slate-500 mb-3 px-1">Saavutukset ({st.achievements.length}/{ACHIEVEMENTS.length})</div>
-            <div className="grid grid-cols-2 gap-2">{ACHIEVEMENTS.map(a=>{const ok=st.achievements.includes(a.id);return(
-              <div key={a.id} className={`p-3 rounded-xl border ${ok?'bg-amber-500/5 border-amber-500/30':'bg-slate-900 border-slate-800 opacity-50'}`}>
-                <div className="text-2xl mb-1">{a.icon}</div><div className={`text-xs font-semibold ${ok?'text-amber-300':'text-slate-400'}`}>{a.title}</div><div className="text-[10px] text-slate-500 mt-0.5">{a.desc}</div>
-              </div>
-            );})}</div>
-          </div>
-          <button onClick={buildExport} className="w-full py-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 font-medium flex items-center justify-center gap-2 active:scale-[0.98] transition mb-4"><DownloadIco className="w-4 h-4"/>Vie edistyminen Claudelle</button>
-          {exp&&(
-            <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
-              <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-5 max-h-[90vh] overflow-y-auto">
-                <div className="flex items-center justify-between mb-3"><h3 className="font-semibold text-slate-100">Export Claudelle</h3><button onClick={()=>setExp(null)} className="p-1 rounded-lg hover:bg-slate-800"><XIco className="w-4 h-4 text-slate-400"/></button></div>
-                <p className="text-xs text-slate-400 mb-3">Kopioi ja liitä Claudelle uudessa keskustelussa pyytäen analyysiä tai uusia harjoituksia.</p>
-                <pre className="text-[10px] text-slate-300 bg-slate-950 p-3 rounded-lg overflow-x-auto whitespace-pre-wrap max-h-64 mb-3">{exp}</pre>
-                <button onClick={()=>{navigator.clipboard?.writeText(exp);setPop('Kopioitu!');setTimeout(()=>setPop(null),2000);}} className="w-full py-3 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold flex items-center justify-center gap-2"><CopyIco className="w-4 h-4"/>Kopioi</button>
-              </div>
-            </div>
-          )}
-        </div>
-        <Nav view={view} setView={setView}/>
-      </div>
-    );
-  }
-
-  /* GUIDE */
-  if(view==='guide'){
-    const lvIdx=LEVELS.indexOf(lv.current);
-    return (
-      <div className={`${W} pb-28`}>
-        <TopBar title="Ohjeet"/>
-        <div className="px-5 pt-4 space-y-5">
-
-          {/* Miten sovellus toimii */}
-          <div>
-            <div className="text-xs uppercase tracking-wider text-slate-500 mb-3 px-1">Miten sovellus toimii</div>
-            <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-3">
-              <div className="flex gap-3"><div className="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center shrink-0 text-sm">🃏</div><div><div className="text-sm font-medium text-slate-100 mb-0.5">Leitner-kortisto (SRS)</div><div className="text-xs text-slate-400 leading-relaxed">Sanat kiertävät 5 boksin läpi. Oikea vastaus siirtää sanan pidemmälle — väärä palauttaa takaisin. Mitä pidemmällä boksi, sitä harvemmin sana tulee uusintaan.</div></div></div>
-              <div className="grid grid-cols-5 gap-1 pt-1">
-                {[['Box 0','heti','bg-rose-500/20 text-rose-300'],['Box 1','1 pv','bg-orange-500/20 text-orange-300'],['Box 2','3 pv','bg-amber-500/20 text-amber-300'],['Box 3','7 pv','bg-emerald-500/20 text-emerald-300'],['Box 4','14 pv','bg-violet-500/20 text-violet-300']].map(([b,d,c])=>(
-                  <div key={b} className={`rounded-lg p-2 text-center ${c}`}><div className="text-[10px] font-semibold">{b}</div><div className="text-[9px] mt-0.5 opacity-80">{d}</div></div>
-                ))}
-              </div>
-              <div className="text-xs text-slate-500 pt-1">Box 3+ = sana on "hallittu". Box 5 = 30 päivän väli.</div>
-            </div>
-          </div>
-
-          {/* Tasokartta */}
-          <div>
-            <div className="text-xs uppercase tracking-wider text-slate-500 mb-3 px-1">Tasokartta</div>
-            <div className="rounded-xl bg-slate-900 border border-slate-800 overflow-hidden">
-              {LEVELS.map((l,i)=>{
-                const isCurrent=i===lvIdx;
-                const isDone=i<lvIdx;
-                const next=LEVELS[i+1];
-                return (
-                  <div key={l.title} className={`flex items-center gap-3 px-4 py-2.5 border-b border-slate-800/60 last:border-0 ${isCurrent?'bg-violet-500/10':''}`}>
-                    <div className={`text-lg w-7 text-center ${isDone?'opacity-40':''}`}>{l.icon}</div>
-                    <div className="flex-1 min-w-0">
-                      <div className={`text-sm font-medium truncate ${isCurrent?'text-violet-300':isDone?'text-slate-500':'text-slate-200'}`}>{l.title}</div>
-                      <div className="text-[10px] text-slate-600">{l.min.toLocaleString()} XP{next?` – ${(next.min-1).toLocaleString()}`:''}</div>
-                    </div>
-                    {isCurrent&&<div className="text-[10px] text-violet-400 font-semibold shrink-0">← sinä</div>}
-                    {isDone&&<CheckIco className="w-4 h-4 text-emerald-500 shrink-0"/>}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Välilehdet */}
-          <div>
-            <div className="text-xs uppercase tracking-wider text-slate-500 mb-3 px-1">Välilehdet</div>
-            <div className="space-y-2">
-              {[
-                {icon:'🏠',title:'Etusivu',desc:'Päivän XP-tavoite, viimeisin saavutus ja pikakäynnistys harjoitteluun.'},
-                {icon:'📚',title:'Library',desc:'Selaa koko sanastoa kategorioittain. Näet jokaisen sanan boksitason ja oikein/väärin-tilaston.'},
-                {icon:'📊',title:'Edistyminen',desc:'Sessiohistoria, tarkkuustilasto, kategoriakohtainen edistyminen ja saavutukset.'},
-                {icon:'💡',title:'Ohjeet',desc:'Tämä sivu. Sovelluksen toimintaperiaate, tasokartta ja välilehtikuvaukset.'},
-                {icon:'⚙️',title:'Asetukset',desc:'Päivän XP-tavoite, iPhone-asennusohjeet ja datan nollaus.'}
-              ].map(({icon,title,desc})=>(
-                <div key={title} className="flex gap-3 p-3 rounded-xl bg-slate-900 border border-slate-800">
-                  <div className="text-lg w-7 text-center shrink-0">{icon}</div>
-                  <div><div className="text-sm font-medium text-slate-100 mb-0.5">{title}</div><div className="text-xs text-slate-400 leading-relaxed">{desc}</div></div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-        </div>
-        <Nav view={view} setView={setView}/>
-      </div>
-    );
-  }
-
-  /* SETTINGS */
   return (
-    <div className={`${W} pb-28`}>
-      <TopBar title="Asetukset"/>
-      <div className="px-5 pt-4 space-y-4">
-        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
-          <div className="text-sm font-medium text-slate-100 mb-2">Päivän XP-tavoite</div>
-          <div className="flex gap-2">{[150,250,400,600].map(g=><button key={g} onClick={()=>setSt(s=>({...s,dailyGoal:g}))} className={`flex-1 py-2 rounded-lg text-sm font-medium ${st.dailyGoal===g?'bg-violet-500/20 border border-violet-500/40 text-violet-300':'bg-slate-800 text-slate-400'}`}>{g}</button>)}</div>
-          <div className="text-xs text-slate-500 mt-2">150 ≈ 1 sessio · 250 ≈ hyvä sessio · 400 ≈ 2 sessiota</div>
+    <div style={{padding:16}}>
+      <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:20}}>
+        <LevelBadge xp={xp} size={54}/>
+        <div style={{flex:1}}>
+          <div style={{fontFamily:FS,fontSize:22,color:C.paper,lineHeight:1.2}}>{lv.title}</div>
+          <div style={{fontFamily:FM,fontSize:12,color:C.accent}}>{xp.toLocaleString()} XP</div>
         </div>
-        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
-          <div className="text-sm font-medium text-slate-100 mb-2">📱 Asenna iPhoneen</div>
-          <div className="text-xs text-slate-400 leading-relaxed">1. Avaa <strong className="text-slate-300">makelai.github.io/english-trainer</strong> Safarissa<br/>2. Napauta jako-painiketta (□↑)<br/>3. Valitse "Lisää Koti-näyttöön"<br/>4. Sovellus toimii kuin natiivi app!</div>
-        </div>
-        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
-          <div className="text-sm font-medium text-slate-100 mb-1">🔒 Yksityisyys</div>
-          <div className="text-xs text-slate-400">Data tallennetaan vain tähän selaimeen (localStorage). Mikään ei lähde laitteeltasi.</div>
-        </div>
-        <button onClick={()=>{if(window.confirm('Nollaa kaikki edistyminen? Ei voi peruuttaa.'))setSt(defaultState());}} className="w-full py-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-sm font-medium">Nollaa kaikki edistyminen</button>
+        {(state.streak||0)>0&&<div style={{fontFamily:FM,fontSize:14,color:C.accent}}>{state.streak}🔥</div>}
       </div>
-      <Nav view={view} setView={setView}/>
-      {pop&&<div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-slate-800 border border-slate-700 text-sm text-slate-100 shadow-xl">{pop}</div>}
+      {next&&(
+        <div style={{marginBottom:20}}>
+          <div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}>
+            <span style={{fontFamily:FU,fontSize:11,color:C.inkMute}}>{pct}% → {next.title}</span>
+            <span style={{fontFamily:FM,fontSize:10,color:C.inkFaint}}>{xpIn}/{xpNeed} XP</span>
+          </div>
+          <div style={{height:4,background:C.bgGlow,borderRadius:2}}><div style={{height:'100%',width:`${pct}%`,background:`linear-gradient(90deg,${C.accentDark},${C.accent})`,borderRadius:2,transition:'width 0.5s'}}/></div>
+        </div>
+      )}
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,marginBottom:20}}>
+        {[{label:'Hallittu',val:`${mastered}/${VOCAB.length}`},{label:'Tarkkuus',val:`${acc}%`},{label:'Sessiot',val:state.sessions||0}].map((s,i)=>(
+          <div key={i} style={{background:C.bgGlow,borderRadius:8,padding:'10px 6px',textAlign:'center'}}>
+            <div style={{fontFamily:FM,fontSize:15,color:C.paper}}>{s.val}</div>
+            <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,marginTop:2}}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+      <IndexCard cat="daily" style={{marginBottom:16}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+          <div>
+            <div style={{fontFamily:FS,fontSize:24,color:C.ink,fontWeight:700}}>{due} sanaa</div>
+            <div style={{fontFamily:FU,fontSize:12,color:C.inkMute}}>odottaa harjoittelua tänään</div>
+          </div>
+          <div style={{width:36,height:36,background:C.accent,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center'}}>
+            <svg viewBox="0 0 24 24" width={20} height={20} fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </div>
+        </div>
+      </IndexCard>
+      <button onClick={()=>setShowModes(true)} style={{width:'100%',padding:'16px',border:'none',borderRadius:10,cursor:'pointer',background:`linear-gradient(135deg,${C.accentDark},${C.accent})`,color:'#fff',fontFamily:FS,fontSize:20,fontWeight:600,boxShadow:`0 4px 16px rgba(201,122,60,0.3)`,marginBottom:20}}>
+        Harjoittele →
+      </button>
+      <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:10}}>Kategoriat</div>
+      {Object.entries(CATS).map(([key,cat])=>{
+        const ws=VOCAB.filter(w=>w.cat===key), m=ws.filter(w=>state.words[w.id]?.box>=3).length;
+        return (
+          <div key={key} style={{marginBottom:9}}>
+            <div style={{display:'flex',justifyContent:'space-between',marginBottom:3}}>
+              <span style={{fontFamily:FU,fontSize:12,color:C.paper}}>{cat.fi}</span>
+              <span style={{fontFamily:FM,fontSize:10,color:C.inkMute}}>{m}/{ws.length}</span>
+            </div>
+            <div style={{height:3,background:'#1a1510',borderRadius:2}}><div style={{height:'100%',width:`${Math.round((m/ws.length)*100)}%`,background:catColor(key),borderRadius:2}}/></div>
+          </div>
+        );
+      })}
     </div>
+  );
+}
+
+/* ── LIBRARY VIEW ───────────────────────────────────────────────────────────── */
+function LibraryView({state}) {
+  const [cat,setCat]=useState('all');
+  const [detail,setDetail]=useState(null);
+  const today=todayKey();
+  const words=cat==='all'?VOCAB:VOCAB.filter(w=>w.cat===cat);
+
+  if(detail) {
+    const ws=state.words[detail.id]||{};
+    return (
+      <div style={{padding:16}}>
+        <button onClick={()=>setDetail(null)} style={{background:'none',border:'none',color:C.inkMute,cursor:'pointer',fontFamily:FU,fontSize:13,marginBottom:16,padding:0}}>← Sanasto</button>
+        <IndexCard cat={detail.cat} style={{marginBottom:12}}>
+          <div>
+            <div style={{fontFamily:FM,fontSize:10,color:catColor(detail.cat),textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:6}}>{CATS[detail.cat]?.label} · {'★'.repeat(detail.diff)}</div>
+            <div style={{fontFamily:FS,fontSize:28,color:C.ink,fontWeight:700,marginBottom:2}}>{detail.en}</div>
+            <div style={{fontFamily:FU,fontSize:16,color:C.inkLight,marginBottom:10}}>{detail.fi}</div>
+            {detail.exFi&&<div style={{fontFamily:FU,fontSize:12,color:C.inkMute,fontStyle:'italic',marginBottom:3}}>{detail.exFi}</div>}
+            {detail.exEn&&<div style={{fontFamily:FU,fontSize:12,color:C.inkLight,marginBottom:10}}>{detail.exEn}</div>}
+            {detail.tip&&<div style={{borderTop:`1px solid ${C.paperEdge}`,paddingTop:10,fontFamily:FU,fontSize:11,color:C.inkFaint}}>{detail.tip}</div>}
+          </div>
+        </IndexCard>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8}}>
+          {[{l:'Boksi',v:`${ws.box||0} / 5`},{l:'Oikein',v:ws.correct||0},{l:'Väärin',v:ws.wrong||0}].map((s,i)=>(
+            <div key={i} style={{background:C.bgGlow,borderRadius:8,padding:'10px 6px',textAlign:'center'}}>
+              <div style={{fontFamily:FM,fontSize:15,color:C.paper}}>{s.v}</div>
+              <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,marginTop:2}}>{s.l}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{padding:16}}>
+      <div style={{fontFamily:FS,fontSize:26,color:C.paper,marginBottom:12}}>Sanasto <span style={{fontFamily:FM,fontSize:14,color:C.inkMute}}>({words.length})</span></div>
+      <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:14}}>
+        {['all',...Object.keys(CATS)].map(k=>(
+          <button key={k} onClick={()=>setCat(k)} style={{padding:'5px 11px',borderRadius:20,border:'none',cursor:'pointer',background:cat===k?C.accent:C.bgGlow,color:cat===k?'#fff':C.inkMute,fontFamily:FU,fontSize:11,fontWeight:500}}>
+            {k==='all'?'Kaikki':CATS[k].short}
+          </button>
+        ))}
+      </div>
+      <div style={{display:'flex',flexDirection:'column',gap:5}}>
+        {words.map(w=>{
+          const ws=state.words[w.id]||{};
+          const mastered=(ws.box||0)>=3;
+          const due=(ws.nextReview||'0000')<=today&&!mastered;
+          return (
+            <button key={w.id} onClick={()=>setDetail(w)} style={{padding:'9px 12px',background:C.bgGlow,borderRadius:8,border:'none',cursor:'pointer',textAlign:'left',display:'flex',alignItems:'center',gap:10}}>
+              <div style={{width:8,height:8,borderRadius:'50%',background:mastered?'#4ade80':due?C.accent:C.inkFaint,flexShrink:0}}/>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontFamily:FS,fontSize:16,color:C.paper,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{w.en}</div>
+                <div style={{fontFamily:FU,fontSize:11,color:C.inkMute}}>{w.fi}</div>
+              </div>
+              <div style={{fontFamily:FM,fontSize:10,color:C.inkFaint,flexShrink:0}}>B{ws.box||0}</div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ── STATS VIEW ─────────────────────────────────────────────────────────────── */
+function StatsView({state}) {
+  const xp=state.xp||0, mastered=getMastered(state);
+  const tot=(state.totalCorrect||0)+(state.totalWrong||0);
+  const acc=tot>0?Math.round(((state.totalCorrect||0)/tot)*100):0;
+  const lvIdx=getLevelIdx(xp), lv=LEVELS[lvIdx];
+  const earned=ACHIEVEMENTS.filter(a=>(state.achievements||[]).includes(a.id));
+
+  return (
+    <div style={{padding:16}}>
+      <div style={{fontFamily:FS,fontSize:26,color:C.paper,marginBottom:16}}>Edistyminen</div>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:20}}>
+        {[
+          {l:'XP yhteensä',v:xp.toLocaleString(),s:'pistettä'},
+          {l:'Taso',v:lvIdx+1,s:lv.title},
+          {l:'Sessioita',v:state.sessions||0,s:'harjoitusta'},
+          {l:'Streak',v:`${state.streak||0} 🔥`,s:'päivää'},
+          {l:'Hallittu',v:`${mastered}/${VOCAB.length}`,s:'sanaa (B3+)'},
+          {l:'Tarkkuus',v:`${acc}%`,s:`${state.totalCorrect||0}/${tot}`},
+        ].map((s,i)=>(
+          <div key={i} style={{background:C.bgGlow,borderRadius:8,padding:'12px'}}>
+            <div style={{fontFamily:FM,fontSize:20,color:C.paper}}>{s.v}</div>
+            <div style={{fontFamily:FU,fontSize:11,color:C.inkMute,marginTop:2}}>{s.l}</div>
+            <div style={{fontFamily:FU,fontSize:10,color:C.inkFaint}}>{s.s}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:10}}>Kategoriat</div>
+      {Object.entries(CATS).map(([key,cat])=>{
+        const ws=VOCAB.filter(w=>w.cat===key), m=ws.filter(w=>state.words[w.id]?.box>=3).length;
+        const p=Math.round((m/ws.length)*100);
+        return (
+          <div key={key} style={{marginBottom:10}}>
+            <div style={{display:'flex',justifyContent:'space-between',marginBottom:3}}>
+              <span style={{fontFamily:FU,fontSize:13,color:C.paper}}>{cat.label}</span>
+              <span style={{fontFamily:FM,fontSize:11,color:C.inkMute}}>{m}/{ws.length} · {p}%</span>
+            </div>
+            <div style={{height:4,background:'#1a1510',borderRadius:2}}><div style={{height:'100%',width:`${p}%`,background:catColor(key),borderRadius:2}}/></div>
+          </div>
+        );
+      })}
+      {earned.length>0&&<>
+        <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:10,marginTop:20}}>Saavutukset ({earned.length}/{ACHIEVEMENTS.length})</div>
+        <div style={{display:'flex',flexDirection:'column',gap:6}}>
+          {earned.map(a=>(
+            <div key={a.id} style={{display:'flex',alignItems:'center',gap:10,background:C.bgGlow,borderRadius:8,padding:'10px 12px'}}>
+              <span style={{fontSize:20}}>{a.icon}</span>
+              <div><div style={{fontFamily:FU,fontSize:13,color:C.paper,fontWeight:600}}>{a.title}</div><div style={{fontFamily:FU,fontSize:11,color:C.inkMute}}>{a.desc}</div></div>
+            </div>
+          ))}
+        </div>
+      </>}
+    </div>
+  );
+}
+
+/* ── SETTINGS VIEW ──────────────────────────────────────────────────────────── */
+function SettingsView({state,onReset}) {
+  const [conf,setConf]=useState(false),[imp,setImp]=useState(false);
+  function exportData(){
+    const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url; a.download=`sanasto-${todayKey()}.json`; a.click();
+    URL.revokeObjectURL(url);
+  }
+  function importData(e){
+    const f=e.target.files[0]; if(!f) return;
+    const r=new FileReader();
+    r.onload=ev=>{try{localStorage.setItem(SK,ev.target.result);setImp(true);setTimeout(()=>window.location.reload(),800);}catch(err){alert('Virheellinen tiedosto.');}};
+    r.readAsText(f);
+  }
+  return (
+    <div style={{padding:16}}>
+      <div style={{fontFamily:FS,fontSize:26,color:C.paper,marginBottom:20}}>Asetukset</div>
+      <div style={{display:'flex',flexDirection:'column',gap:10}}>
+        <button onClick={exportData} style={{padding:'14px 16px',background:C.bgGlow,border:`1px solid #2a201a`,borderRadius:8,cursor:'pointer',textAlign:'left',color:C.paper,fontFamily:FU,fontSize:14}}>⬇ Lataa varmuuskopio</button>
+        <label style={{padding:'14px 16px',background:C.bgGlow,border:`1px solid #2a201a`,borderRadius:8,cursor:'pointer',display:'block',color:imp?'#4ade80':C.paper,fontFamily:FU,fontSize:14}}>
+          {imp?'✓ Tuotu!':'⬆ Tuo varmuuskopio'}
+          <input type="file" accept=".json" onChange={importData} style={{display:'none'}}/>
+        </label>
+        {!conf
+          ?<button onClick={()=>setConf(true)} style={{padding:'14px 16px',background:'#1a0808',border:`1px solid #3a1818`,borderRadius:8,cursor:'pointer',textAlign:'left',color:'#f87171',fontFamily:FU,fontSize:14}}>Nollaa kaikki edistyminen</button>
+          :<div style={{background:'#1a0808',border:`1px solid #3a1818`,borderRadius:8,padding:16}}>
+            <div style={{fontFamily:FU,fontSize:13,color:'#f87171',marginBottom:12}}>Oletko varma? Kaikki data poistetaan pysyvästi.</div>
+            <div style={{display:'flex',gap:8}}>
+              <button onClick={()=>setConf(false)} style={{flex:1,padding:'10px',background:C.bgGlow,border:'none',borderRadius:6,cursor:'pointer',color:C.paper,fontFamily:FU}}>Peruuta</button>
+              <button onClick={()=>{onReset();setConf(false);}} style={{flex:1,padding:'10px',background:'#3a1010',border:'none',borderRadius:6,cursor:'pointer',color:'#f87171',fontFamily:FU,fontWeight:600}}>Nollaa</button>
+            </div>
+          </div>
+        }
+      </div>
+      <div style={{marginTop:28,fontFamily:FM,fontSize:10,color:C.inkFaint}}>
+        Sanasto v2.0 · {VOCAB.length} sanaa · {SK}
+      </div>
+    </div>
+  );
+}
+
+/* ── APP ────────────────────────────────────────────────────────────────────── */
+function App() {
+  const [state,setState]=useState(()=>loadState());
+  const [view,setView]=useState('home');
+  const [practMode,setPractMode]=useState(null);
+  const [practWords,setPractWords]=useState(null);
+
+  function save(s){setState(s);saveState(s);}
+
+  function startPractice(mode,cat) {
+    const today=todayKey();
+    let pool=VOCAB.filter(w=>{const ws=state.words[w.id];return !ws||ws.nextReview<=today;});
+    if(cat!=='all') pool=pool.filter(w=>w.cat===cat);
+    if(pool.length<5){
+      pool=cat==='all'?[...VOCAB]:VOCAB.filter(w=>w.cat===cat);
+    }
+    const shuffled=pool.sort(()=>Math.random()-0.5).slice(0,15);
+    setPractMode(mode); setPractWords(shuffled); setView('practice');
+  }
+
+  function onFinish(results) {
+    const today=todayKey();
+    const ns={...state,words:{...state.words}};
+    results.forEach(({id,correct})=>{
+      const ws={...ns.words[id]};
+      ws.seen=true;
+      if(correct){ws.box=Math.min((ws.box||0)+1,BOX_INTERVALS.length-1);ws.correct=(ws.correct||0)+1;}
+      else{ws.box=Math.max(0,(ws.box||0)-1);ws.wrong=(ws.wrong||0)+1;}
+      ws.nextReview=addDays(today,BOX_INTERVALS[ws.box]);
+      ns.words[id]=ws;
+    });
+    const ok=results.filter(r=>r.correct).length;
+    ns.xp=(ns.xp||0)+ok*10;
+    ns.totalCorrect=(ns.totalCorrect||0)+ok;
+    ns.totalWrong=(ns.totalWrong||0)+(results.length-ok);
+    ns.sessions=(ns.sessions||0)+1;
+    if(ns.lastSession!==today){
+      ns.streak=ns.lastSession===addDays(today,-1)?(ns.streak||0)+1:1;
+      ns.lastSession=today;
+    }
+    let cur=0,mx=ns.maxCombo||0;
+    results.forEach(r=>{if(r.correct){cur++;mx=Math.max(mx,cur);}else cur=0;});
+    ns.maxCombo=mx;
+    if(results.length>=20&&ok===results.length&&!(ns.achievements||[]).includes('perfect')){
+      ns.achievements=[...(ns.achievements||[]),'perfect'];
+    }
+    const newA=checkAchievements(ns);
+    ns.achievements=[...(ns.achievements||[]),...newA];
+    save(ns); setView('home'); setPractWords(null); setPractMode(null);
+  }
+
+  if(view==='practice'&&practWords) return (
+    <Shell>
+      <div style={{display:'flex',alignItems:'center',padding:'12px 16px',paddingTop:'max(12px,env(safe-area-inset-top))',borderBottom:`1px solid #1a1410`,background:'#0d0a07',flexShrink:0}}>
+        <button onClick={()=>{setView('home');setPractWords(null);}} style={{background:'none',border:'none',cursor:'pointer',color:C.inkMute,fontFamily:FU,fontSize:13,padding:0}}>← Takaisin</button>
+        <span style={{flex:1,textAlign:'center',color:C.paper,fontFamily:FU,fontSize:13,fontWeight:600}}>{practMode==='flash'?'Korttipakka':'Monivalinta'}</span>
+        <span style={{width:60}}/>
+      </div>
+      <div style={{flex:1,overflow:'auto',display:'flex',flexDirection:'column'}}>
+        <Practice mode={practMode} words={practWords} onFinish={onFinish}/>
+      </div>
+    </Shell>
+  );
+
+  return (
+    <Shell>
+      <div style={{flex:1,overflow:'auto',paddingTop:'env(safe-area-inset-top)'}}>
+        {view==='home'&&<HomeView state={state} onPractice={startPractice}/>}
+        {view==='library'&&<LibraryView state={state}/>}
+        {view==='stats'&&<StatsView state={state}/>}
+        {view==='settings'&&<SettingsView state={state} onReset={()=>save(defaultState())}/>}
+      </div>
+      <BottomNav view={view} setView={setView}/>
+    </Shell>
   );
 }
 
