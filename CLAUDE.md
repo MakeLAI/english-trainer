@@ -40,26 +40,23 @@ GitHub Pages     — hosting (Public repo, Free tier)
 
 ### Käyttäjän edistyminen
 ```
-XP:       10 551
-Taso:     CFO (maksimitaso saavutettu 105 sessiossa)
+XP:       10 551+
+Taso:     CFO (maksimitaso saavutettu)
 Tarkkuus: 96%
-Vahvat:   99/99 sanaa hallittu
-Heikot:   0
-Streak:   3 päivää
+Streak:   3+ päivää
 ```
-Käyttäjä on hallinnut kaikki 99 sanaa. Sisältöä tarvitaan välittömästi lisää.
 
-### Sanasto — 99 sanaa (tarkistettu 18.5.2026)
+### Sanasto — 163 sanaa (tarkistettu koodista 18.5.2026)
 
-| Kategoria | Sanat | Vapaat ID:t |
-|---|---|---|
-| basics | b1–b15 (15 kpl) | b16+ |
-| balance | bs1–bs12 (12 kpl) | bs13+ |
-| income | is1–is12 (12 kpl) | is13+ |
-| daily | d1–d12 (12 kpl) | d13+ |
-| ifrs | i1–i20 (20 kpl) | i21+ |
-| controlling | c1–c8 (8 kpl) | c9+ |
-| phrases | p1–p20 (20 kpl) | p21+ |
+| Kategoria | Sanat | Viimeisin ID | Vapaat ID:t |
+|---|---|---|---|
+| basics | b1–b23 (23 kpl) | b23 | b24+ |
+| balance | bs1–bs20 (20 kpl) | bs20 | bs21+ |
+| income | is1–is19 (19 kpl) | is19 | is20+ |
+| daily | d1–d22 (22 kpl) | d22 | d23+ |
+| ifrs | i1–i29 (29 kpl) | i29 | i30+ |
+| controlling | c1–c19 (19 kpl) | c19 | c20+ |
+| phrases | p1–p31 (31 kpl) | p31 | p32+ |
 
 **Tarkista aina viimeisin käytetty ID koodista ennen lisäystä.**
 
@@ -119,48 +116,19 @@ index.html
 
 ## 5. KEHITYSBACKLOG
 
-### KRIITTINEN — tee heti
+### TEHTY ✓
 
-**[P1] Sisällön laajennus**
-Tavoite: 99 → 150+ sanaa. Kaikki kategoriat tarvitsevat lisää.
-Prioriteettijärjestys: controlling (8→20), daily (12→20), balance (12→20), phrases (20→30).
-
-**[P2] Session pituuden standardointi**
-Ongelma: sessio vaihtelee (nyt n. 10 sanaa), pitäisi olla aina 15.
-Korjaus: `startSession`-funktioon kiinteä 15 sanan sessio.
-
-### TÄRKEÄ — seuraava kehitysvaihe
-
-**[P3] Level-järjestelmän uudistus**
-Ongelma: CFO saavutettu 105 sessiossa — liian nopeasti.
-- Lisää väli-levelejä: 8 → 15+ tasoa
-- Hitaampi XP-kertymä tai korkeammat XP-rajat
-- Lisää saavutuksia: 9 → 20+
-- Vanhat saavutukset päivitettävä
-
-**[P4] Välilehtien tarkistus**
-Kaikki 4 välilehteä luotu projektin alussa, sisältö muuttunut.
-Tarkista ja päivitä: Etusivu, Library, Edistyminen, Asetukset.
-Ohjeet-osio: tarkempi kuvaus mitä kullakin välilehdellä tehdään.
-
-**[P5] Pitkät sanat mobiilissa**
-Jotkut pitkät suomalaiset termit näyttävät oudoilta mobiilissa.
-Ratkaisu: tekstin skaalaus tai katkaisu + full teksti tipissä.
-
-**[P6] Kieliasun tarkistus**
-Sovelluksessa sekaisin suomea ja englantia.
-Tarkista kaikki UI-tekstit: kielioppi, pilkut, johdonmukaisuus.
-Päätä: kokonaan suomeksi vai tietoisesti kaksikielinen?
-
-**[P7] Daily insights -parannukset**
-Nykyiset sessiolopun vinkit geneerisiä.
-Tavoite: personoidut, dataan perustuvat vinkit.
-
-**[P8] Kehitettävää-osion parannus**
-Lisää heikon sanan kohdalle muistisääntö (tip näkyviin ilman harjoittelua).
-
-**[P9] Sanoihin porautuminen**
-Library: napautus → detaili-näkymä (esimerkkilause, tippi, SRS-status, historia).
+| Koodi | Tehtävä |
+|---|---|
+| P1 | Sisällön laajennus: 99 → 163 sanaa |
+| P2 | Session pituuden standardointi (15 sanaa) |
+| P3 | Level-järjestelmän uudistus (8 → 15+ tasoa, hitaampi XP) |
+| P4 | Välilehtien tarkistus ja päivitys |
+| P5 | Pitkät sanat mobiilissa (skaalaus/katkaisu) |
+| P6 | Kieliasun tarkistus ja johdonmukaistaminen |
+| P7 | Daily insights -parannukset (personoidut vinkit) |
+| P8 | Tip heikon sanan kohdalla ilman harjoittelua |
+| P9 | Sanoihin porautuminen Libraryssä (detaili-näkymä) |
 
 ### TULEVA KEHITYS
 
@@ -197,15 +165,25 @@ Kaikki toimii Claude Codessa. PM-rooli on siirtynyt käyttäjälle.
 | **Project Manager** | Käyttäjä | — |
 | **Claude Code** | Tämä sessio | Ei lisää sanastoa itsenäisesti ilman hyväksyntää |
 | **Kieltenopettaja** | `@agents/kieltenopettaja.md` | Ei muokkaa koodia, ei vie GitHubiin |
+| **UX-agentti** | `@agents/ux-agent.md` | Ei muuta sisältörakennetta ilman sisältökartan hyväksyntää |
 
-**Workflow:**
+**Workflow — sanasto:**
 ```
 @agents/kieltenopettaja.md tuottaa taulukon
   → Käyttäjä hyväksyy
   → Claude Code lisää VOCAB:iin + vie GitHubiin
 ```
 
-**Roolitiedostot:** `agents/kieltenopettaja.md` · `agents/project-manager.md`
+**Workflow — visuaalinen uudistus:**
+```
+@agents/ux-agent.md tuottaa sisältökartan (välilehti + osiot)
+  → Käyttäjä hyväksyy kartan
+  → UX-agentti tuottaa muutoslistan
+  → Käyttäjä hyväksyy
+  → Claude Code toteuttaa surgical editinä + tarkistuslista + vie GitHubiin
+```
+
+**Roolitiedostot:** `agents/kieltenopettaja.md` · `agents/project-manager.md` · `agents/ux-agent.md`
 
 ---
 
@@ -232,6 +210,8 @@ nextReview = tänään + BOX_INTERVALS[box]
 7. **Kieltenopettaja ei koskaan muokkaa koodia.**
 8. **Apostrofit JSX:ssä:** `machine\'s` tai käytä double quoteja.
 9. **Surgical edit aina** — ei full rewrite pieniin muutoksiin.
+10. **Visuaalinen uudistus ≠ rakenteen muutos.** Teema vaihtuu, sisältörakenne pysyy. Ks. UX-agentti.
+11. **Sisältökartta ennen redesignia.** Jokaisen välilehden sisältö dokumentoitava ja hyväksyttävä ennen koodia.
 
 ---
 
@@ -259,14 +239,46 @@ Validointi:[Mitä tarkistetaan — ID:t, käynnistys, muutetut rivit]
 
 ## 11. ALOITA SEURAAVA SESSIO TÄSTÄ
 
-**Tilanne (18.5.2026):** 99 sanaa, Controller-taso (10 551 XP), P2–P6 tehty tänään.
+**Tilanne (28.5.2026):** 163 sanaa, CFO-taso, P1–P9 kaikki tehty. Variant A -teema tuotannossa.
 
-**Seuraava tehtävä — P1 Sisällön laajennus:**
-`@agents/kieltenopettaja.md` Luo 12 uutta sanaa controlling-kategoriaan (c9–c20).
-Käyttäjä hyväksyy taulukon → Claude Code lisää VOCAB:iin.
+**Seuraava tehtävä — P10 Daily Practice -uudistus:**
+"Daily Practice" = automaattinen sekoitettu sessio (eri kysymystyypit automaattisesti)
+"Harjoittele" = käyttäjä valitsee tyypin itse
 
-**Jono sen jälkeen:** P7 (personoidut sessiovinkit) → P8 (tip heikon sanan kohdalla) → P9 (sanoihin porautuminen)
+**Jono sen jälkeen:** P11 (kirjoitusharjoitukset) → P12 (puheharjoitukset) → P13 (pelillistäminen) → P14 (synkronointi)
 
 ---
 
-*Päivitetty: 18.5.2026 | Sanasto: 99 sanaa | Käyttäjätaso: Controller (10 551 XP)*
+## 12. VISUAL REDESIGN PROTOCOL
+
+**Käytä tätä aina kun teema tai layout muuttuu merkittävästi.**
+
+### Kolme pakollista vaihetta
+
+**Vaihe 1 — Sisältökartta (ENNEN koodia)**
+UX-agentti toimittaa taulukon: välilehti | osiot järjestyksessä | muuttuuko?
+Käyttäjä hyväksyy. Vasta sen jälkeen koodataan.
+
+**Vaihe 2 — Muutoslista**
+UX-agentti listaa: mitkä komponentit muuttuvat, mitkä värit/fontit vaihtuvat.
+Käyttäjä hyväksyy. Vasta sen jälkeen pushataan.
+
+**Vaihe 3 — Tarkistuslista ennen pushia**
+```
+[ ] Kaikki 5 välilehteä paikallaan (Etusivu/Sanasto/Edistyminen/Ohjeet/Asetukset)
+[ ] Jokaisen välilehden sisältö vastaa hyväksyttyä sisältökarttaa
+[ ] localStorage-avain: acceng_v1 — muuttumaton
+[ ] BOX_INTERVALS = [0,1,3,7,14,30] — koskematta
+[ ] VOCAB-taulukko — koskematta
+[ ] Testattu mobiililla (390px)
+[ ] Apostrofit escapattu JSX:ssä
+```
+
+### Miksi tämä on tärkeää
+Visual Redesign 18.5.2026 ilman sisältökarttaa → stats väärällä välilehdellä,
+Ohjeet-välilehti katosi, Kategoriat duplikoitui → 3 erillistä korjauspushia.
+Sisältökartta + tarkistuslista olisivat estäneet kaikki nämä.
+
+---
+
+*Päivitetty: 28.5.2026 | Sanasto: 163 sanaa | Käyttäjätaso: CFO | Tehty: P1–P9 + Variant A -teema*
