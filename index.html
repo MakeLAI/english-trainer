@@ -311,6 +311,9 @@ function loadState() {
     if(s.dailyGoal==null) s.dailyGoal=250;
     if(s.todayXp==null) s.todayXp=0;
     if(s.lastXpDate==null) s.lastXpDate=null;
+    if(s.xp==null) s.xp=0;
+    if(s.sessions==null) s.sessions=0;
+    if(s.streak==null) s.streak=0;
     // Reset todayXp if new day
     if(s.lastXpDate!==todayKey()) s.todayXp=0;
     return s;
@@ -543,8 +546,6 @@ function HomeView({state,onPractice}) {
   const xpIn=xp-lv.min, xpNeed=next?next.min-lv.min:1;
   const pct=Math.min(100,Math.round((xpIn/xpNeed)*100));
   const mastered=getMastered(state);
-  const today=todayKey();
-  const due=VOCAB.filter(w=>!state.words[w.id]||state.words[w.id].nextReview<=today).length;
   const tot=(state.totalCorrect||0)+(state.totalWrong||0);
   const acc=tot>0?Math.round(((state.totalCorrect||0)/tot)*100):0;
   const dailyGoal=state.dailyGoal||250;
@@ -594,17 +595,6 @@ function HomeView({state,onPractice}) {
           <div style={{height:4,background:C.bgGlow,borderRadius:2}}><div style={{height:'100%',width:`${pct}%`,background:`linear-gradient(90deg,${C.accentDark},${C.accent})`,borderRadius:2,transition:'width 0.5s'}}/></div>
         </div>
       )}
-      <IndexCard cat="daily" style={{marginBottom:14}}>
-        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-          <div>
-            <div style={{fontFamily:FS,fontSize:24,color:C.ink,fontWeight:700}}>{due} sanaa</div>
-            <div style={{fontFamily:FU,fontSize:12,color:C.inkMute}}>odottaa harjoittelua tänään</div>
-          </div>
-          <div style={{width:36,height:36,background:C.accent,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center'}}>
-            <svg viewBox="0 0 24 24" width={20} height={20} fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-          </div>
-        </div>
-      </IndexCard>
       <button onClick={()=>setShowModes(true)} style={{width:'100%',padding:'16px',border:'none',borderRadius:10,cursor:'pointer',background:`linear-gradient(135deg,${C.accentDark},${C.accent})`,color:'#fff',fontFamily:FS,fontSize:20,fontWeight:600,boxShadow:`0 4px 16px rgba(201,122,60,0.3)`,marginBottom:14}}>
         Harjoittele →
       </button>
@@ -620,10 +610,10 @@ function HomeView({state,onPractice}) {
       </div>
       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:16}}>
         {[
-          {label:'Sanoja opittu',val:mastered,sub:`/ ${VOCAB.length}`},
+          {label:'Sanoja opittu',val:String(mastered),sub:`/ ${VOCAB.length}`},
           {label:'Tarkkuus',val:`${acc}%`,sub:'kaikki sessiot'},
-          {label:'Sessiot',val:state.sessions||0,sub:'yhteensä'},
-          {label:'Saavutukset',val:(state.achievements||[]).length,sub:`/ ${ACHIEVEMENTS.length}`},
+          {label:'Sessiot',val:String(state.sessions||0),sub:'yhteensä'},
+          {label:'Saavutukset',val:String((state.achievements||[]).length),sub:`/ ${ACHIEVEMENTS.length}`},
         ].map((s,i)=>(
           <div key={i} style={{background:C.bgGlow,borderRadius:8,padding:'12px'}}>
             <div style={{fontFamily:FM,fontSize:20,color:C.paper}}>{s.val}</div>
@@ -705,7 +695,11 @@ function LibraryView({state}) {
                 <div style={{fontFamily:FS,fontSize:16,color:C.paper,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{w.en}</div>
                 <div style={{fontFamily:FU,fontSize:11,color:C.inkMute}}>{w.fi}</div>
               </div>
-              <div style={{fontFamily:FM,fontSize:10,color:C.inkFaint,flexShrink:0}}>B{ws.box||0}</div>
+              <div style={{display:'flex',gap:3,flexShrink:0,alignItems:'center'}}>
+                {[0,1,2,3,4].map(i=>(
+                  <div key={i} style={{width:6,height:6,borderRadius:'50%',background:i<(ws.box||0)?((ws.box||0)>=3?'#4ade80':C.accent):'rgba(168,148,102,0.25)'}}/>
+                ))}
+              </div>
             </button>
           );
         })}
@@ -747,22 +741,6 @@ function StatsView({state}) {
   return (
     <div style={{padding:16}}>
       <div style={{fontFamily:FS,fontSize:26,color:C.paper,marginBottom:16}}>Edistyminen</div>
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:20}}>
-        {[
-          {l:'XP yhteensä',v:xp.toLocaleString(),s:'pistettä'},
-          {l:'Taso',v:lvIdx+1,s:lv.title},
-          {l:'Sessioita',v:state.sessions||0,s:'harjoitusta'},
-          {l:'Streak',v:`${state.streak||0} 🔥`,s:'päivää'},
-          {l:'Hallittu',v:`${mastered}/${VOCAB.length}`,s:'sanaa (B3+)'},
-          {l:'Tarkkuus',v:`${acc}%`,s:`${state.totalCorrect||0}/${tot}`},
-        ].map((s,i)=>(
-          <div key={i} style={{background:C.bgGlow,borderRadius:8,padding:'12px'}}>
-            <div style={{fontFamily:FM,fontSize:20,color:C.paper}}>{s.v}</div>
-            <div style={{fontFamily:FU,fontSize:11,color:C.inkMute,marginTop:2}}>{s.l}</div>
-            <div style={{fontFamily:FU,fontSize:10,color:C.inkFaint}}>{s.s}</div>
-          </div>
-        ))}
-      </div>
 
       <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:10}}>Hallinta kategorioittain</div>
       {Object.entries(CATS).map(([key,cat])=>{
