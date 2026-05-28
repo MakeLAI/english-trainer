@@ -300,8 +300,9 @@ function defaultState() {
 function loadState() {
   try {
     const raw=localStorage.getItem(SK);
-    if(!raw) return defaultState();
+    if(!raw) { console.log('[acceng] localStorage tyhjä — palautetaan oletustila'); return defaultState(); }
     const s=JSON.parse(raw);
+    console.log('[acceng] loadState:', {xp:s.xp, sessions:s.sessions, streak:s.streak, achievements:(s.achievements||[]).length, wordCount:Object.keys(s.words||{}).length, masteredCount:Object.values(s.words||{}).filter(w=>w&&w.box>=3).length});
     if(!s.words) s.words={};
     VOCAB.forEach(w=>{if(!s.words[w.id])s.words[w.id]=defaultWord();});
     if(!s.achievements) s.achievements=[];
@@ -548,6 +549,7 @@ function HomeView({state,onPractice}) {
   const mastered=getMastered(state);
   const tot=(state.totalCorrect||0)+(state.totalWrong||0);
   const acc=tot>0?Math.round(((state.totalCorrect||0)/tot)*100):0;
+  console.log('[acceng] HomeView:', {mastered, sessions:state.sessions, acc, achievements:(state.achievements||[]).length});
   const dailyGoal=state.dailyGoal||250;
   const todayXp=state.todayXp||0;
   const dailyPct=Math.min(1,todayXp/dailyGoal);
@@ -610,10 +612,10 @@ function HomeView({state,onPractice}) {
       </div>
       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:16}}>
         {[
-          {label:'Sanoja opittu',val:String(mastered),sub:`/ ${VOCAB.length}`},
+          {label:'Sanoja opittu',val:`${mastered}`,sub:`/ ${VOCAB.length}`},
           {label:'Tarkkuus',val:`${acc}%`,sub:'kaikki sessiot'},
-          {label:'Sessiot',val:String(state.sessions||0),sub:'yhteensä'},
-          {label:'Saavutukset',val:String((state.achievements||[]).length),sub:`/ ${ACHIEVEMENTS.length}`},
+          {label:'Sessiot',val:`${state.sessions||0}`,sub:'yhteensä'},
+          {label:'Saavutukset',val:`${(state.achievements||[]).length}`,sub:`/ ${ACHIEVEMENTS.length}`},
         ].map((s,i)=>(
           <div key={i} style={{background:C.bgGlow,borderRadius:8,padding:'12px'}}>
             <div style={{fontFamily:FM,fontSize:20,color:C.paper}}>{s.val}</div>
@@ -754,10 +756,15 @@ function StatsView({state}) {
           <div key={key} style={{background:C.bgGlow,borderRadius:8,padding:'10px 12px',marginBottom:8}}>
             <div style={{display:'flex',justifyContent:'space-between',marginBottom:6}}>
               <span style={{fontFamily:FU,fontSize:13,color:C.paper}}>{cat.label}</span>
-              <span style={{fontFamily:FM,fontSize:11,color:C.inkMute}}>{m}/{ws.length}</span>
+              <span style={{fontFamily:FM,fontSize:11,color:m>0?C.paper:C.inkMute}}>{m}/{ws.length}</span>
             </div>
-            <div style={{height:4,background:'#1a1510',borderRadius:2,marginBottom:4}}><div style={{height:'100%',width:`${p}%`,background:catColor(key),borderRadius:2}}/></div>
-            {catAcc!==null&&<div style={{fontFamily:FU,fontSize:10,color:C.inkFaint}}>Tarkkuus: {catAcc}%</div>}
+            <div style={{height:4,background:'#1a1510',borderRadius:2,marginBottom:4}}>
+              <div style={{height:'100%',width:`${Math.max(p,m>0?2:0)}%`,background:catColor(key),borderRadius:2}}/>
+            </div>
+            {catAcc!==null
+              ?<div style={{fontFamily:FU,fontSize:10,color:C.inkFaint}}>Tarkkuus: {catAcc}%</div>
+              :<div style={{fontFamily:FU,fontSize:10,color:C.inkFaint}}>Ei harjoiteltu vielä</div>
+            }
           </div>
         );
       })}
