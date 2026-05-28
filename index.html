@@ -594,15 +594,7 @@ function HomeView({state,onPractice}) {
           <div style={{height:4,background:C.bgGlow,borderRadius:2}}><div style={{height:'100%',width:`${pct}%`,background:`linear-gradient(90deg,${C.accentDark},${C.accent})`,borderRadius:2,transition:'width 0.5s'}}/></div>
         </div>
       )}
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,marginBottom:20}}>
-        {[{label:'Hallittu',val:`${mastered}/${VOCAB.length}`},{label:'Tarkkuus',val:`${acc}%`},{label:'Sessiot',val:state.sessions||0}].map((s,i)=>(
-          <div key={i} style={{background:C.bgGlow,borderRadius:8,padding:'10px 6px',textAlign:'center'}}>
-            <div style={{fontFamily:FM,fontSize:15,color:C.paper}}>{s.val}</div>
-            <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,marginTop:2}}>{s.label}</div>
-          </div>
-        ))}
-      </div>
-      <IndexCard cat="daily" style={{marginBottom:16}}>
+      <IndexCard cat="daily" style={{marginBottom:14}}>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
           <div>
             <div style={{fontFamily:FS,fontSize:24,color:C.ink,fontWeight:700}}>{due} sanaa</div>
@@ -616,7 +608,7 @@ function HomeView({state,onPractice}) {
       <button onClick={()=>setShowModes(true)} style={{width:'100%',padding:'16px',border:'none',borderRadius:10,cursor:'pointer',background:`linear-gradient(135deg,${C.accentDark},${C.accent})`,color:'#fff',fontFamily:FS,fontSize:20,fontWeight:600,boxShadow:`0 4px 16px rgba(201,122,60,0.3)`,marginBottom:14}}>
         Harjoittele →
       </button>
-      <div style={{background:C.bgGlow,borderRadius:10,padding:'12px 14px',marginBottom:20}}>
+      <div style={{background:C.bgGlow,borderRadius:10,padding:'12px 14px',marginBottom:16}}>
         <div style={{display:'flex',justifyContent:'space-between',marginBottom:6}}>
           <span style={{fontFamily:FU,fontSize:12,color:C.paper}}>Päivän tavoite</span>
           <span style={{fontFamily:FM,fontSize:12,color:todayXp>=dailyGoal?'#4ade80':C.accent}}>{todayXp} / {dailyGoal} XP</span>
@@ -626,19 +618,33 @@ function HomeView({state,onPractice}) {
         </div>
         {todayXp>=dailyGoal&&<div style={{fontFamily:FU,fontSize:11,color:'#4ade80',marginTop:4}}>✓ Tavoite saavutettu!</div>}
       </div>
-      <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:10}}>Kategoriat</div>
-      {Object.entries(CATS).map(([key,cat])=>{
-        const ws=VOCAB.filter(w=>w.cat===key), m=ws.filter(w=>state.words[w.id]?.box>=3).length;
-        return (
-          <div key={key} style={{marginBottom:9}}>
-            <div style={{display:'flex',justifyContent:'space-between',marginBottom:3}}>
-              <span style={{fontFamily:FU,fontSize:12,color:C.paper}}>{cat.fi}</span>
-              <span style={{fontFamily:FM,fontSize:10,color:C.inkMute}}>{m}/{ws.length}</span>
-            </div>
-            <div style={{height:3,background:'#1a1510',borderRadius:2}}><div style={{height:'100%',width:`${Math.round((m/ws.length)*100)}%`,background:catColor(key),borderRadius:2}}/></div>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:16}}>
+        {[
+          {label:'Sanoja opittu',val:mastered,sub:`/ ${VOCAB.length}`},
+          {label:'Tarkkuus',val:`${acc}%`,sub:'kaikki sessiot'},
+          {label:'Sessiot',val:state.sessions||0,sub:'yhteensä'},
+          {label:'Saavutukset',val:(state.achievements||[]).length,sub:`/ ${ACHIEVEMENTS.length}`},
+        ].map((s,i)=>(
+          <div key={i} style={{background:C.bgGlow,borderRadius:8,padding:'12px'}}>
+            <div style={{fontFamily:FM,fontSize:20,color:C.paper}}>{s.val}</div>
+            <div style={{fontFamily:FU,fontSize:11,color:C.inkMute,marginTop:2}}>{s.label}</div>
+            {s.sub&&<div style={{fontFamily:FU,fontSize:10,color:C.inkFaint}}>{s.sub}</div>}
           </div>
-        );
-      })}
+        ))}
+      </div>
+      {(state.achievements||[]).length>0&&(()=>{
+        const lastA=ACHIEVEMENTS.find(a=>a.id===(state.achievements||[]).slice(-1)[0]);
+        return lastA?(
+          <div style={{display:'flex',alignItems:'center',gap:12,padding:'12px',background:C.bgGlow,borderRadius:8,borderLeft:`3px solid #fbbf24`}}>
+            <span style={{fontSize:28}}>{lastA.icon}</span>
+            <div>
+              <div style={{fontFamily:FU,fontSize:11,color:C.inkFaint,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:2}}>Viimeisin saavutus</div>
+              <div style={{fontFamily:FU,fontSize:13,fontWeight:600,color:'#fbbf24'}}>{lastA.title}</div>
+              <div style={{fontFamily:FU,fontSize:11,color:C.inkMute}}>{lastA.desc}</div>
+            </div>
+          </div>
+        ):null;
+      })()}
     </div>
   );
 }
