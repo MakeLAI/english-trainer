@@ -624,6 +624,9 @@ function HomeView({state,onPractice}) {
           </div>
         ))}
       </div>
+      <div style={{background:'#0a1a0a',border:'1px solid #1a3a1a',borderRadius:6,padding:'8px 10px',marginBottom:12,fontFamily:FM,fontSize:10,color:'#4ade80'}}>
+        🔍 Data: XP={state.xp||0} · Sessiot={state.sessions||0} · Hallittu={mastered} · Saavutukset={(state.achievements||[]).length}
+      </div>
       {(state.achievements||[]).length>0&&(()=>{
         const lastA=ACHIEVEMENTS.find(a=>a.id===(state.achievements||[]).slice(-1)[0]);
         return lastA?(
