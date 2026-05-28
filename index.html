@@ -66,6 +66,42 @@ const TIER_GLYPHS = [
 /* ── SRS + KATEGORIAT ──────────────────────────────────────────────────────── */
 const BOX_INTERVALS = [0,1,3,7,14,30];
 const SK = 'acceng_v1';
+const SYNC_KEY = 'acceng_sync_v1';
+
+/* ── GITHUB GIST SYNC ──────────────────────────────────────────────────────── */
+function loadSyncCfg(){try{const r=localStorage.getItem(SYNC_KEY);return r?JSON.parse(r):{token:'',gistId:''};}catch(e){return{token:'',gistId:''};}}
+function saveSyncCfg(c){try{localStorage.setItem(SYNC_KEY,JSON.stringify(c));}catch(e){}}
+async function gistPush(token,gistId,state){
+  const body={description:'Accounting English Trainer progress',files:{'progress.json':{content:JSON.stringify(state)}}};
+  if(!gistId){
+    const r=await fetch('https://api.github.com/gists',{method:'POST',headers:{'Authorization':`token ${token}`,'Content-Type':'application/json'},body:JSON.stringify({...body,public:false})});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    return(await r.json()).id;
+  }
+  const r=await fetch(`https://api.github.com/gists/${gistId}`,{method:'PATCH',headers:{'Authorization':`token ${token}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  return gistId;
+}
+async function gistPull(token,gistId){
+  const r=await fetch(`https://api.github.com/gists/${gistId}`,{headers:{'Authorization':`token ${token}`}});
+  if(!r.ok)return null;
+  const d=await r.json();
+  const c=d.files?.['progress.json']?.content;
+  return c?JSON.parse(c):null;
+}
+function mergeRemote(remote){
+  const s={...defaultState(),...remote};
+  VOCAB.forEach(w=>{if(!s.words[w.id])s.words[w.id]=defaultWord();});
+  if(!s.achievements)s.achievements=[];
+  if(s.sessions==null)s.sessions=0;
+  if(s.xp==null)s.xp=0;
+  if(s.totalCorrect==null)s.totalCorrect=0;
+  if(s.totalWrong==null)s.totalWrong=0;
+  if(s.dailyGoal==null)s.dailyGoal=250;
+  if(s.todayXp==null)s.todayXp=0;
+  if(s.lastXpDate!==todayKey())s.todayXp=0;
+  return s;
+}
 
 const CATS = {
   basics:     {fi:'Perusteet',   en:'Basics',       label:'Kirjanpidon perusteet',    short:'Perusteet',   hue:210},
@@ -891,9 +927,44 @@ function GuideView({state}) {
 }
 
 /* ── SETTINGS VIEW ──────────────────────────────────────────────────────────── */
-function SettingsView({state,onReset,onGoalChange}) {
+function SettingsView({state,onReset,onGoalChange,syncStatus,setSyncStatus,onSyncLoad}) {
   const [conf,setConf]=useState(false),[imp,setImp]=useState(false);
   const goal=state.dailyGoal||250;
+  const [syncCfg,setSyncCfgState]=useState(loadSyncCfg);
+  const [tokenInput,setTokenInput]=useState(()=>loadSyncCfg().token||'');
+  const [syncMsg,setSyncMsg]=useState('');
+
+  async function handleConnect(){
+    if(!tokenInput.trim()){setSyncMsg('Syötä token ensin.');return;}
+    setSyncStatus('syncing');setSyncMsg('Yhdistetään...');
+    try{
+      const cfg=loadSyncCfg();
+      const newId=await gistPush(tokenInput.trim(),cfg.gistId||'',state);
+      const newCfg={token:tokenInput.trim(),gistId:newId};
+      saveSyncCfg(newCfg);setSyncCfgState(newCfg);
+      setSyncStatus('ok');setSyncMsg('✓ Yhdistetty ja tallennettu!');
+    }catch(e){setSyncStatus('err');setSyncMsg('Virhe: '+e.message+' — tarkista token.');}
+  }
+  async function handlePull(){
+    const cfg=loadSyncCfg();
+    if(!cfg.token||!cfg.gistId){setSyncMsg('Ei yhteyttä — yhdistä ensin.');return;}
+    setSyncStatus('syncing');setSyncMsg('Ladataan pilvestä...');
+    try{
+      const remote=await gistPull(cfg.token,cfg.gistId);
+      if(!remote){setSyncMsg('Gistissä ei dataa.');setSyncStatus('err');return;}
+      onSyncLoad(remote);setSyncStatus('ok');
+      setSyncMsg(`✓ Ladattu! XP: ${remote.xp||0}, Sessiot: ${remote.sessions||0}`);
+    }catch(e){setSyncStatus('err');setSyncMsg('Virhe: '+e.message);}
+  }
+  async function handlePush(){
+    const cfg=loadSyncCfg();
+    if(!cfg.token||!cfg.gistId){setSyncMsg('Ei yhteyttä — yhdistä ensin.');return;}
+    setSyncStatus('syncing');setSyncMsg('Tallennetaan pilveen...');
+    try{
+      await gistPush(cfg.token,cfg.gistId,state);
+      setSyncStatus('ok');setSyncMsg('✓ Tallennettu pilveen!');
+    }catch(e){setSyncStatus('err');setSyncMsg('Virhe: '+e.message);}
+  }
   function exportData(){
     const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
     const url=URL.createObjectURL(blob);
@@ -909,6 +980,32 @@ function SettingsView({state,onReset,onGoalChange}) {
   return (
     <div style={{padding:16}}>
       <div style={{fontFamily:FS,fontSize:26,color:C.paper,marginBottom:20}}>Asetukset</div>
+
+      <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:8}}>Pilvisynkronointi</div>
+      <div style={{background:C.bgGlow,borderRadius:10,padding:'14px',marginBottom:20}}>
+        <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:12}}>
+          <div style={{width:8,height:8,borderRadius:'50%',flexShrink:0,background:syncStatus==='ok'?'#4ade80':syncStatus==='err'?'#f87171':syncStatus==='syncing'?C.accent:C.inkFaint}}/>
+          <span style={{fontFamily:FU,fontSize:12,color:syncStatus==='ok'?'#4ade80':syncStatus==='err'?'#f87171':syncStatus==='syncing'?C.accent:C.inkMute,flex:1}}>
+            {syncStatus==='ok'?'Yhdistetty — synkronointi päällä':syncStatus==='err'?'Virhe — tarkista token':syncStatus==='syncing'?'Synkronoidaan…':'Ei yhteyttä'}
+          </span>
+          {syncCfg.gistId&&<span style={{fontFamily:FM,fontSize:9,color:C.inkFaint}}>#{syncCfg.gistId.slice(0,7)}</span>}
+        </div>
+        <div style={{fontFamily:FU,fontSize:11,color:C.inkMute,marginBottom:4}}>GitHub Personal Access Token</div>
+        <input type="password" value={tokenInput} onChange={e=>setTokenInput(e.target.value)} placeholder="ghp_xxxxxxxxxxxx" style={{width:'100%',padding:'10px',background:C.bg,border:`1px solid #2a201a`,borderRadius:6,color:C.paper,fontFamily:FM,fontSize:12,marginBottom:8}}/>
+        <button onClick={handleConnect} style={{width:'100%',padding:'11px',background:C.accent,border:'none',borderRadius:6,cursor:'pointer',color:'#fff',fontFamily:FU,fontSize:13,fontWeight:600,marginBottom:syncCfg.gistId?6:0}}>
+          {syncCfg.gistId?'Päivitä yhteys':'Yhdistä & luo Gist'}
+        </button>
+        {syncCfg.gistId&&(
+          <div style={{display:'flex',gap:6}}>
+            <button onClick={handlePull} style={{flex:1,padding:'9px',background:C.bg,border:`1px solid #2a201a`,borderRadius:6,cursor:'pointer',color:C.paper,fontFamily:FU,fontSize:12}}>⬇ Lataa pilvestä</button>
+            <button onClick={handlePush} style={{flex:1,padding:'9px',background:C.bg,border:`1px solid #2a201a`,borderRadius:6,cursor:'pointer',color:C.paper,fontFamily:FU,fontSize:12}}>⬆ Tallenna pilveen</button>
+          </div>
+        )}
+        {syncMsg&&<div style={{fontFamily:FU,fontSize:11,color:syncMsg.startsWith('✓')?'#4ade80':'#f87171',marginTop:8}}>{syncMsg}</div>}
+        {!syncCfg.gistId&&<div style={{fontFamily:FU,fontSize:10,color:C.inkFaint,marginTop:10,lineHeight:1.6}}>
+          Luo token: GitHub.com → Settings → Developer settings → Personal access tokens → Tokens (classic) → New token → valitse <span style={{fontFamily:FM,color:C.accent}}>gist</span>-oikeus → kopioi token tähän.
+        </div>}
+      </div>
 
       <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:8}}>Päivän XP-tavoite</div>
       <div style={{background:C.bgGlow,borderRadius:10,padding:'12px',marginBottom:20}}>
@@ -953,8 +1050,29 @@ function App() {
   const [view,setView]=useState('home');
   const [practMode,setPractMode]=useState(null);
   const [practWords,setPractWords]=useState(null);
+  const [syncStatus,setSyncStatus]=useState('idle'); // idle|syncing|ok|err
 
   function save(s){setState(s);saveState(s);}
+
+  // Auto-load from Gist on startup
+  useEffect(()=>{
+    const cfg=loadSyncCfg();
+    if(!cfg.token||!cfg.gistId) return;
+    setSyncStatus('syncing');
+    gistPull(cfg.token,cfg.gistId).then(remote=>{
+      if(!remote){setSyncStatus('err');return;}
+      setState(cur=>{
+        if((remote.xp||0)>(cur.xp||0)){
+          const s=mergeRemote(remote);
+          saveState(s);
+          setSyncStatus('ok');
+          return s;
+        }
+        setSyncStatus('ok');
+        return cur;
+      });
+    }).catch(()=>setSyncStatus('err'));
+  },[]);
 
   function startPractice(mode,cat) {
     const today=todayKey();
@@ -998,7 +1116,14 @@ function App() {
     }
     const newA=checkAchievements(ns);
     ns.achievements=[...(ns.achievements||[]),...newA];
-    save(ns); setView('home'); setPractWords(null); setPractMode(null);
+    save(ns);
+    // Auto-sync to Gist
+    const cfg=loadSyncCfg();
+    if(cfg.token&&cfg.gistId){
+      setSyncStatus('syncing');
+      gistPush(cfg.token,cfg.gistId,ns).then(()=>setSyncStatus('ok')).catch(()=>setSyncStatus('err'));
+    }
+    setView('home'); setPractWords(null); setPractMode(null);
   }
 
   if(view==='practice'&&practWords) return (
@@ -1021,7 +1146,7 @@ function App() {
         {view==='library'&&<LibraryView state={state}/>}
         {view==='stats'&&<StatsView state={state}/>}
         {view==='guide'&&<GuideView state={state}/>}
-        {view==='settings'&&<SettingsView state={state} onReset={()=>save(defaultState())} onGoalChange={g=>save({...state,dailyGoal:g})}/>}
+        {view==='settings'&&<SettingsView state={state} onReset={()=>save(defaultState())} onGoalChange={g=>save({...state,dailyGoal:g})} syncStatus={syncStatus} setSyncStatus={setSyncStatus} onSyncLoad={r=>{const s=mergeRemote(r);save(s);}}/>}
       </div>
       <BottomNav view={view} setView={setView}/>
     </Shell>
