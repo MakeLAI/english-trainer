@@ -295,7 +295,7 @@ function defaultWord() { return {box:0,nextReview:todayKey(),correct:0,wrong:0,s
 function defaultState() {
   const words={};
   VOCAB.forEach(w=>{words[w.id]=defaultWord();});
-  return {words,xp:0,sessions:0,streak:0,lastSession:null,achievements:[],totalCorrect:0,totalWrong:0,maxCombo:0};
+  return {words,xp:0,sessions:0,streak:0,lastSession:null,achievements:[],totalCorrect:0,totalWrong:0,maxCombo:0,dailyGoal:250,todayXp:0,lastXpDate:null};
 }
 function loadState() {
   try {
@@ -308,6 +308,11 @@ function loadState() {
     if(s.maxCombo==null) s.maxCombo=0;
     if(s.totalCorrect==null) s.totalCorrect=0;
     if(s.totalWrong==null) s.totalWrong=0;
+    if(s.dailyGoal==null) s.dailyGoal=250;
+    if(s.todayXp==null) s.todayXp=0;
+    if(s.lastXpDate==null) s.lastXpDate=null;
+    // Reset todayXp if new day
+    if(s.lastXpDate!==todayKey()) s.todayXp=0;
     return s;
   } catch(e) { return defaultState(); }
 }
@@ -386,6 +391,7 @@ function BottomNav({view,setView}) {
     {id:'home',label:'Etusivu',path:'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10'},
     {id:'library',label:'Sanasto',path:'m16 6 4 14 M12 6v14 M8 8v12 M4 4v16'},
     {id:'stats',label:'Edistyminen',path:'M3 3v18h18 M18 17V9 M13 17V5 M8 17v-3'},
+    {id:'guide',label:'Ohjeet',path:'M9 18h6 M10 22h4 M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z'},
     {id:'settings',label:'Asetukset',path:'M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z M9 12a3 3 0 1 0 6 0 3 3 0 0 0-6 0'},
   ];
   return (
@@ -541,6 +547,9 @@ function HomeView({state,onPractice}) {
   const due=VOCAB.filter(w=>!state.words[w.id]||state.words[w.id].nextReview<=today).length;
   const tot=(state.totalCorrect||0)+(state.totalWrong||0);
   const acc=tot>0?Math.round(((state.totalCorrect||0)/tot)*100):0;
+  const dailyGoal=state.dailyGoal||250;
+  const todayXp=state.todayXp||0;
+  const dailyPct=Math.min(1,todayXp/dailyGoal);
 
   if(showModes) return (
     <div style={{padding:16}}>
@@ -604,9 +613,19 @@ function HomeView({state,onPractice}) {
           </div>
         </div>
       </IndexCard>
-      <button onClick={()=>setShowModes(true)} style={{width:'100%',padding:'16px',border:'none',borderRadius:10,cursor:'pointer',background:`linear-gradient(135deg,${C.accentDark},${C.accent})`,color:'#fff',fontFamily:FS,fontSize:20,fontWeight:600,boxShadow:`0 4px 16px rgba(201,122,60,0.3)`,marginBottom:20}}>
+      <button onClick={()=>setShowModes(true)} style={{width:'100%',padding:'16px',border:'none',borderRadius:10,cursor:'pointer',background:`linear-gradient(135deg,${C.accentDark},${C.accent})`,color:'#fff',fontFamily:FS,fontSize:20,fontWeight:600,boxShadow:`0 4px 16px rgba(201,122,60,0.3)`,marginBottom:14}}>
         Harjoittele →
       </button>
+      <div style={{background:C.bgGlow,borderRadius:10,padding:'12px 14px',marginBottom:20}}>
+        <div style={{display:'flex',justifyContent:'space-between',marginBottom:6}}>
+          <span style={{fontFamily:FU,fontSize:12,color:C.paper}}>Päivän tavoite</span>
+          <span style={{fontFamily:FM,fontSize:12,color:todayXp>=dailyGoal?'#4ade80':C.accent}}>{todayXp} / {dailyGoal} XP</span>
+        </div>
+        <div style={{height:6,background:'#1a1510',borderRadius:3}}>
+          <div style={{height:'100%',width:`${dailyPct*100}%`,background:todayXp>=dailyGoal?'#4ade80':`linear-gradient(90deg,${C.accentDark},${C.accent})`,borderRadius:3,transition:'width 0.5s'}}/>
+        </div>
+        {todayXp>=dailyGoal&&<div style={{fontFamily:FU,fontSize:11,color:'#4ade80',marginTop:4}}>✓ Tavoite saavutettu!</div>}
+      </div>
       <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:10}}>Kategoriat</div>
       {Object.entries(CATS).map(([key,cat])=>{
         const ws=VOCAB.filter(w=>w.cat===key), m=ws.filter(w=>state.words[w.id]?.box>=3).length;
@@ -691,11 +710,33 @@ function LibraryView({state}) {
 
 /* ── STATS VIEW ─────────────────────────────────────────────────────────────── */
 function StatsView({state}) {
+  const [openTip,setOpenTip]=useState(null);
+  const [showExp,setShowExp]=useState(false);
   const xp=state.xp||0, mastered=getMastered(state);
   const tot=(state.totalCorrect||0)+(state.totalWrong||0);
   const acc=tot>0?Math.round(((state.totalCorrect||0)/tot)*100):0;
   const lvIdx=getLevelIdx(xp), lv=LEVELS[lvIdx];
-  const earned=ACHIEVEMENTS.filter(a=>(state.achievements||[]).includes(a.id));
+  const earned=new Set(state.achievements||[]);
+
+  // Weak words: wrong>=2 && box<=2
+  const weak=Object.entries(state.words||{})
+    .filter(([,p])=>(p.wrong||0)>=2&&(p.box||0)<=2)
+    .sort((a,b)=>(b[1].wrong||0)-(a[1].wrong||0))
+    .slice(0,5)
+    .map(([id,p])=>({word:VOCAB.find(w=>w.id===id),p}))
+    .filter(x=>x.word);
+
+  // Export data
+  const exportStr=JSON.stringify({
+    xp,sessions:state.sessions||0,streak:state.streak||0,
+    mastered,accuracy:acc,
+    categories:Object.fromEntries(Object.entries(CATS).map(([k,c])=>{
+      const ws=VOCAB.filter(w=>w.cat===k);
+      const m=ws.filter(w=>state.words[w.id]?.box>=3).length;
+      return [k,{label:c.label,mastered:m,total:ws.length}];
+    })),
+    achievements:(state.achievements||[]),
+  },null,2);
 
   return (
     <div style={{padding:16}}>
@@ -716,38 +757,152 @@ function StatsView({state}) {
           </div>
         ))}
       </div>
-      <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:10}}>Kategoriat</div>
+
+      <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:10}}>Hallinta kategorioittain</div>
       {Object.entries(CATS).map(([key,cat])=>{
-        const ws=VOCAB.filter(w=>w.cat===key), m=ws.filter(w=>state.words[w.id]?.box>=3).length;
+        const ws=VOCAB.filter(w=>w.cat===key);
+        const m=ws.filter(w=>state.words[w.id]?.box>=3).length;
+        const tc=ws.reduce((s,w)=>s+(state.words[w.id]?.correct||0),0);
+        const tw=ws.reduce((s,w)=>s+(state.words[w.id]?.wrong||0),0);
+        const catAcc=tc+tw>0?Math.round(100*tc/(tc+tw)):null;
         const p=Math.round((m/ws.length)*100);
         return (
-          <div key={key} style={{marginBottom:10}}>
-            <div style={{display:'flex',justifyContent:'space-between',marginBottom:3}}>
+          <div key={key} style={{background:C.bgGlow,borderRadius:8,padding:'10px 12px',marginBottom:8}}>
+            <div style={{display:'flex',justifyContent:'space-between',marginBottom:6}}>
               <span style={{fontFamily:FU,fontSize:13,color:C.paper}}>{cat.label}</span>
-              <span style={{fontFamily:FM,fontSize:11,color:C.inkMute}}>{m}/{ws.length} · {p}%</span>
+              <span style={{fontFamily:FM,fontSize:11,color:C.inkMute}}>{m}/{ws.length}</span>
             </div>
-            <div style={{height:4,background:'#1a1510',borderRadius:2}}><div style={{height:'100%',width:`${p}%`,background:catColor(key),borderRadius:2}}/></div>
+            <div style={{height:4,background:'#1a1510',borderRadius:2,marginBottom:4}}><div style={{height:'100%',width:`${p}%`,background:catColor(key),borderRadius:2}}/></div>
+            {catAcc!==null&&<div style={{fontFamily:FU,fontSize:10,color:C.inkFaint}}>Tarkkuus: {catAcc}%</div>}
           </div>
         );
       })}
-      {earned.length>0&&<>
-        <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:10,marginTop:20}}>Saavutukset ({earned.length}/{ACHIEVEMENTS.length})</div>
+
+      {weak.length>0&&<>
+        <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:10,marginTop:20}}>Kehitettävää</div>
         <div style={{display:'flex',flexDirection:'column',gap:6}}>
-          {earned.map(a=>(
-            <div key={a.id} style={{display:'flex',alignItems:'center',gap:10,background:C.bgGlow,borderRadius:8,padding:'10px 12px'}}>
-              <span style={{fontSize:20}}>{a.icon}</span>
-              <div><div style={{fontFamily:FU,fontSize:13,color:C.paper,fontWeight:600}}>{a.title}</div><div style={{fontFamily:FU,fontSize:11,color:C.inkMute}}>{a.desc}</div></div>
+          {weak.map(({word,p})=>(
+            <div key={word.id} style={{background:'rgba(248,113,113,0.05)',border:'1px solid rgba(248,113,113,0.2)',borderRadius:8,overflow:'hidden'}}>
+              <button onClick={()=>setOpenTip(openTip===word.id?null:word.id)} style={{width:'100%',padding:'10px 12px',background:'none',border:'none',cursor:'pointer',textAlign:'left',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                <div>
+                  <div style={{fontFamily:FU,fontSize:13,color:C.paper}}>{word.fi}</div>
+                  <div style={{fontFamily:FU,fontSize:11,color:C.inkMute}}>{word.en}</div>
+                </div>
+                <div style={{display:'flex',alignItems:'center',gap:8}}>
+                  <span style={{fontFamily:FM,fontSize:11,color:'#f87171'}}>{p.wrong} virhettä</span>
+                  <span style={{color:C.inkMute,fontSize:10}}>{openTip===word.id?'▲':'▼'}</span>
+                </div>
+              </button>
+              {openTip===word.id&&word.tip&&<div style={{padding:'0 12px 10px',borderTop:'1px solid rgba(248,113,113,0.1)',paddingTop:8}}><div style={{fontFamily:FU,fontSize:11,color:C.inkFaint}}>{word.tip}</div></div>}
             </div>
           ))}
         </div>
       </>}
+
+      <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:10,marginTop:20}}>Saavutukset ({(state.achievements||[]).length}/{ACHIEVEMENTS.length})</div>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:20}}>
+        {ACHIEVEMENTS.map(a=>{
+          const ok=earned.has(a.id);
+          return (
+            <div key={a.id} style={{background:ok?'rgba(251,191,36,0.05)':C.bgGlow,border:`1px solid ${ok?'rgba(251,191,36,0.3)':'#1a1510'}`,borderRadius:8,padding:'10px',opacity:ok?1:0.45}}>
+              <div style={{fontSize:22,marginBottom:4}}>{a.icon}</div>
+              <div style={{fontFamily:FU,fontSize:12,fontWeight:600,color:ok?'#fbbf24':C.inkMute}}>{a.title}</div>
+              <div style={{fontFamily:FU,fontSize:10,color:C.inkFaint,marginTop:2}}>{a.desc}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      <button onClick={()=>setShowExp(true)} style={{width:'100%',padding:'12px',background:C.bgGlow,border:`1px solid #2a201a`,borderRadius:8,cursor:'pointer',color:C.paper,fontFamily:FU,fontSize:14,display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginBottom:16}}>
+        ⬇ Vie edistyminen Claudelle
+      </button>
+
+      {showExp&&(
+        <div style={{position:'fixed',inset:0,zIndex:50,background:'rgba(0,0,0,0.8)',display:'flex',alignItems:'flex-end',justifyContent:'center',padding:16}}>
+          <div style={{width:'100%',maxWidth:480,background:'#1a1510',border:`1px solid #2a201a`,borderRadius:16,padding:20,maxHeight:'80vh',overflow:'auto'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+              <div style={{fontFamily:FS,fontSize:18,color:C.paper}}>Export Claudelle</div>
+              <button onClick={()=>setShowExp(false)} style={{background:'none',border:'none',cursor:'pointer',color:C.inkMute,fontSize:20}}>×</button>
+            </div>
+            <div style={{fontFamily:FU,fontSize:11,color:C.inkMute,marginBottom:10}}>Kopioi ja liitä Claudelle uudessa keskustelussa.</div>
+            <pre style={{fontFamily:FM,fontSize:10,color:C.paper,background:C.bg,padding:12,borderRadius:8,overflow:'auto',maxHeight:240,marginBottom:12,whiteSpace:'pre-wrap'}}>{exportStr}</pre>
+            <button onClick={()=>{navigator.clipboard?.writeText(exportStr);}} style={{width:'100%',padding:'12px',background:`linear-gradient(135deg,${C.accentDark},${C.accent})`,border:'none',borderRadius:8,cursor:'pointer',color:'#fff',fontFamily:FU,fontSize:14,fontWeight:600}}>Kopioi leikepöydälle</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── GUIDE VIEW ─────────────────────────────────────────────────────────────── */
+function GuideView({state}) {
+  const lvIdx=getLevelIdx(state.xp||0);
+  return (
+    <div style={{padding:16}}>
+      <div style={{fontFamily:FS,fontSize:26,color:C.paper,marginBottom:16}}>Ohjeet</div>
+
+      <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:10}}>Miten sovellus toimii</div>
+      <div style={{background:C.bgGlow,borderRadius:10,padding:'14px',marginBottom:20}}>
+        <div style={{display:'flex',gap:12,marginBottom:12}}>
+          <div style={{width:36,height:36,borderRadius:8,background:'rgba(201,122,60,0.15)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}}>🃏</div>
+          <div>
+            <div style={{fontFamily:FU,fontSize:14,fontWeight:600,color:C.paper,marginBottom:4}}>Leitner-kortisto (SRS)</div>
+            <div style={{fontFamily:FU,fontSize:12,color:C.inkMute,lineHeight:1.5}}>Sanat kiertävät 5 boksin läpi. Oikea vastaus siirtää sanan pidemmälle — väärä palauttaa takaisin. Mitä pidemmällä boksi, sitä harvemmin sana tulee uusintaan.</div>
+          </div>
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:4}}>
+          {[['B0','heti','#f87171'],['B1','1 pv','#fb923c'],['B2','3 pv','#facc15'],['B3','7 pv','#4ade80'],['B4','14 pv','#a78bfa']].map(([b,d,col])=>(
+            <div key={b} style={{borderRadius:6,padding:'6px 4px',textAlign:'center',background:`${col}18`,border:`1px solid ${col}40`}}>
+              <div style={{fontFamily:FM,fontSize:10,fontWeight:600,color:col}}>{b}</div>
+              <div style={{fontFamily:FU,fontSize:9,color:C.inkFaint,marginTop:2}}>{d}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{fontFamily:FU,fontSize:10,color:C.inkFaint,marginTop:8}}>B3+ = sana on "hallittu". B5 = 30 päivän väli.</div>
+      </div>
+
+      <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:10}}>Tasokartta</div>
+      <div style={{background:C.bgGlow,borderRadius:10,overflow:'hidden',marginBottom:20}}>
+        {LEVELS.map((l,i)=>{
+          const isCurrent=i===lvIdx, isDone=i<lvIdx;
+          const next=LEVELS[i+1];
+          return (
+            <div key={l.title} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 14px',borderBottom:i<LEVELS.length-1?`1px solid #1a1510`:'none',background:isCurrent?'rgba(201,122,60,0.08)':'transparent'}}>
+              <LevelBadge xp={l.min} size={28}/>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontFamily:FU,fontSize:13,fontWeight:600,color:isCurrent?C.accent:isDone?C.inkMute:C.paper,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{l.title}</div>
+                <div style={{fontFamily:FM,fontSize:10,color:C.inkFaint}}>{l.min.toLocaleString()} XP{next?` – ${(next.min-1).toLocaleString()}`:''}</div>
+              </div>
+              {isCurrent&&<span style={{fontFamily:FU,fontSize:10,color:C.accent,fontWeight:600,flexShrink:0}}>← sinä</span>}
+              {isDone&&<span style={{color:'#4ade80',fontSize:14,flexShrink:0}}>✓</span>}
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:10}}>Välilehdet</div>
+      <div style={{display:'flex',flexDirection:'column',gap:8}}>
+        {[
+          {icon:'🏠',title:'Etusivu',desc:'Tasosi, XP-palkki, päivän tavoite ja pikakäynnistys harjoitteluun.'},
+          {icon:'📚',title:'Sanasto',desc:'Selaa koko sanastoa kategorioittain. Näet boksitason ja oikein/väärin-tilaston.'},
+          {icon:'📊',title:'Edistyminen',desc:'Kategoriakohtainen hallinta, heikot sanat, saavutukset ja export Claudelle.'},
+          {icon:'💡',title:'Ohjeet',desc:'Tämä sivu. SRS-selitys, tasokartta ja välilehtikuvaukset.'},
+          {icon:'⚙️',title:'Asetukset',desc:'Päivän XP-tavoite, varmuuskopiointi ja datan nollaus.'},
+        ].map(({icon,title,desc})=>(
+          <div key={title} style={{display:'flex',gap:12,padding:'10px 12px',background:C.bgGlow,borderRadius:8}}>
+            <div style={{fontSize:18,width:28,textAlign:'center',flexShrink:0}}>{icon}</div>
+            <div><div style={{fontFamily:FU,fontSize:13,fontWeight:600,color:C.paper,marginBottom:2}}>{title}</div><div style={{fontFamily:FU,fontSize:11,color:C.inkMute,lineHeight:1.4}}>{desc}</div></div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
 /* ── SETTINGS VIEW ──────────────────────────────────────────────────────────── */
-function SettingsView({state,onReset}) {
+function SettingsView({state,onReset,onGoalChange}) {
   const [conf,setConf]=useState(false),[imp,setImp]=useState(false);
+  const goal=state.dailyGoal||250;
   function exportData(){
     const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
     const url=URL.createObjectURL(blob);
@@ -763,23 +918,37 @@ function SettingsView({state,onReset}) {
   return (
     <div style={{padding:16}}>
       <div style={{fontFamily:FS,fontSize:26,color:C.paper,marginBottom:20}}>Asetukset</div>
-      <div style={{display:'flex',flexDirection:'column',gap:10}}>
-        <button onClick={exportData} style={{padding:'14px 16px',background:C.bgGlow,border:`1px solid #2a201a`,borderRadius:8,cursor:'pointer',textAlign:'left',color:C.paper,fontFamily:FU,fontSize:14}}>⬇ Lataa varmuuskopio</button>
-        <label style={{padding:'14px 16px',background:C.bgGlow,border:`1px solid #2a201a`,borderRadius:8,cursor:'pointer',display:'block',color:imp?'#4ade80':C.paper,fontFamily:FU,fontSize:14}}>
-          {imp?'✓ Tuotu!':'⬆ Tuo varmuuskopio'}
+
+      <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:8}}>Päivän XP-tavoite</div>
+      <div style={{background:C.bgGlow,borderRadius:10,padding:'12px',marginBottom:20}}>
+        <div style={{display:'flex',gap:8,marginBottom:8}}>
+          {[150,250,400,600].map(g=>(
+            <button key={g} onClick={()=>onGoalChange(g)} style={{flex:1,padding:'10px 0',border:`1px solid ${goal===g?C.accent:'#2a201a'}`,borderRadius:8,cursor:'pointer',background:goal===g?'rgba(201,122,60,0.15)':C.bg,color:goal===g?C.accent:C.inkMute,fontFamily:FM,fontSize:13,fontWeight:600}}>{g}</button>
+          ))}
+        </div>
+        <div style={{fontFamily:FU,fontSize:10,color:C.inkFaint}}>150 ≈ 1 sessio · 250 ≈ hyvä sessio · 400 ≈ 2 sessiota</div>
+      </div>
+
+      <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:8}}>Varmuuskopiointi</div>
+      <div style={{display:'flex',flexDirection:'column',gap:8,marginBottom:20}}>
+        <button onClick={exportData} style={{padding:'13px 16px',background:C.bgGlow,border:`1px solid #2a201a`,borderRadius:8,cursor:'pointer',textAlign:'left',color:C.paper,fontFamily:FU,fontSize:14}}>⬇ Lataa varmuuskopio (.json)</button>
+        <label style={{padding:'13px 16px',background:C.bgGlow,border:`1px solid #2a201a`,borderRadius:8,cursor:'pointer',display:'block',color:imp?'#4ade80':C.paper,fontFamily:FU,fontSize:14}}>
+          {imp?'✓ Tuotu!':'⬆ Tuo varmuuskopio (.json)'}
           <input type="file" accept=".json" onChange={importData} style={{display:'none'}}/>
         </label>
-        {!conf
-          ?<button onClick={()=>setConf(true)} style={{padding:'14px 16px',background:'#1a0808',border:`1px solid #3a1818`,borderRadius:8,cursor:'pointer',textAlign:'left',color:'#f87171',fontFamily:FU,fontSize:14}}>Nollaa kaikki edistyminen</button>
-          :<div style={{background:'#1a0808',border:`1px solid #3a1818`,borderRadius:8,padding:16}}>
-            <div style={{fontFamily:FU,fontSize:13,color:'#f87171',marginBottom:12}}>Oletko varma? Kaikki data poistetaan pysyvästi.</div>
-            <div style={{display:'flex',gap:8}}>
-              <button onClick={()=>setConf(false)} style={{flex:1,padding:'10px',background:C.bgGlow,border:'none',borderRadius:6,cursor:'pointer',color:C.paper,fontFamily:FU}}>Peruuta</button>
-              <button onClick={()=>{onReset();setConf(false);}} style={{flex:1,padding:'10px',background:'#3a1010',border:'none',borderRadius:6,cursor:'pointer',color:'#f87171',fontFamily:FU,fontWeight:600}}>Nollaa</button>
-            </div>
-          </div>
-        }
       </div>
+
+      <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:8}}>Vaara-alue</div>
+      {!conf
+        ?<button onClick={()=>setConf(true)} style={{width:'100%',padding:'13px 16px',background:'#1a0808',border:`1px solid #3a1818`,borderRadius:8,cursor:'pointer',textAlign:'left',color:'#f87171',fontFamily:FU,fontSize:14}}>Nollaa kaikki edistyminen</button>
+        :<div style={{background:'#1a0808',border:`1px solid #3a1818`,borderRadius:8,padding:16}}>
+          <div style={{fontFamily:FU,fontSize:13,color:'#f87171',marginBottom:12}}>Oletko varma? Kaikki data poistetaan pysyvästi.</div>
+          <div style={{display:'flex',gap:8}}>
+            <button onClick={()=>setConf(false)} style={{flex:1,padding:'10px',background:C.bgGlow,border:'none',borderRadius:6,cursor:'pointer',color:C.paper,fontFamily:FU}}>Peruuta</button>
+            <button onClick={()=>{onReset();setConf(false);}} style={{flex:1,padding:'10px',background:'#3a1010',border:'none',borderRadius:6,cursor:'pointer',color:'#f87171',fontFamily:FU,fontWeight:600}}>Nollaa</button>
+          </div>
+        </div>
+      }
       <div style={{marginTop:28,fontFamily:FM,fontSize:10,color:C.inkFaint}}>
         Sanasto v2.0 · {VOCAB.length} sanaa · {SK}
       </div>
@@ -819,7 +988,10 @@ function App() {
       ns.words[id]=ws;
     });
     const ok=results.filter(r=>r.correct).length;
-    ns.xp=(ns.xp||0)+ok*10;
+    const xpGained=ok*10;
+    ns.xp=(ns.xp||0)+xpGained;
+    ns.todayXp=(ns.lastXpDate===today?(ns.todayXp||0):0)+xpGained;
+    ns.lastXpDate=today;
     ns.totalCorrect=(ns.totalCorrect||0)+ok;
     ns.totalWrong=(ns.totalWrong||0)+(results.length-ok);
     ns.sessions=(ns.sessions||0)+1;
@@ -857,7 +1029,8 @@ function App() {
         {view==='home'&&<HomeView state={state} onPractice={startPractice}/>}
         {view==='library'&&<LibraryView state={state}/>}
         {view==='stats'&&<StatsView state={state}/>}
-        {view==='settings'&&<SettingsView state={state} onReset={()=>save(defaultState())}/>}
+        {view==='guide'&&<GuideView state={state}/>}
+        {view==='settings'&&<SettingsView state={state} onReset={()=>save(defaultState())} onGoalChange={g=>save({...state,dailyGoal:g})}/>}
       </div>
       <BottomNav view={view} setView={setView}/>
     </Shell>
