@@ -1106,20 +1106,28 @@ function SettingsView({state,onReset,onGoalChange,syncStatus,setSyncStatus,onSyn
         </div>
         <div style={{fontFamily:FU,fontSize:11,color:C.inkMute,marginBottom:4}}>GitHub Personal Access Token</div>
         <input type="password" value={tokenInput} onChange={e=>setTokenInput(e.target.value)} placeholder="ghp_xxxxxxxxxxxx" style={{width:'100%',padding:'10px',background:C.bg,border:`1px solid #2a201a`,borderRadius:6,color:C.paper,fontFamily:FM,fontSize:12,marginBottom:8}}/>
-        <button onClick={handleConnect} style={{width:'100%',padding:'11px',background:C.accent,border:'none',borderRadius:6,cursor:'pointer',color:'#fff',fontFamily:FU,fontSize:13,fontWeight:600,marginBottom:syncCfg.gistId?6:0}}>
+        <button onClick={handleConnect} style={{width:'100%',padding:'11px',background:C.accent,border:'none',borderRadius:6,cursor:'pointer',color:'#fff',fontFamily:FU,fontSize:13,fontWeight:600}}>
           {syncCfg.gistId?'Päivitä yhteys':'Yhdistä & luo Gist'}
         </button>
-        {syncCfg.gistId&&(
-          <div style={{display:'flex',gap:6}}>
-            <button onClick={handlePull} style={{flex:1,padding:'9px',background:C.bg,border:`1px solid #2a201a`,borderRadius:6,cursor:'pointer',color:C.paper,fontFamily:FU,fontSize:12}}>⬇ Lataa pilvestä</button>
-            <button onClick={handlePush} style={{flex:1,padding:'9px',background:C.bg,border:`1px solid #2a201a`,borderRadius:6,cursor:'pointer',color:C.paper,fontFamily:FU,fontSize:12}}>⬆ Tallenna pilveen</button>
-          </div>
-        )}
+        {syncCfg.gistId&&<div style={{fontFamily:FU,fontSize:11,color:'#4ade80',marginTop:10,lineHeight:1.5}}>✓ Synkronointi on automaattinen — edistyminen tallentuu pilveen ja latautuu itsestään kaikilla laitteilla. Sinun ei tarvitse tehdä mitään.</div>}
         {syncMsg&&<div style={{fontFamily:FU,fontSize:11,color:syncMsg.startsWith('✓')?'#4ade80':'#f87171',marginTop:8}}>{syncMsg}</div>}
         {!syncCfg.gistId&&<div style={{fontFamily:FU,fontSize:10,color:C.inkFaint,marginTop:10,lineHeight:1.6}}>
           Luo token: GitHub.com → Settings → Developer settings → Personal access tokens → Tokens (classic) → New token → valitse <span style={{fontFamily:FM,color:C.accent}}>gist</span>-oikeus → kopioi token tähän.
         </div>}
       </div>
+
+      {syncCfg.gistId&&<>
+        <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:8}}>Manuaaliohjaus — vain erikoistilanteisiin</div>
+        <div style={{background:C.bgGlow,borderRadius:10,padding:'14px',marginBottom:20}}>
+          <div style={{fontFamily:FU,fontSize:11,color:C.inkFaint,lineHeight:1.6,marginBottom:12}}>
+            Normaalisti et tarvitse näitä — synkronointi on automaattinen. Käytä vain jos haluat pakottaa synkronoinnin.
+          </div>
+          <button onClick={handlePull} style={{width:'100%',padding:'11px',background:C.bg,border:`1px solid #2a201a`,borderRadius:6,cursor:'pointer',color:C.paper,fontFamily:FU,fontSize:13,textAlign:'left',marginBottom:6}}>⬇ Lataa pilvestä (pakota)</button>
+          <div style={{fontFamily:FU,fontSize:10,color:C.inkFaint,lineHeight:1.5,marginBottom:12}}>Korvaa tämän laitteen tiedot pilven tiedoilla — <b>myös jos tämän laitteen XP on suurempi</b>. Käytä esim. nollauksen jälkeen toisella laitteella, tai jos tämän laitteen data on virheellinen.</div>
+          <button onClick={handlePush} style={{width:'100%',padding:'11px',background:C.bg,border:`1px solid #2a201a`,borderRadius:6,cursor:'pointer',color:C.paper,fontFamily:FU,fontSize:13,textAlign:'left',marginBottom:6}}>⬆ Tallenna pilveen (pakota)</button>
+          <div style={{fontFamily:FU,fontSize:10,color:C.inkFaint,lineHeight:1.5}}>Työntää tämän laitteen tiedot pilveen heti odottamatta automatiikkaa. Harvoin tarpeen.</div>
+        </div>
+      </>}
 
       <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:8}}>Päivän XP-tavoite</div>
       <div style={{background:C.bgGlow,borderRadius:10,padding:'12px',marginBottom:20}}>
