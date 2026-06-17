@@ -299,4 +299,32 @@ Sisältökartta + tarkistuslista olisivat estäneet kaikki nämä.
 
 ---
 
-*Päivitetty: 28.5.2026 | Sanasto: 163 sanaa | Käyttäjätaso: CFO | Tehty: P1–P9 + Variant A -teema*
+## 13. DATA SAFETY & DEPLOYMENT PROTOCOL ⚠️ (LUE ENNEN JOKAISTA PUSHIA)
+
+**Tärkein sääntö koko projektissa: käyttäjän edistyminen ei saa KOSKAAN kadota, eikä rikkinäinen päivitys saa mennä tuotantoon.** Tämä luku syntyi koska dataa hävisi ja sovellus mustaruutuili useamman päivityksen aikana.
+
+### A. Deployment — pakollinen verifiointi ennen pushia
+Selain-Babel tarkoittaa, että syntaksi-/ajovirheet näkyvät VASTA ajossa → rikkinäinen push mustaruutuilee tuotannon hiljaa. Siksi:
+```
+[ ] 1. Lataa muutos PAIKALLISEEN esikatseluun (ei vain lue koodia)
+[ ] 2. Varmista: #root dataset.mounted==='1' JA lapsia on
+[ ] 3. Konsolissa NOLLA virhettä (vain Babel-varoitus sallittu)
+[ ] 4. Jos koskettaa harjoitus-/synkronointi-/asetuslogiikkaa: testaa se polku esikatselussa
+[ ] 5. Vasta sitten git push
+[ ] 6. Kerro käyttäjälle: hard-refresh (Ctrl+Shift+R), GitHub Pages cache ~1-2 min
+```
+**Älä koskaan palauta `<script type="text/babel">`-automaattikäännöstä** (ks. luku 1 Babel-sudenkuoppa). Vain manuaalinen `runtime:'classic'`.
+
+### B. Data — kerroksittainen suoja edistymiselle
+1. **hydrated-suoja:** auto-push EI saa lähettää mitään ennen kuin käynnistyslataus on valmis. Tyhjän 0 XP:n työntäminen pilveen oikean datan päälle = pahin mahdollinen vika.
+2. **XP-regressiosuoja:** auto-push EI saa hiljaa lähettää tilaa, jonka XP on pienempi kuin pilven viimeisin. XP:n lasku (nollaus) vaatii käyttäjän painaman "(pakota)"-napin.
+3. **Varmuuskopiot monessa kerroksessa:** paikallinen paras-XP-snapshot localStorage:ssa + pilven `progress.prev.json` (edellinen versio).
+4. **Avainerottelu:** `acceng_v1` = edistyminen, `acceng_sync_v1` = synkronointiasetukset. "Nollaa synkronointi" -nappi koskee VAIN jälkimmäistä. Älä koskaan vahingossa kytke nollausta edistymisavaimeen.
+5. **Ennen nollaus-/destruktiivisia synkronointitestejä:** exporttaa .json-varmuuskopio ensin.
+
+### Miksi tämä on tärkeää
+Tässä projektissa: auto-push olisi voinut ylikirjoittaa 17 684 XP:n nollalla (estetty hydrated-suojalla); localStorage tyhjeni laitteelta (estetty Gist-syncillä); Babel automatic runtime mustaruutuili kaiken (estetty klassisella ajonajalla). Jokainen näistä olisi vältetty noudattamalla tätä protokollaa.
+
+---
+
+*Päivitetty: 28.5.2026 | Sanasto: 163 sanaa | Käyttäjätaso: CFO | Tehty: P1–P9 + Variant A -teema + P14 Gist-sync + tietoturvakovennus*
