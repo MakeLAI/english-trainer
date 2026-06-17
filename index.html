@@ -35,7 +35,7 @@ window.addEventListener('error', function(e){
   }
 });
 </script>
-<script type="text/babel" data-presets="react" data-type="script">
+<script type="text/jsx-source" id="app-src">
 const { useState, useEffect } = React;
 
 /* ── DESIGN TOKENS ─────────────────────────────────────────────────────────── */
@@ -1162,8 +1162,25 @@ function App() {
 }
 
 const rootEl=document.getElementById('root');
-rootEl.dataset.mounted='1';
 ReactDOM.createRoot(rootEl).render(<App/>);
+rootEl.dataset.mounted='1';
+</script>
+<script>
+// Manuaalinen Babel-käännös: pakota KLASSINEN JSX-ajonaika (React.createElement),
+// jotta automaattinen ajonaika ei lisää import-lausetta (kaataisi koko sovelluksen).
+(function(){
+  try{
+    var src=document.getElementById('app-src').textContent;
+    var out=Babel.transform(src,{presets:[['react',{runtime:'classic'}]]}).code;
+    (0,eval)(out);
+  }catch(err){
+    console.error('[acceng] Käännös/ajo epäonnistui:',err);
+    var root=document.getElementById('root');
+    if(root&&!root.dataset.mounted){
+      root.innerHTML='<div style="padding:20px;font-family:monospace;font-size:13px;color:#f87171;background:#15110c;min-height:100vh;line-height:1.6"><b style="color:#e6d9b8">Virhe sovelluksessa:</b><br><br>'+((err&&err.message)||'Tuntematon')+'</div>';
+    }
+  }
+})();
 </script>
 </body>
 </html>
