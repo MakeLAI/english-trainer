@@ -28,6 +28,23 @@ GitHub Pages     — hosting (Public repo, Free tier)
 
 **Tärkeä rajoite:** Ei backendiä, ei npm, ei build-vaihetta. Kaikki yhdessä `index.html`-tiedostossa. Apostrofit JSX-merkkijonoissa escapataan: `machine\'s` tai käytetään double quoteja.
 
+### ⚠️ BABEL-SUDENKUOPPA — KLASSINEN JSX-AJONAIKA PAKOLLINEN
+
+**Älä käytä `<script type="text/babel">`-automaattikäännöstä.** Babel Standalonen react-preset käyttää nykyään "automatic"-JSX-ajonaikaa, joka lisää käännettyyn koodiin rivin:
+```js
+import { jsx as _jsx } from "react/jsx-runtime";
+```
+Tämä `import`-lause kaataa koko sovelluksen (musta ruutu) virheellä **"Cannot use import statement outside a module"**, koska CDN-setupissa ei ole moduulijärjestelmää. `data-presets`/`data-type`-attribuutit EIVÄT korjaa tätä.
+
+**Oikea tapa (käytössä index.html:ssä):** koodi on inert-skriptissä `<script type="text/jsx-source" id="app-src">`, ja erillinen ajuriskripti kääntää sen manuaalisesti pakottaen klassisen ajonajan:
+```js
+var out = Babel.transform(src, {presets:[['react',{runtime:'classic'}]]}).code;
+(0,eval)(out);
+```
+`runtime:'classic'` → `React.createElement`, EI import-lauseita. **Tätä rakennetta ei saa muuttaa takaisin automaattikäännökseen.**
+
+**Diagnoosi jos musta ruutu palaa:** avaa konsoli (F12). "Cannot use import statement outside a module" = ajonaika-ongelma. Tarkista käännetty skripti: jos se alkaa `import {...}`, klassinen ajonaika ei ole päällä.
+
 **Muutostyönkulku:**
 1. Tee muutokset `index.html`-tiedostoon
 2. Testaa selaimessa (ei Claude-appissa)
