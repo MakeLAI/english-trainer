@@ -50,8 +50,8 @@ const FM = '"IBM Plex Mono", ui-monospace, Menlo, monospace';
 const FU = '"Inter Tight", -apple-system, system-ui, sans-serif';
 const CAT_HUE = {basics:210,balance:158,income:38,daily:350,ifrs:268,controlling:232,phrases:318};
 const catColor = cat => `oklch(58% 0.13 ${CAT_HUE[cat]||210})`;
-const paperBg = {background:`linear-gradient(180deg,${C.paper} 0%,${C.paperShade} 100%)`};
-const paperGrain = {backgroundImage:`repeating-linear-gradient(0deg,rgba(60,40,10,0.04) 0px,rgba(60,40,10,0.04) 1px,transparent 1px,transparent 3px),repeating-linear-gradient(90deg,rgba(80,50,20,0.025) 0px,rgba(80,50,20,0.025) 1px,transparent 1px,transparent 5px)`};
+const paperBg = {backgroundColor:C.paper};
+const paperGrain = {backgroundImage:`repeating-linear-gradient(0deg,rgba(60,40,10,0.04) 0px,rgba(60,40,10,0.04) 1px,transparent 1px,transparent 3px),repeating-linear-gradient(90deg,rgba(80,50,20,0.025) 0px,rgba(80,50,20,0.025) 1px,transparent 1px,transparent 5px),linear-gradient(180deg,${C.paper} 0%,${C.paperShade} 100%)`};
 
 /* ── TIER GLYPHS ───────────────────────────────────────────────────────────── */
 const TIER_GLYPHS = [
@@ -481,6 +481,11 @@ function Practice({mode,words,onFinish}) {
     setResults(r);
     setTimeout(()=>setIdx(i=>i+1),correct?400:700);
   }
+  // Monivalinta: vastaus kirjataan heti valinnasta, eteneminen vasta Jatka-napista
+  function advanceNow() {
+    setResults(r=>[...r,{id:word.id,correct:selected===correctOpt}]);
+    setIdx(i=>i+1);
+  }
 
   if(!word) {
     const ok=results.filter(r=>r.correct).length;
@@ -568,16 +573,23 @@ function Practice({mode,words,onFinish}) {
             <button key={i} onClick={()=>{
               if(selected) return;
               setSelected(opt);
-              setTimeout(()=>answer(opt===correctOpt),700);
             }} style={{padding:'13px 14px',border,borderRadius:8,cursor:selected?'default':'pointer',background:bg,color:col2,fontFamily:FU,fontSize:14,textAlign:'left',transition:'all 0.2s'}}>
               {opt}
             </button>
           );
         })}
       </div>
-      {selected&&word.tip&&(
-        <div style={{marginTop:12,padding:'10px 12px',background:C.bgGlow,borderRadius:8,borderLeft:`3px solid ${C.accent}`}}>
-          <div style={{fontFamily:FU,fontSize:11,color:C.inkFaint}}>{word.tip}</div>
+      {selected&&(
+        <div style={{marginTop:12}}>
+          <div style={{padding:'10px 12px',background:C.bgGlow,borderRadius:8,borderLeft:`3px solid ${selected===correctOpt?'#4ade80':'#f87171'}`,marginBottom:10}}>
+            <div style={{fontFamily:FU,fontSize:13,fontWeight:600,color:selected===correctOpt?'#4ade80':'#f87171',marginBottom:word.tip?6:0}}>
+              {selected===correctOpt?'✓ Oikein!':`✗ Oikea vastaus: ${correctOpt}`}
+            </div>
+            {word.tip&&<div style={{fontFamily:FU,fontSize:11,color:C.inkFaint}}>{word.tip}</div>}
+          </div>
+          <button onClick={advanceNow} style={{width:'100%',padding:'14px',border:'none',borderRadius:8,cursor:'pointer',background:`linear-gradient(135deg,${C.accentDark},${C.accent})`,color:'#fff',fontFamily:FS,fontSize:17,fontWeight:600}}>
+            {idx+1>=words.length?'Valmis →':'Jatka →'}
+          </button>
         </div>
       )}
     </div>
