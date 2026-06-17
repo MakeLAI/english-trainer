@@ -26,6 +26,15 @@
 </head>
 <body>
 <div id="root"></div>
+<script>
+// Globaali virheenkaappaaja — näyttää virheen mustan ruudun sijaan
+window.addEventListener('error', function(e){
+  var root=document.getElementById('root');
+  if(root && !root.dataset.mounted){
+    root.innerHTML='<div style="padding:20px;font-family:monospace;font-size:13px;color:#f87171;background:#15110c;min-height:100vh;line-height:1.6"><b style="color:#e6d9b8">Virhe sovelluksessa:</b><br><br>'+(e.message||e.error||'Tuntematon')+'<br><br><span style="color:#a89466;font-size:11px">'+(e.filename||'')+' :'+(e.lineno||'?')+'</span><br><br><button onclick="localStorage.removeItem(\'acceng_sync_v1\');location.reload()" style="padding:10px 16px;background:#c97a3c;border:none;border-radius:6px;color:#fff;font-size:13px">Nollaa synkronointi & lataa uudelleen</button></div>';
+  }
+});
+</script>
 <script type="text/babel">
 const { useState, useEffect } = React;
 
@@ -86,7 +95,8 @@ async function gistPull(token,gistId){
   const r=await fetch(`https://api.github.com/gists/${gistId}`,{headers:{'Authorization':`token ${token}`}});
   if(!r.ok)return null;
   const d=await r.json();
-  const c=d.files?.['progress.json']?.content;
+  const f=d&&d.files?d.files['progress.json']:null;
+  const c=f?f.content:null;
   return c?JSON.parse(c):null;
 }
 function mergeRemote(remote){
@@ -1056,21 +1066,19 @@ function App() {
 
   // Auto-load from Gist on startup
   useEffect(()=>{
-    const cfg=loadSyncCfg();
-    if(!cfg.token||!cfg.gistId) return;
+    let cfg;
+    try{ cfg=loadSyncCfg(); }catch(e){ return; }
+    if(!cfg||!cfg.token||!cfg.gistId) return;
     setSyncStatus('syncing');
     gistPull(cfg.token,cfg.gistId).then(remote=>{
       if(!remote){setSyncStatus('err');return;}
-      setState(cur=>{
-        if((remote.xp||0)>(cur.xp||0)){
-          const s=mergeRemote(remote);
-          saveState(s);
-          setSyncStatus('ok');
-          return s;
-        }
-        setSyncStatus('ok');
-        return cur;
-      });
+      const local=loadState();
+      if((remote.xp||0)>(local.xp||0)){
+        const s=mergeRemote(remote);
+        saveState(s);
+        setState(s);
+      }
+      setSyncStatus('ok');
     }).catch(()=>setSyncStatus('err'));
   },[]);
 
@@ -1153,7 +1161,9 @@ function App() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+const rootEl=document.getElementById('root');
+rootEl.dataset.mounted='1';
+ReactDOM.createRoot(rootEl).render(<App/>);
 </script>
 </body>
 </html>
