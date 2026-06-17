@@ -183,6 +183,7 @@ Kaikki toimii Claude Codessa. PM-rooli on siirtynyt käyttäjälle.
 | **Claude Code** | Tämä sessio | Ei lisää sanastoa itsenäisesti ilman hyväksyntää |
 | **Kieltenopettaja** | `@agents/kieltenopettaja.md` | Ei muokkaa koodia, ei vie GitHubiin |
 | **UX-agentti** | `@agents/ux-agent.md` | Ei muuta sisältörakennetta ilman sisältökartan hyväksyntää |
+| **Tietoturva-agentti** | `@agents/tietoturva.md` | Käy läpi koodin & sivun, korjaa haavoittuvuudet; raportoi ennen muutoksia |
 
 **Workflow — sanasto:**
 ```
@@ -200,7 +201,7 @@ Kaikki toimii Claude Codessa. PM-rooli on siirtynyt käyttäjälle.
   → Claude Code toteuttaa surgical editinä + tarkistuslista + vie GitHubiin
 ```
 
-**Roolitiedostot:** `agents/kieltenopettaja.md` · `agents/project-manager.md` · `agents/ux-agent.md`
+**Roolitiedostot:** `agents/kieltenopettaja.md` · `agents/project-manager.md` · `agents/ux-agent.md` · `agents/tietoturva.md`
 
 ---
 

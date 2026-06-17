@@ -2,6 +2,10 @@
 <html lang="fi">
 <head>
   <meta charset="UTF-8">
+  <!-- Content Security Policy: rajaa mistä koodia ladataan ja MINNE dataa voi lähettää.
+       connect-src estää tokenin viennin muualle kuin GitHubin APIin (XSS-suoja). -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://api.github.com; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -12,9 +16,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Pinnatut versiot + SRI-tarkistussummat: jos CDN murretaan, muuttunut tiedosto hylätään. -->
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@8.0.1/babel.min.js" integrity="sha384-qowNkx6Np6801Cz0Sz0ftU5+V+SCzqoH0r0HsqR6jRnRm6rOz45uhhHsJ/GB3VD/" crossorigin="anonymous"></script>
   <style>
     * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; margin: 0; padding: 0; }
     html, body, #root { width: 100%; height: 100%; }
@@ -27,11 +32,13 @@
 <body>
 <div id="root"></div>
 <script>
+// HTML-escape: estää virhetekstin kautta tapahtuvan HTML-injektion (XSS-suoja).
+function escHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 // Globaali virheenkaappaaja — näyttää virheen mustan ruudun sijaan
 window.addEventListener('error', function(e){
   var root=document.getElementById('root');
   if(root && !root.dataset.mounted){
-    root.innerHTML='<div style="padding:20px;font-family:monospace;font-size:13px;color:#f87171;background:#15110c;min-height:100vh;line-height:1.6"><b style="color:#e6d9b8">Virhe sovelluksessa:</b><br><br>'+(e.message||e.error||'Tuntematon')+'<br><br><span style="color:#a89466;font-size:11px">'+(e.filename||'')+' :'+(e.lineno||'?')+'</span><br><br><button onclick="localStorage.removeItem(\'acceng_sync_v1\');location.reload()" style="padding:10px 16px;background:#c97a3c;border:none;border-radius:6px;color:#fff;font-size:13px">Nollaa synkronointi & lataa uudelleen</button></div>';
+    root.innerHTML='<div style="padding:20px;font-family:monospace;font-size:13px;color:#f87171;background:#15110c;min-height:100vh;line-height:1.6"><b style="color:#e6d9b8">Virhe sovelluksessa:</b><br><br>'+escHtml(e.message||e.error||'Tuntematon')+'<br><br><span style="color:#a89466;font-size:11px">'+escHtml(e.filename||'')+' :'+escHtml(e.lineno||'?')+'</span><br><br><button onclick="localStorage.removeItem(\'acceng_sync_v1\');location.reload()" style="padding:10px 16px;background:#c97a3c;border:none;border-radius:6px;color:#fff;font-size:13px">Nollaa synkronointi &amp; lataa uudelleen</button></div>';
   }
 });
 </script>
@@ -365,9 +372,8 @@ function defaultState() {
 function loadState() {
   try {
     const raw=localStorage.getItem(SK);
-    if(!raw) { console.log('[acceng] localStorage tyhjä — palautetaan oletustila'); return defaultState(); }
+    if(!raw) return defaultState();
     const s=JSON.parse(raw);
-    console.log('[acceng] loadState:', {xp:s.xp, sessions:s.sessions, streak:s.streak, achievements:(s.achievements||[]).length, wordCount:Object.keys(s.words||{}).length, masteredCount:Object.values(s.words||{}).filter(w=>w&&w.box>=3).length});
     if(!s.words) s.words={};
     VOCAB.forEach(w=>{if(!s.words[w.id])s.words[w.id]=defaultWord();});
     if(!s.achievements) s.achievements=[];
@@ -676,7 +682,6 @@ function HomeView({state,onPractice}) {
   const mastered=getMastered(state);
   const tot=(state.totalCorrect||0)+(state.totalWrong||0);
   const acc=tot>0?Math.round(((state.totalCorrect||0)/tot)*100):0;
-  console.log('[acceng] HomeView:', {mastered, sessions:state.sessions, acc, achievements:(state.achievements||[]).length});
   const dailyGoal=state.dailyGoal||250;
   const todayXp=state.todayXp||0;
   const dailyPct=Math.min(1,todayXp/dailyGoal);
@@ -1276,7 +1281,7 @@ rootEl.dataset.mounted='1';
     console.error('[acceng] Käännös/ajo epäonnistui:',err);
     var root=document.getElementById('root');
     if(root&&!root.dataset.mounted){
-      root.innerHTML='<div style="padding:20px;font-family:monospace;font-size:13px;color:#f87171;background:#15110c;min-height:100vh;line-height:1.6"><b style="color:#e6d9b8">Virhe sovelluksessa:</b><br><br>'+((err&&err.message)||'Tuntematon')+'</div>';
+      root.innerHTML='<div style="padding:20px;font-family:monospace;font-size:13px;color:#f87171;background:#15110c;min-height:100vh;line-height:1.6"><b style="color:#e6d9b8">Virhe sovelluksessa:</b><br><br>'+escHtml((err&&err.message)||'Tuntematon')+'</div>';
     }
   }
 })();
