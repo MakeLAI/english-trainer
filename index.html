@@ -353,6 +353,9 @@ function makeOptions(word, dir) {
   const pool = VOCAB.filter(w=>w.id!==word.id).map(w=>w[key]).sort(()=>Math.random()-0.5).slice(0,3);
   return [correct,...pool].sort(()=>Math.random()-0.5);
 }
+// Kirjoitusharjoituksen vastauksen normalisointi: trim, pieni kirjain, välilyönnit, loppupisteet.
+// EI hyväksy kirjoitusvirheitä — vertailu on tämän jälkeen tarkka.
+function normalizeAns(s){ return (s||'').trim().toLowerCase().replace(/\s+/g,' ').replace(/[.,;:!?]+$/,''); }
 function defaultWord() { return {box:0,nextReview:todayKey(),correct:0,wrong:0,seen:false}; }
 function defaultState() {
   const words={};
@@ -484,12 +487,14 @@ function Practice({mode,words,onFinish}) {
   const [selected,setSelected]=useState(null);
   const [options,setOptions]=useState([]);
   const [results,setResults]=useState([]);
+  const [input,setInput]=useState('');
+  const [submitted,setSubmitted]=useState(false);
   const [dir]=useState(()=>Math.random()<0.5?'fi2en':'en2fi');
   const word=words[idx];
 
   useEffect(()=>{
     if(word&&mode==='quiz') setOptions(makeOptions(word,dir));
-    setFlipped(false); setSelected(null);
+    setFlipped(false); setSelected(null); setInput(''); setSubmitted(false);
   },[idx]);
 
   function answer(correct) {
@@ -556,6 +561,54 @@ function Practice({mode,words,onFinish}) {
           <div style={{display:'flex',gap:10}}>
             <button onClick={()=>answer(false)} style={{flex:1,padding:'14px 0',border:'none',borderRadius:8,cursor:'pointer',background:'#2a1010',color:'#f87171',fontFamily:FU,fontSize:14,fontWeight:600}}>✗ En tiennyt</button>
             <button onClick={()=>answer(true)} style={{flex:1,padding:'14px 0',border:'none',borderRadius:8,cursor:'pointer',background:'#102a10',color:'#4ade80',fontFamily:FU,fontSize:14,fontWeight:600}}>✓ Tiesin</button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if(mode==='write') {
+    const expected=word.en;            // Suomi → englanti aina
+    const writeCorrect=normalizeAns(input)===normalizeAns(expected);
+    function submitWrite(){ if(!submitted&&input.trim())setSubmitted(true); }
+    function advanceWrite(){ setResults(r=>[...r,{id:word.id,correct:writeCorrect}]); setIdx(i=>i+1); }
+    return (
+      <div style={{flex:1,overflow:'auto',padding:16}}>
+        <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:16}}>
+          <span style={{fontFamily:FM,fontSize:12,color:C.inkMute}}>{idx+1}/{words.length}</span>
+          <div style={{flex:1,height:3,background:C.bgGlow,borderRadius:2}}>
+            <div style={{height:'100%',width:`${prog*100}%`,background:C.accent,borderRadius:2,transition:'width 0.3s'}}/>
+          </div>
+        </div>
+        <IndexCard cat={word.cat} style={{marginBottom:12}}>
+          <div style={{minHeight:80,display:'flex',flexDirection:'column',justifyContent:'center',gap:6}}>
+            <div style={{fontSize:10,fontFamily:FM,color:catColor(word.cat),textTransform:'uppercase',letterSpacing:'0.1em'}}>{CATS[word.cat]?.short} · {'★'.repeat(word.diff)}</div>
+            <div style={{fontFamily:FS,fontSize:28,color:C.ink,fontWeight:600}}>{word.fi}</div>
+            <div style={{fontFamily:FU,fontSize:11,color:C.inkMute}}>Kirjoita englanninkielinen termi</div>
+          </div>
+        </IndexCard>
+        <input autoFocus value={input} disabled={submitted}
+          onChange={e=>setInput(e.target.value)}
+          onKeyDown={e=>{if(e.key==='Enter')submitWrite();}}
+          placeholder="englanninkielinen termi…"
+          style={{width:'100%',padding:'14px',background:C.bgGlow,border:`1px solid ${submitted?(writeCorrect?'#4ade80':'#f87171'):'#2a201a'}`,borderRadius:8,color:C.paper,fontFamily:FU,fontSize:16,marginBottom:10}}/>
+        {!submitted&&(
+          <button onClick={submitWrite} disabled={!input.trim()} style={{width:'100%',padding:'14px',border:'none',borderRadius:8,cursor:input.trim()?'pointer':'default',background:input.trim()?`linear-gradient(135deg,${C.accentDark},${C.accent})`:C.bgGlow,color:input.trim()?'#fff':C.inkMute,fontFamily:FS,fontSize:17,fontWeight:600}}>
+            Tarkista
+          </button>
+        )}
+        {submitted&&(
+          <div>
+            <div style={{padding:'12px',background:C.bgGlow,borderRadius:8,borderLeft:`3px solid ${writeCorrect?'#4ade80':'#f87171'}`,marginBottom:10}}>
+              <div style={{fontFamily:FU,fontSize:13,fontWeight:600,color:writeCorrect?'#4ade80':'#f87171',marginBottom:6}}>
+                {writeCorrect?'✓ Oikein!':'✗ Väärin'}
+              </div>
+              {!writeCorrect&&<div style={{fontFamily:FU,fontSize:13,color:C.paper,marginBottom:word.tip?6:0}}>Oikea vastaus: <b style={{color:'#4ade80'}}>{expected}</b></div>}
+              {word.tip&&<div style={{fontFamily:FU,fontSize:11,color:C.inkFaint}}>{word.tip}</div>}
+            </div>
+            <button onClick={advanceWrite} style={{width:'100%',padding:'14px',border:'none',borderRadius:8,cursor:'pointer',background:`linear-gradient(135deg,${C.accentDark},${C.accent})`,color:'#fff',fontFamily:FS,fontSize:17,fontWeight:600}}>
+              {idx+1>=words.length?'Valmis →':'Jatka →'}
+            </button>
           </div>
         )}
       </div>
@@ -642,7 +695,7 @@ function HomeView({state,onPractice}) {
       </div>
       <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:8}}>Harjoitusmuoto</div>
       <div style={{display:'flex',flexDirection:'column',gap:10}}>
-        {[{id:'flash',title:'Korttipakka',desc:'Kääntele kortteja omaan tahtiin'},{id:'quiz',title:'Monivalinta',desc:'Valitse oikea vastaus neljästä'}].map(m=>(
+        {[{id:'flash',title:'Korttipakka',desc:'Kääntele kortteja omaan tahtiin'},{id:'quiz',title:'Monivalinta',desc:'Valitse oikea vastaus neljästä'},{id:'write',title:'Kirjoitus',desc:'Kirjoita englanninkielinen termi muistista'}].map(m=>(
           <button key={m.id} onClick={()=>{setShowModes(false);onPractice(m.id,selCat);}} style={{padding:'16px',border:`1px solid #2a201a`,borderRadius:10,cursor:'pointer',background:C.bgGlow,textAlign:'left'}}>
             <div style={{fontFamily:FS,fontSize:20,color:C.paper,marginBottom:4}}>{m.title}</div>
             <div style={{fontFamily:FU,fontSize:12,color:C.inkMute}}>{m.desc}</div>
@@ -1184,7 +1237,7 @@ function App() {
     <Shell>
       <div style={{display:'flex',alignItems:'center',padding:'12px 16px',paddingTop:'max(12px,env(safe-area-inset-top))',borderBottom:`1px solid #1a1410`,background:'#0d0a07',flexShrink:0}}>
         <button onClick={()=>{setView('home');setPractWords(null);}} style={{background:'none',border:'none',cursor:'pointer',color:C.inkMute,fontFamily:FU,fontSize:13,padding:0}}>← Takaisin</button>
-        <span style={{flex:1,textAlign:'center',color:C.paper,fontFamily:FU,fontSize:13,fontWeight:600}}>{practMode==='flash'?'Korttipakka':'Monivalinta'}</span>
+        <span style={{flex:1,textAlign:'center',color:C.paper,fontFamily:FU,fontSize:13,fontWeight:600}}>{practMode==='flash'?'Korttipakka':practMode==='write'?'Kirjoitus':'Monivalinta'}</span>
         <span style={{width:60}}/>
       </div>
       <div style={{flex:1,overflow:'auto',display:'flex',flexDirection:'column'}}>
