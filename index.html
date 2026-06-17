@@ -1166,24 +1166,67 @@ function App() {
   const [practWords,setPractWords]=useState(null);
   const [syncStatus,setSyncStatus]=useState('idle'); // idle|syncing|ok|err
 
+  const hydratedRef=React.useRef(false);   // tosi vasta kun käynnistyslataus valmis — estää tyhjän tilan työntämisen pilveen
+  const pushTimerRef=React.useRef(null);
+
   function save(s){setState(s);saveState(s);}
 
-  // Auto-load from Gist on startup
-  useEffect(()=>{
-    let cfg;
-    try{ cfg=loadSyncCfg(); }catch(e){ return; }
-    if(!cfg||!cfg.token||!cfg.gistId) return;
+  // Työnnä tila pilveen (best-effort)
+  function syncPush(s){
+    const cfg=loadSyncCfg();
+    if(!cfg.token||!cfg.gistId) return;
+    setSyncStatus('syncing');
+    gistPush(cfg.token,cfg.gistId,s).then(()=>setSyncStatus('ok')).catch(()=>setSyncStatus('err'));
+  }
+  // Lataa pilvestä ja ota käyttöön jos siellä enemmän edistymistä
+  function syncPull(){
+    const cfg=loadSyncCfg();
+    if(!cfg.token||!cfg.gistId) return;
     setSyncStatus('syncing');
     gistPull(cfg.token,cfg.gistId).then(remote=>{
       if(!remote){setSyncStatus('err');return;}
       const local=loadState();
-      if((remote.xp||0)>(local.xp||0)){
-        const s=mergeRemote(remote);
-        saveState(s);
-        setState(s);
-      }
+      if((remote.xp||0)>(local.xp||0)){ const s=mergeRemote(remote); saveState(s); setState(s); }
       setSyncStatus('ok');
     }).catch(()=>setSyncStatus('err'));
+  }
+
+  // Käynnistys: lataa kerran pilvestä, merkitse sitten "hydrated"
+  useEffect(()=>{
+    let cfg;
+    try{ cfg=loadSyncCfg(); }catch(e){ hydratedRef.current=true; return; }
+    if(!cfg||!cfg.token||!cfg.gistId){ hydratedRef.current=true; return; }
+    setSyncStatus('syncing');
+    gistPull(cfg.token,cfg.gistId).then(remote=>{
+      if(remote){
+        const local=loadState();
+        if((remote.xp||0)>(local.xp||0)){ const s=mergeRemote(remote); saveState(s); setState(s); }
+        setSyncStatus('ok');
+      } else setSyncStatus('err');
+    }).catch(()=>setSyncStatus('err')).finally(()=>{ hydratedRef.current=true; });
+  },[]);
+
+  // Automaattinen tallennus pilveen (viiveellä) KAIKISTA muutoksista — vasta latauksen jälkeen
+  useEffect(()=>{
+    if(!hydratedRef.current) return;
+    const cfg=loadSyncCfg();
+    if(!cfg.token||!cfg.gistId) return;
+    if(pushTimerRef.current) clearTimeout(pushTimerRef.current);
+    pushTimerRef.current=setTimeout(()=>syncPush(state),1500);
+    return ()=>{ if(pushTimerRef.current) clearTimeout(pushTimerRef.current); };
+  },[state]);
+
+  // Automaattinen lataus kun palaat sovellukseen; tallennus kun poistut
+  useEffect(()=>{
+    function onVis(){
+      if(!hydratedRef.current) return;
+      if(document.visibilityState==='visible') syncPull();
+      else syncPush(loadState());
+    }
+    function onFocus(){ if(hydratedRef.current) syncPull(); }
+    document.addEventListener('visibilitychange',onVis);
+    window.addEventListener('focus',onFocus);
+    return ()=>{ document.removeEventListener('visibilitychange',onVis); window.removeEventListener('focus',onFocus); };
   },[]);
 
   function startPractice(mode,cat) {
@@ -1228,13 +1271,7 @@ function App() {
     }
     const newA=checkAchievements(ns);
     ns.achievements=[...(ns.achievements||[]),...newA];
-    save(ns);
-    // Auto-sync to Gist
-    const cfg=loadSyncCfg();
-    if(cfg.token&&cfg.gistId){
-      setSyncStatus('syncing');
-      gistPush(cfg.token,cfg.gistId,ns).then(()=>setSyncStatus('ok')).catch(()=>setSyncStatus('err'));
-    }
+    save(ns);   // auto-push-efekti synkronoi muutoksen pilveen
     setView('home'); setPractWords(null); setPractMode(null);
   }
 
