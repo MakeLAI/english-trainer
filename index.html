@@ -99,6 +99,22 @@ async function gistPull(token,gistId){
   const c=f?f.content:null;
   return c?JSON.parse(c):null;
 }
+// Etsi olemassa oleva progress.json-gist tokenin tililtä (laitteiden yhdistämiseen).
+// Jos useita, valitaan se jossa eniten XP:tä — estää tyhjän gistin valinnan.
+async function gistFind(token){
+  const r=await fetch('https://api.github.com/gists?per_page=100',{headers:{'Authorization':`token ${token}`}});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  const list=await r.json();
+  if(!Array.isArray(list))return null;
+  const cands=list.filter(g=>g&&g.files&&g.files['progress.json']);
+  if(cands.length===0)return null;
+  if(cands.length===1)return cands[0].id;
+  let bestId=cands[0].id,bestXp=-1;
+  for(const g of cands){
+    try{const d=await gistPull(token,g.id);const xp=d?(d.xp||0):0;if(xp>bestXp){bestXp=xp;bestId=g.id;}}catch(e){}
+  }
+  return bestId;
+}
 function mergeRemote(remote){
   const s={...defaultState(),...remote};
   VOCAB.forEach(w=>{if(!s.words[w.id])s.words[w.id]=defaultWord();});
@@ -957,12 +973,30 @@ function SettingsView({state,onReset,onGoalChange,syncStatus,setSyncStatus,onSyn
   const [syncMsg,setSyncMsg]=useState('');
 
   async function handleConnect(){
-    if(!tokenInput.trim()){setSyncMsg('Syötä token ensin.');return;}
+    const token=tokenInput.trim();
+    if(!token){setSyncMsg('Syötä token ensin.');return;}
     setSyncStatus('syncing');setSyncMsg('Yhdistetään...');
     try{
       const cfg=loadSyncCfg();
-      const newId=await gistPush(tokenInput.trim(),cfg.gistId||'',state);
-      const newCfg={token:tokenInput.trim(),gistId:newId};
+      // 1) Etsi olemassa oleva gist tältä tilltä (jos toinen laite on jo yhdistänyt)
+      let gistId=cfg.gistId||await gistFind(token);
+      if(gistId){
+        // Olemassa oleva gist löytyi — lataa pilven data jos siellä on enemmän edistymistä
+        setSyncMsg('Löytyi pilvitallennus, ladataan...');
+        const remote=await gistPull(token,gistId);
+        if(remote&&(remote.xp||0)>(state.xp||0)){
+          onSyncLoad(remote);
+          const nc={token,gistId};saveSyncCfg(nc);setSyncCfgState(nc);
+          setSyncStatus('ok');setSyncMsg(`✓ Yhdistetty! Ladattu pilvestä (XP: ${remote.xp||0}, sessiot: ${remote.sessions||0}).`);
+          return;
+        }
+        // Paikallinen data uudempi tai yhtä suuri — tallenna se pilveen
+        await gistPush(token,gistId,state);
+      }else{
+        // Ensimmäinen laite — luo uusi gist
+        gistId=await gistPush(token,'',state);
+      }
+      const newCfg={token,gistId};
       saveSyncCfg(newCfg);setSyncCfgState(newCfg);
       setSyncStatus('ok');setSyncMsg('✓ Yhdistetty ja tallennettu!');
     }catch(e){setSyncStatus('err');setSyncMsg('Virhe: '+e.message+' — tarkista token.');}
