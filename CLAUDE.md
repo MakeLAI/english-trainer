@@ -310,9 +310,11 @@ Selain-Babel tarkoittaa, että syntaksi-/ajovirheet näkyvät VASTA ajossa → r
 [ ] 2. Varmista: #root dataset.mounted==='1' JA lapsia on
 [ ] 3. Konsolissa NOLLA virhettä (vain Babel-varoitus sallittu)
 [ ] 4. Jos koskettaa harjoitus-/synkronointi-/asetuslogiikkaa: testaa se polku esikatselussa
-[ ] 5. Vasta sitten git push
-[ ] 6. Kerro käyttäjälle: hard-refresh (Ctrl+Shift+R), GitHub Pages cache ~1-2 min
+[ ] 5. Nosta APP_VERSION **ja päivitä sen päivämäärä todelliseen julkaisupäivään** (tarkista oikea päivä — älä kopioi vanhaa)
+[ ] 6. Vasta sitten git push
+[ ] 7. Kerro käyttäjälle: hard-refresh (Ctrl+Shift+R), GitHub Pages cache ~1-2 min
 ```
+**APP_VERSION on muodossa `'numero · YYYY-MM-DD'`.** Numero ja päivämäärä päivitetään AINA yhdessä — väärä päivämäärä tekee versioleimasta hyödyttömän cache-diagnostiikassa.
 **Älä koskaan palauta `<script type="text/babel">`-automaattikäännöstä** (ks. luku 1 Babel-sudenkuoppa). Vain manuaalinen `runtime:'classic'`.
 
 ### B. Data — kerroksittainen suoja edistymiselle
@@ -327,4 +329,4 @@ Tässä projektissa: auto-push olisi voinut ylikirjoittaa 17 684 XP:n nollalla (
 
 ---
 
-*Päivitetty: 28.5.2026 | Sanasto: 163 sanaa | Käyttäjätaso: CFO | Tehty: P1–P9 + Variant A -teema + P14 Gist-sync + tietoturvakovennus*
+*Päivitetty: 1.8.2026 | Sanasto: 163 sanaa | Käyttäjätaso: CFO | Tehty: P1–P9 + Variant A -teema + P11 kirjoitusharjoitus + P14 Gist-sync + tietoturvakovennus*
