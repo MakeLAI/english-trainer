@@ -83,7 +83,8 @@ const TIER_GLYPHS = [
 const BOX_INTERVALS = [0,1,3,7,14,30];
 const SK = 'acceng_v1';
 const SYNC_KEY = 'acceng_sync_v1';
-const APP_VERSION = '2.1.0 · 2026-05-28';  // R4: nosta tätä jokaisen julkaisun yhteydessä — auttaa tunnistamaan cache-version
+const APP_VERSION = '2.2.0 · 2026-05-28';  // R4: nosta tätä jokaisen julkaisun yhteydessä — auttaa tunnistamaan cache-version
+const SESSION_SIZE = 15;                   // sanoja per harjoitussessio — saavutusten rajat sidottu tähän
 
 /* ── GITHUB GIST SYNC ──────────────────────────────────────────────────────── */
 function loadSyncCfg(){try{const r=localStorage.getItem(SYNC_KEY);return r?JSON.parse(r):{token:'',gistId:''};}catch(e){return{token:'',gistId:''};}}
@@ -187,8 +188,8 @@ const ACHIEVEMENTS = [
   {id:'words_75',          title:'Vocab Expert',        desc:'Opi 75 sanaa (taso 3+)',               icon:'📖'},
   {id:'words_all',         title:'Full Collection',     desc:'Hallitse kaikki sanat (taso 3+)',      icon:'🌟'},
   {id:'combo_10',          title:'On Fire',             desc:'10 oikein peräkkäin',                  icon:'⚡'},
-  {id:'combo_20',          title:'Unstoppable',         desc:'20 oikein peräkkäin',                  icon:'⚡⚡'},
-  {id:'perfect',           title:'Perfectionist',       desc:'Täydellinen sessio (20+ sanaa, 100%)', icon:'💯'},
+  {id:'combo_20',          title:'Unstoppable',         desc:'20 oikein peräkkäin (myös sessioiden yli)',icon:'⚡⚡'},
+  {id:'perfect',           title:'Perfectionist',       desc:'Täydellinen sessio (kaikki oikein)',   icon:'💯'},
   {id:'ifrs_master',       title:'IFRS Specialist',     desc:'Hallitse kaikki IFRS-termit',          icon:'🌍'},
   {id:'controlling_master',title:'Controlling Pro',     desc:'Hallitse kaikki Controlling-termit',   icon:'📊'},
   {id:'balance_master',    title:'Balance Sheet Pro',   desc:'Hallitse kaikki tase-termit',          icon:'💰'},
@@ -363,6 +364,52 @@ const VOCAB = [
   {id:'p31', fi:'näin etenemme',           en:'here is how we will proceed',   cat:'phrases',     diff:1,exFi:'Näin etenemme: ensin täsmäytetään, sitten raportoidaan johdolle.',exEn:'Here is how we will proceed: first we reconcile, then we report to management.',tip:'Selkeä toimintasuunnitelman aloitusfraasi.'},
 ];
 
+/* ── VAIHTOEHTOISET HYVÄKSYTTÄVÄT VASTAUKSET (kirjoitusharjoitus) ───────────────
+   Sanan tip mainitsee usein toisen yhtä oikean termin (esim. "USA: fiscal year").
+   Ne hyväksytään tässä, jotta oikea vastaus ei mene väärin. Lisää tänne vapaasti —
+   VOCAB-taulukkoon ei tarvitse koskea. Avain = sanan id, arvo = lista synonyymeja. */
+const ALT_ANSWERS = {
+  b3:['statement of financial position'],
+  b5:['statement of cash flows'],
+  b7:['fiscal year'],
+  b8:['supporting document'],
+  b9:['transaction'],
+  b13:['GL'],
+  b14:['external audit'],
+  bs4:['fixed assets'],
+  bs6:['property, plant and equipment','PP&E','PPE'],
+  bs8:['stock'],
+  bs9:['accounts receivable','AR'],
+  bs10:['accounts payable','AP'],
+  bs20:['minority interest'],
+  is1:['revenue'],
+  is3:['EBIT'],
+  is5:['net income','net profit','profit for the year'],
+  is9:['staff costs','employee benefits expense'],
+  is12:['expected credit loss','ECL','bad debt'],
+  is13:['COGS'],
+  is15:['G&A'],
+  is17:['financial expenses'],
+  is19:['EPS'],
+  d3:['supplier invoice'],
+  d6:['VAT','sales tax'],
+  d12:['month-end close'],
+  d17:['intercompany transaction','IC'],
+  i2:['book value'],
+  i3:['ROU asset'],
+  i5:['PV'],
+  i8:['balance sheet date'],
+  i25:['OCI'],
+  c3:['BvA'],
+  c7:['KPI','financial ratio'],
+  c11:['ROIC'],
+  c12:['ROE'],
+  c13:['ROA'],
+  p5:['based on this'],
+};
+// Kaikki hyväksyttävät vastaukset yhdelle sanalle
+function acceptedAnswers(w){ return [w.en,...(ALT_ANSWERS[w.id]||[])]; }
+
 /* ── HELPERS ────────────────────────────────────────────────────────────────── */
 function todayKey() { return new Date().toISOString().slice(0,10); }
 function addDays(d, n) { const dt = new Date(d); dt.setDate(dt.getDate()+n); return dt.toISOString().slice(0,10); }
@@ -375,14 +422,28 @@ function makeOptions(word, dir) {
   const pool = VOCAB.filter(w=>w.id!==word.id).map(w=>w[key]).sort(()=>Math.random()-0.5).slice(0,3);
   return [correct,...pool].sort(()=>Math.random()-0.5);
 }
-// Kirjoitusharjoituksen vastauksen normalisointi: trim, pieni kirjain, välilyönnit, loppupisteet.
-// EI hyväksy kirjoitusvirheitä — vertailu on tämän jälkeen tarkka.
-function normalizeAns(s){ return (s||'').trim().toLowerCase().replace(/\s+/g,' ').replace(/[.,;:!?]+$/,''); }
+// Kirjoitusharjoituksen vastauksen normalisointi.
+// Poistaa heittomerkit KOKONAAN — eri puhelinnäppäimistöt tuottavat eri merkin
+// (' ' ' ´ ` ʼ), joten "let's" = "let's" = "lets". Poistaa myös välimerkit
+// ("budget vs. actuals" = "budget vs actuals") ja yhtenäistää UK/US-kirjoitusasun
+// ("cost centre" = "cost center"). EI hyväksy varsinaisia kirjoitusvirheitä.
+function normalizeAns(s){
+  return (s||'')
+    .trim().toLowerCase()
+    .replace(/[‘’ʼ′‛'`´]/g,'')
+    .replace(/[.,;:!?]/g,'')
+    .replace(/\bcentre\b/g,'center')
+    .replace(/\bprogramme\b/g,'program')
+    .replace(/isation\b/g,'ization')
+    .replace(/ise\b/g,'ize')
+    .replace(/\s+/g,' ')
+    .trim();
+}
 function defaultWord() { return {box:0,nextReview:todayKey(),correct:0,wrong:0,seen:false}; }
 function defaultState() {
   const words={};
   VOCAB.forEach(w=>{words[w.id]=defaultWord();});
-  return {words,xp:0,sessions:0,streak:0,lastSession:null,achievements:[],totalCorrect:0,totalWrong:0,maxCombo:0,dailyGoal:250,todayXp:0,lastXpDate:null};
+  return {words,xp:0,sessions:0,streak:0,lastSession:null,achievements:[],totalCorrect:0,totalWrong:0,maxCombo:0,combo:0,dailyGoal:250,todayXp:0,lastXpDate:null};
 }
 function loadState() {
   try {
@@ -398,6 +459,7 @@ function loadState() {
     VOCAB.forEach(w=>{if(!s.words[w.id])s.words[w.id]=defaultWord();});
     if(!s.achievements) s.achievements=[];
     if(s.maxCombo==null) s.maxCombo=0;
+    if(s.combo==null) s.combo=0;
     if(s.totalCorrect==null) s.totalCorrect=0;
     if(s.totalWrong==null) s.totalWrong=0;
     if(s.dailyGoal==null) s.dailyGoal=250;
@@ -603,7 +665,9 @@ function Practice({mode,words,onFinish}) {
 
   if(mode==='write') {
     const expected=word.en;            // Suomi → englanti aina
-    const writeCorrect=normalizeAns(input)===normalizeAns(expected);
+    const alts=ALT_ANSWERS[word.id]||[];
+    // Hyväksy myös vaihtoehtoiset termit (esim. financial year / fiscal year)
+    const writeCorrect=acceptedAnswers(word).some(a=>normalizeAns(a)===normalizeAns(input));
     function submitWrite(){ if(!submitted&&input.trim())setSubmitted(true); }
     function advanceWrite(){ setResults(r=>[...r,{id:word.id,correct:writeCorrect}]); setIdx(i=>i+1); }
     return (
@@ -637,7 +701,8 @@ function Practice({mode,words,onFinish}) {
               <div style={{fontFamily:FU,fontSize:13,fontWeight:600,color:writeCorrect?'#4ade80':'#f87171',marginBottom:6}}>
                 {writeCorrect?'✓ Oikein!':'✗ Väärin'}
               </div>
-              {!writeCorrect&&<div style={{fontFamily:FU,fontSize:13,color:C.paper,marginBottom:word.tip?6:0}}>Oikea vastaus: <b style={{color:'#4ade80'}}>{expected}</b></div>}
+              {!writeCorrect&&<div style={{fontFamily:FU,fontSize:13,color:C.paper,marginBottom:4}}>Oikea vastaus: <b style={{color:'#4ade80'}}>{expected}</b></div>}
+              {alts.length>0&&<div style={{fontFamily:FU,fontSize:11,color:C.inkMute,marginBottom:word.tip?6:0}}>Myös hyväksytään: {alts.join(' · ')}</div>}
               {word.tip&&<div style={{fontFamily:FU,fontSize:11,color:C.inkFaint}}>{word.tip}</div>}
             </div>
             <button onClick={advanceWrite} style={{width:'100%',padding:'14px',border:'none',borderRadius:8,cursor:'pointer',background:`linear-gradient(135deg,${C.accentDark},${C.accent})`,color:'#fff',fontFamily:FS,fontSize:17,fontWeight:600}}>
@@ -1274,7 +1339,7 @@ function App() {
     if(pool.length<5){
       pool=cat==='all'?[...VOCAB]:VOCAB.filter(w=>w.cat===cat);
     }
-    const shuffled=pool.sort(()=>Math.random()-0.5).slice(0,15);
+    const shuffled=pool.sort(()=>Math.random()-0.5).slice(0,SESSION_SIZE);
     setPractMode(mode); setPractWords(shuffled); setView('practice');
   }
 
@@ -1301,10 +1366,11 @@ function App() {
       ns.streak=ns.lastSession===addDays(today,-1)?(ns.streak||0)+1:1;
       ns.lastSession=today;
     }
-    let cur=0,mx=ns.maxCombo||0;
+    // Putki jatkuu sessioiden yli — muuten yli SESSION_SIZE:n combo olisi mahdoton saavuttaa
+    let cur=ns.combo||0,mx=ns.maxCombo||0;
     results.forEach(r=>{if(r.correct){cur++;mx=Math.max(mx,cur);}else cur=0;});
-    ns.maxCombo=mx;
-    if(results.length>=20&&ok===results.length&&!(ns.achievements||[]).includes('perfect')){
+    ns.combo=cur; ns.maxCombo=mx;
+    if(results.length>=SESSION_SIZE&&ok===results.length&&!(ns.achievements||[]).includes('perfect')){
       ns.achievements=[...(ns.achievements||[]),'perfect'];
     }
     const newA=checkAchievements(ns);
