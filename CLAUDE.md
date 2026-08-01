@@ -53,7 +53,7 @@ var out = Babel.transform(src, {presets:[['react',{runtime:'classic'}]]}).code;
 
 ---
 
-## 3. SOVELLUKSEN NYKYTILA (18.5.2026)
+## 3. SOVELLUKSEN NYKYTILA (1.8.2026)
 
 ### Käyttäjän edistyminen
 ```
@@ -63,19 +63,31 @@ Tarkkuus: 96%
 Streak:   3+ päivää
 ```
 
-### Sanasto — 163 sanaa (tarkistettu koodista 18.5.2026)
+### Sanasto — 250 sanaa (tarkistettu koodista 1.8.2026)
 
 | Kategoria | Sanat | Viimeisin ID | Vapaat ID:t |
 |---|---|---|---|
-| basics | b1–b23 (23 kpl) | b23 | b24+ |
-| balance | bs1–bs20 (20 kpl) | bs20 | bs21+ |
-| income | is1–is19 (19 kpl) | is19 | is20+ |
-| daily | d1–d22 (22 kpl) | d22 | d23+ |
-| ifrs | i1–i29 (29 kpl) | i29 | i30+ |
-| controlling | c1–c19 (19 kpl) | c19 | c20+ |
-| phrases | p1–p31 (31 kpl) | p31 | p32+ |
+| basics | b1–b33 (33 kpl) | b33 | b34+ |
+| balance | bs1–bs32 (32 kpl) | bs32 | bs33+ |
+| income | is1–is31 (31 kpl) | is31 | is32+ |
+| daily | d1–d35 (35 kpl) | d35 | d36+ |
+| ifrs | i1–i42 (42 kpl) | i42 | i43+ |
+| controlling | c1–c34 (34 kpl) | c34 | c35+ |
+| phrases | p1–p43 (43 kpl) | p43 | p44+ |
 
 **Tarkista aina viimeisin käytetty ID koodista ennen lisäystä.**
+
+**Laajennushistoria:** 163 → 250 sanaa (1.8.2026), 87 uutta sanaa 7 erässä. Jokainen tulkinnanvarainen termi verkkotarkistettu (Finlex/IFRS/KPA-lähteet) ennen lisäystä. Samassa yhteydessä korjattiin 5 päällekkäistä englanninkielistä käännöstä (i3, i4, p9, p22, d29), jotka olisivat aiheuttaneet monivalinnassa kaksi identtistä vaihtoehtoa.
+
+**Vaihtoehtoiset hyväksyttävät vastaukset:** `ALT_ANSWERS`-taulukko (index.html, VOCAB-taulukon jälkeen) — synonyymit kirjoitusharjoitukseen. Lisää tähän, älä VOCAB-riviin.
+
+**Duplikaattitarkistus ennen jokaista sanastolisäystä (pakollinen):**
+```
+[ ] 1. Ei duplikaatti-ID:itä
+[ ] 2. Ei duplikaatti-englanninkielisiä termejä KOKO sanastossa (ei vain uusissa)
+[ ] 3. Ei duplikaatti-suomenkielisiä termejä KOKO sanastossa
+[ ] 4. Tarkistus tehdään selaimessa VOCAB-taulukkoa lukemalla — ei pelkkää tekstihakua (apostrofit ja escapoinnit vääristävät tekstihakuja)
+```
 
 ### Sanastorakenne
 ```javascript
