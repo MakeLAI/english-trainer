@@ -83,20 +83,32 @@ const TIER_GLYPHS = [
 const BOX_INTERVALS = [0,1,3,7,14,30];
 const SK = 'acceng_v1';
 const SYNC_KEY = 'acceng_sync_v1';
+const APP_VERSION = '2.1.0 · 2026-05-28';  // R4: nosta tätä jokaisen julkaisun yhteydessä — auttaa tunnistamaan cache-version
 
 /* ── GITHUB GIST SYNC ──────────────────────────────────────────────────────── */
 function loadSyncCfg(){try{const r=localStorage.getItem(SYNC_KEY);return r?JSON.parse(r):{token:'',gistId:''};}catch(e){return{token:'',gistId:''};}}
 function saveSyncCfg(c){try{localStorage.setItem(SYNC_KEY,JSON.stringify(c));}catch(e){}}
+// Peili pilven sisällöstä — käytetään XP-regressiosuojaan (R1) ja prev-varmuuskopioon (R6)
+function getCloudState(){try{return localStorage.getItem('acceng_cloudstate');}catch(e){return null;}}
+function getCloudXp(){try{return parseInt(localStorage.getItem('acceng_cloudxp')||'-1',10);}catch(e){return -1;}}
+function setCloud(jsonStr,xp){try{localStorage.setItem('acceng_cloudstate',jsonStr);localStorage.setItem('acceng_cloudxp',String(xp||0));}catch(e){}}
 async function gistPush(token,gistId,state){
-  const body={description:'Accounting English Trainer progress',files:{'progress.json':{content:JSON.stringify(state)}}};
+  const newJson=JSON.stringify(state);
+  const files={'progress.json':{content:newJson}};
+  const prev=getCloudState();                        // edellinen pilviversio → varmuuskopio
+  if(prev&&prev!==newJson) files['progress.prev.json']={content:prev};
+  const body={description:'Accounting English Trainer progress',files};
+  let id=gistId;
   if(!gistId){
     const r=await fetch('https://api.github.com/gists',{method:'POST',headers:{'Authorization':`token ${token}`,'Content-Type':'application/json'},body:JSON.stringify({...body,public:false})});
     if(!r.ok)throw new Error('HTTP '+r.status);
-    return(await r.json()).id;
+    id=(await r.json()).id;
+  }else{
+    const r=await fetch(`https://api.github.com/gists/${gistId}`,{method:'PATCH',headers:{'Authorization':`token ${token}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!r.ok)throw new Error('HTTP '+r.status);
   }
-  const r=await fetch(`https://api.github.com/gists/${gistId}`,{method:'PATCH',headers:{'Authorization':`token ${token}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
-  if(!r.ok)throw new Error('HTTP '+r.status);
-  return gistId;
+  setCloud(newJson,state.xp);                         // pilven tila nyt = tämä
+  return id;
 }
 async function gistPull(token,gistId){
   const r=await fetch(`https://api.github.com/gists/${gistId}`,{headers:{'Authorization':`token ${token}`}});
@@ -104,7 +116,10 @@ async function gistPull(token,gistId){
   const d=await r.json();
   const f=d&&d.files?d.files['progress.json']:null;
   const c=f?f.content:null;
-  return c?JSON.parse(c):null;
+  if(!c)return null;
+  const parsed=JSON.parse(c);
+  setCloud(c,parsed.xp);                              // tiedetään mitä pilvessä on
+  return parsed;
 }
 // Etsi olemassa oleva progress.json-gist tokenin tililtä (laitteiden yhdistämiseen).
 // Jos useita, valitaan se jossa eniten XP:tä — estää tyhjän gistin valinnan.
@@ -371,7 +386,12 @@ function defaultState() {
 }
 function loadState() {
   try {
-    const raw=localStorage.getItem(SK);
+    let raw=localStorage.getItem(SK);
+    // R2: jos pääavain on KOKONAAN kadonnut (selaimen siivous yms.), palauta paras paikallinen snapshot
+    if(!raw){
+      const bak=localStorage.getItem(SK+'_bak');
+      if(bak){ raw=bak; localStorage.setItem(SK,bak); }
+    }
     if(!raw) return defaultState();
     const s=JSON.parse(raw);
     if(!s.words) s.words={};
@@ -391,7 +411,15 @@ function loadState() {
     return s;
   } catch(e) { return defaultState(); }
 }
-function saveState(s) { try{localStorage.setItem(SK,JSON.stringify(s));}catch(e){} }
+function saveState(s) {
+  try{
+    localStorage.setItem(SK,JSON.stringify(s));
+    // R2: päivitä paras-XP-snapshot vain kun XP kasvaa/pysyy → nollaus ei pyyhi varmuuskopiota
+    const bakRaw=localStorage.getItem(SK+'_bak');
+    const bakXp=bakRaw?(JSON.parse(bakRaw).xp||0):-1;
+    if((s.xp||0)>=bakXp) localStorage.setItem(SK+'_bak',JSON.stringify(s));
+  }catch(e){}
+}
 function checkAchievements(s) {
   const earned=new Set(s.achievements||[]);
   const mastered=getMastered(s);
@@ -1160,7 +1188,7 @@ function SettingsView({state,onReset,onGoalChange,syncStatus,setSyncStatus,onSyn
         </div>
       }
       <div style={{marginTop:28,fontFamily:FM,fontSize:10,color:C.inkFaint}}>
-        Sanasto v2.0 · {VOCAB.length} sanaa · {SK}
+        Sanasto v{APP_VERSION} · {VOCAB.length} sanaa · {SK}
       </div>
     </div>
   );
@@ -1179,10 +1207,12 @@ function App() {
 
   function save(s){setState(s);saveState(s);}
 
-  // Työnnä tila pilveen (best-effort)
-  function syncPush(s){
+  // Työnnä tila pilveen (best-effort). force=true ohittaa XP-regressiosuojan (manuaali/nollaus).
+  function syncPush(s,force){
     const cfg=loadSyncCfg();
     if(!cfg.token||!cfg.gistId) return;
+    // R1: auto-push EI saa hiljaa viedä pienempää XP:tä kuin pilvessä on (estää datahäviön)
+    if(!force && (s.xp||0) < getCloudXp()) return;
     setSyncStatus('syncing');
     gistPush(cfg.token,cfg.gistId,s).then(()=>setSyncStatus('ok')).catch(()=>setSyncStatus('err'));
   }
