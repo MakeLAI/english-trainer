@@ -89,16 +89,18 @@ Streak:   3+ päivää
 [ ] 4. Tarkistus tehdään selaimessa VOCAB-taulukkoa lukemalla — ei pelkkää tekstihakua (apostrofit ja escapoinnit vääristävät tekstihakuja)
 ```
 
-### Prepositiot — erillinen kevyt harjoittelumoduuli (lisätty 2.8.2026)
+### Prepositiot — erillinen kevyt harjoittelumoduuli (lisätty 2.8.2026, sisältö valmis 2.8.2026)
 
-**16 lausetta aloituserässä** (pr1–pr16), tavoite 80+. Data: `PREP_SENTENCES`-taulukko VOCAB:in jälkeen index.html:ssä.
+**70 lausetta** (pr1–pr70), rakennettu 5 erässä (1 moottorin todennus + 4 sisältöerää). Data: `PREP_SENTENCES`-taulukko VOCAB:in jälkeen index.html:ssä.
 
-| Kategoria | Sanat nyt | Viimeisin ID |
+| Kategoria | Lauseet | Viimeisin ID |
 |---|---|---|
-| business | pr1–pr6 (6 kpl) | pr6 |
-| time | pr7–pr11 (5 kpl) | pr11 |
-| place | pr12–pr14 (3 kpl) | pr14 |
-| general | pr15–pr16 (2 kpl) | pr16 |
+| business | pr1–pr6, pr17–pr30 (20 kpl) | pr30 |
+| time | pr7–pr11, pr31–pr45 (20 kpl) | pr45 |
+| place | pr12–pr14, pr46–pr57 (15 kpl) | pr57 |
+| general | pr15–pr16, pr58–pr70 (15 kpl) | pr70 |
+
+**Tarkista aina viimeisin käytetty ID koodista ennen lisäystä — ID-numerointi ei ole yhtenäinen kategorioittain** (esim. business jatkuu pr17:sta pr30:een, ei suoraan pr7:sta).
 
 **Rakenne:** `{id, cat, diff, sentence (lause jossa '___' merkitsee aukkoa), answer, fi (suomennos kontekstiksi), tip}`.
 
@@ -293,13 +295,13 @@ Validointi:[Mitä tarkistetaan — ID:t, käynnistys, muutetut rivit]
 
 ## 11. ALOITA SEURAAVA SESSIO TÄSTÄ
 
-**Tilanne (28.5.2026):** 163 sanaa, CFO-taso, P1–P9 kaikki tehty. Variant A -teema tuotannossa.
+**Tilanne (2.8.2026):** 250 sanaa + 70 prepositiolausetta, CFO-taso, Variant A -teema tuotannossa, Gist-sync + tietoturvakovennus + fiksumpi harjoitussessio (painotettu otanta + kategoriakohtaiset häiriövaihtoehdot) käytössä.
 
-**Seuraava tehtävä — P10 Daily Practice -uudistus:**
-"Daily Practice" = automaattinen sekoitettu sessio (eri kysymystyypit automaattisesti)
-"Harjoittele" = käyttäjä valitsee tyypin itse
+**Tehty:** P1–P9 (alkuperäinen sisältö/laatu), P11 (kirjoitusharjoitus), P14 (Gist-sync), sanasto 163→250, uusi prepositiomoduuli (70 lausetta, oma kevyt seuranta).
 
-**Jono sen jälkeen:** P11 (kirjoitusharjoitukset) → P12 (puheharjoitukset) → P13 (pelillistäminen) → P14 (synkronointi)
+**Jäljellä backlogista:** P12 (puheharjoitukset, Web Speech API — iso arkkitehtuurimuutos) → P13 (pelillistäminen/UX-uudistus, ks. `agents/ux-agent.md` ja Visual Redesign Protocol luku 12 ENNEN aloitusta).
+
+**Mahdollinen jatko prepositiomoduulille:** laajenna `PREP_SENTENCES`-taulukkoa (ks. yllä), tai harkitse omaa mini-saavutusta/streakiä jos kevyt seuranta alkaa tuntua riittämättömältä — kysy käyttäjältä ensin, "kevyt seuranta" oli tietoinen valinta.
 
 ---
 
@@ -365,4 +367,4 @@ Tässä projektissa: auto-push olisi voinut ylikirjoittaa 17 684 XP:n nollalla (
 
 ---
 
-*Päivitetty: 1.8.2026 | Sanasto: 163 sanaa | Käyttäjätaso: CFO | Tehty: P1–P9 + Variant A -teema + P11 kirjoitusharjoitus + P14 Gist-sync + tietoturvakovennus*
+*Päivitetty: 2.8.2026 | Sanasto: 250 sanaa | Prepositiot: 70 lausetta | Käyttäjätaso: CFO | Tehty: P1–P9 + Variant A -teema + P11 kirjoitusharjoitus + P14 Gist-sync + tietoturvakovennus + fiksumpi harjoitussessio + prepositiomoduuli*
