@@ -83,7 +83,7 @@ const TIER_GLYPHS = [
 const BOX_INTERVALS = [0,1,3,7,14,30];
 const SK = 'acceng_v1';
 const SYNC_KEY = 'acceng_sync_v1';
-const APP_VERSION = '2.4.0 · 2026-08-01';  // R4: nosta numero JA päivitä päivämäärä (todellinen julkaisupäivä) joka julkaisussa
+const APP_VERSION = '2.5.0 · 2026-08-02';  // R4: nosta numero JA päivitä päivämäärä (todellinen julkaisupäivä) joka julkaisussa
 const SESSION_SIZE = 15;                   // sanoja per harjoitussessio — saavutusten rajat sidottu tähän
 
 /* ── GITHUB GIST SYNC ──────────────────────────────────────────────────────── */
@@ -161,6 +161,18 @@ const CATS = {
   controlling:{fi:'Controlling', en:'Controlling',   label:'Controlling & raportointi',short:'Controlling', hue:232},
   phrases:    {fi:'Fraasit',     en:'Phrases',       label:'Business-fraasit',         short:'Fraasit',     hue:318},
 };
+
+/* ── PREPOSITIOT (erillinen kevyt harjoittelumoduuli) ────────────────────────── */
+const PREP_CAT_HUE = {business:38, time:210, place:158, general:280};
+const PREP_CATS = {
+  business:{fi:'Business',short:'Business'},
+  time:{fi:'Aika',short:'Aika'},
+  place:{fi:'Paikka',short:'Paikka'},
+  general:{fi:'Yleinen',short:'Yleinen'},
+};
+const prepColor = cat => `oklch(58% 0.13 ${PREP_CAT_HUE[cat]||210})`;
+// Häiriövaihtoehtojen pooli monivalintaan — yleisimmät englannin prepositiot
+const COMMON_PREPS = ['in','on','at','for','of','to','with','by','from','about','into','onto','under','over','between','among','through','during','since','until','within','without','against','towards','upon'];
 
 const LEVELS = [
   {min:0,    title:'Junior Bookkeeper'},    {min:200,  title:'Bookkeeper'},
@@ -451,6 +463,26 @@ const VOCAB = [
   {id:'p43', fi:'hyväksytään esitetyssä muodossa',en:'approved as presented',  cat:'phrases',     diff:2,exFi:'Tilinpäätös hyväksyttiin esitetyssä muodossa.',              exEn:'The financial statements were approved as presented.',            tip:'Pöytäkirjafraasi kokouksissa — ei muutoksia esitykseen.'},
 ];
 
+/* ── PREPOSITIOLAUSEET — erä 1/? (moottorin todennus, laajennetaan erissä) ───── */
+const PREP_SENTENCES = [
+  {id:'pr1', cat:'business', diff:2, sentence:'The company is responsible ___ preparing accurate financial statements.', answer:'for', fi:'Yhtiö vastaa oikeiden tilinpäätöstietojen laatimisesta.', tip:'"RESPONSIBLE FOR" = vastuussa jostakin. Yleinen virhe: "responsible of".'},
+  {id:'pr2', cat:'business', diff:2, sentence:'Our results are ___ accordance with IFRS standards.', answer:'in', fi:'Tuloksemme ovat IFRS-standardien mukaisia.', tip:'"IN ACCORDANCE WITH" = jonkin mukaisesti. Kiinteä fraasi kirjanpidossa.'},
+  {id:'pr3', cat:'business', diff:2, sentence:'The invoice amount consists ___ the net price and VAT.', answer:'of', fi:'Laskun summa koostuu nettohinnasta ja alv:stä.', tip:'"CONSIST OF" = koostua jostakin. Ei "consist in" business-kontekstissa.'},
+  {id:'pr4', cat:'business', diff:2, sentence:'This expense is subject ___ approval from the CFO.', answer:'to', fi:'Tämä kulu vaatii talousjohtajan hyväksynnän.', tip:'"SUBJECT TO" = riippuvainen/edellyttää jotakin.'},
+  {id:'pr5', cat:'business', diff:2, sentence:'The budget must comply ___ the new cost policy.', answer:'with', fi:'Budjetin on noudatettava uutta kustannuspolitiikkaa.', tip:'"COMPLY WITH" = noudattaa sääntöä tai standardia.'},
+  {id:'pr6', cat:'business', diff:1, sentence:'Revenue increased significantly compared ___ last year.', answer:'to', fi:'Liikevaihto kasvoi merkittävästi viime vuoteen verrattuna.', tip:'"COMPARED TO" yleisin muoto liike-elämässä. Myös "compared with" käy.'},
+  {id:'pr7', cat:'time', diff:1, sentence:'The invoice is due ___ 30 days.', answer:'within', fi:'Lasku erääntyy 30 päivän kuluessa.', tip:'"WITHIN" = tietyn ajan sisällä.'},
+  {id:'pr8', cat:'time', diff:1, sentence:'We closed the books ___ the end of March.', answer:'at', fi:'Suljimme kirjanpidon maaliskuun lopussa.', tip:'"AT the end of" — kiinteä ilmaus.'},
+  {id:'pr9', cat:'time', diff:1, sentence:'The meeting is scheduled ___ Monday morning.', answer:'for', fi:'Kokous on sovittu maanantaiaamulle.', tip:'"SCHEDULED FOR" = ajoitettu jollekin ajankohdalle.'},
+  {id:'pr10', cat:'time', diff:2, sentence:'We have been using this system ___ 2019.', answer:'since', fi:'Olemme käyttäneet tätä järjestelmää vuodesta 2019 lähtien.', tip:'"SINCE" = tietystä ajankohdasta lähtien (piste, ei kesto — vrt. "for").'},
+  {id:'pr11', cat:'time', diff:1, sentence:'The report must be submitted ___ Friday.', answer:'by', fi:'Raportti on toimitettava viimeistään perjantaina.', tip:'"BY" = viimeistään johonkin ajankohtaan mennessä.'},
+  {id:'pr12', cat:'place', diff:1, sentence:'The figures are shown ___ page 12 of the report.', answer:'on', fi:'Luvut on esitetty raportin sivulla 12.', tip:'"ON a page" — kiinteä ilmaus sivunumeroista puhuttaessa.'},
+  {id:'pr13', cat:'place', diff:2, sentence:'There is a discrepancy ___ the two balance sheets.', answer:'between', fi:'Kahden taseen välillä on eroavaisuus.', tip:'"BETWEEN" = kahden asian välillä.'},
+  {id:'pr14', cat:'place', diff:1, sentence:'The item is recorded ___ the balance sheet.', answer:'on', fi:'Erä on kirjattu taseeseen.', tip:'"ON the balance sheet" — vakiintunut kirjanpitofraasi.'},
+  {id:'pr15', cat:'general', diff:1, sentence:'We are interested ___ your proposal.', answer:'in', fi:'Olemme kiinnostuneita ehdotuksestasi.', tip:'"INTERESTED IN" = kiinnostunut jostakin.'},
+  {id:'pr16', cat:'general', diff:1, sentence:'The final result depends ___ several factors.', answer:'on', fi:'Lopputulos riippuu useista tekijöistä.', tip:'"DEPEND ON" = riippua jostakin.'},
+];
+
 /* ── VAIHTOEHTOISET HYVÄKSYTTÄVÄT VASTAUKSET (kirjoitusharjoitus) ───────────────
    Sanan tip mainitsee usein toisen yhtä oikean termin (esim. "USA: fiscal year").
    Ne hyväksytään tässä, jotta oikea vastaus ei mene väärin. Lisää tänne vapaasti —
@@ -558,6 +590,16 @@ function weightedSample(arr, weightFn, n){
   }
   return result;
 }
+/* ── PREPOSITIOT: apufunktiot ─────────────────────────────────────────────────
+   Kevyt, sanastosta ERILLINEN seuranta (ei omaa XP/taso-järjestelmää — vain
+   tarkkuus % ja hallittujen lauseiden määrä). SRS-mekaniikka (box/nextReview)
+   on silti sama Leitner-moottori kuin sanastolla, koodin uudelleenkäyttönä. */
+function defaultPrep() { return {box:0,nextReview:todayKey(),correct:0,wrong:0,seen:false}; }
+function getPrepMastered(state) { return PREP_SENTENCES.filter(p=>state.preps&&state.preps[p.id]&&state.preps[p.id].box>=3).length; }
+function makePrepOptions(item) {
+  const pool = COMMON_PREPS.filter(p=>p!==item.answer).sort(()=>Math.random()-0.5).slice(0,3);
+  return [item.answer,...pool].sort(()=>Math.random()-0.5);
+}
 // Kirjoitusharjoituksen vastauksen normalisointi.
 // Poistaa heittomerkit KOKONAAN — eri puhelinnäppäimistöt tuottavat eri merkin
 // (' ' ' ´ ` ʼ), joten "let's" = "let's" = "lets". Poistaa myös välimerkit
@@ -579,7 +621,10 @@ function defaultWord() { return {box:0,nextReview:todayKey(),correct:0,wrong:0,s
 function defaultState() {
   const words={};
   VOCAB.forEach(w=>{words[w.id]=defaultWord();});
-  return {words,xp:0,sessions:0,streak:0,lastSession:null,achievements:[],totalCorrect:0,totalWrong:0,maxCombo:0,combo:0,dailyGoal:250,todayXp:0,lastXpDate:null};
+  const preps={};
+  PREP_SENTENCES.forEach(p=>{preps[p.id]=defaultPrep();});
+  return {words,xp:0,sessions:0,streak:0,lastSession:null,achievements:[],totalCorrect:0,totalWrong:0,maxCombo:0,combo:0,dailyGoal:250,todayXp:0,lastXpDate:null,
+    preps,prepTotalCorrect:0,prepTotalWrong:0,prepSessions:0};
 }
 function loadState() {
   try {
@@ -604,6 +649,11 @@ function loadState() {
     if(s.xp==null) s.xp=0;
     if(s.sessions==null) s.sessions=0;
     if(s.streak==null) s.streak=0;
+    if(!s.preps) s.preps={};
+    PREP_SENTENCES.forEach(p=>{if(!s.preps[p.id])s.preps[p.id]=defaultPrep();});
+    if(s.prepTotalCorrect==null) s.prepTotalCorrect=0;
+    if(s.prepTotalWrong==null) s.prepTotalWrong=0;
+    if(s.prepSessions==null) s.prepSessions=0;
     // Reset todayXp if new day
     if(s.lastXpDate!==todayKey()) s.todayXp=0;
     return s;
@@ -900,10 +950,138 @@ function Practice({mode,words,onFinish}) {
   );
 }
 
+/* ── PREPOSITIOHARJOITTELU ──────────────────────────────────────────────────── */
+function PrepPractice({mode,items,onFinish}) {
+  const [idx,setIdx]=useState(0);
+  const [selected,setSelected]=useState(null);
+  const [options,setOptions]=useState([]);
+  const [results,setResults]=useState([]);
+  const [input,setInput]=useState('');
+  const [submitted,setSubmitted]=useState(false);
+  const item=items[idx];
+
+  useEffect(()=>{
+    if(item&&mode==='prepQuiz') setOptions(makePrepOptions(item));
+    setSelected(null); setInput(''); setSubmitted(false);
+  },[idx]);
+
+  function advance(correct){ setResults(r=>[...r,{id:item.id,correct}]); setIdx(i=>i+1); }
+
+  if(!item) {
+    const ok=results.filter(r=>r.correct).length;
+    const pct=results.length>0?Math.round((ok/results.length)*100):0;
+    return (
+      <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:20,padding:24}}>
+        <div style={{fontFamily:FM,fontSize:56,color:pct>=80?'#4ade80':pct>=60?C.accent:'#f87171'}}>{pct}%</div>
+        <div style={{fontFamily:FU,fontSize:15,color:C.inkMute}}>{ok} / {results.length} oikein</div>
+        <button onClick={()=>onFinish(results)} style={{padding:'14px 48px',border:'none',borderRadius:10,cursor:'pointer',background:`linear-gradient(135deg,${C.accentDark},${C.accent})`,color:'#fff',fontFamily:FS,fontSize:18,fontWeight:600,boxShadow:`0 4px 16px rgba(201,122,60,0.3)`}}>Valmis</button>
+      </div>
+    );
+  }
+
+  const prog=idx/items.length;
+  const parts=item.sentence.split('___');
+
+  const SentenceCard=(
+    <IndexCard cat={item.cat} style={{marginBottom:12}}>
+      <div style={{minHeight:80,display:'flex',flexDirection:'column',justifyContent:'center',gap:8}}>
+        <div style={{fontSize:10,fontFamily:FM,color:prepColor(item.cat),textTransform:'uppercase',letterSpacing:'0.1em'}}>{PREP_CATS[item.cat]?.short} · {'★'.repeat(item.diff||1)}</div>
+        <div style={{fontFamily:FS,fontSize:19,color:C.ink,fontWeight:600,lineHeight:1.5}}>
+          {parts[0]}<span style={{borderBottom:`2px solid ${C.accent}`,padding:'0 6px',color:C.accent,fontWeight:700}}>_____</span>{parts[1]}
+        </div>
+        {item.fi&&<div style={{fontFamily:FU,fontSize:12,color:C.inkMute,fontStyle:'italic'}}>{item.fi}</div>}
+      </div>
+    </IndexCard>
+  );
+
+  if(mode==='prepQuiz') {
+    const correctOpt=item.answer;
+    return (
+      <div style={{flex:1,overflow:'auto',padding:16}}>
+        <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:16}}>
+          <span style={{fontFamily:FM,fontSize:12,color:C.inkMute}}>{idx+1}/{items.length}</span>
+          <div style={{flex:1,height:3,background:C.bgGlow,borderRadius:2}}>
+            <div style={{height:'100%',width:`${prog*100}%`,background:C.accent,borderRadius:2,transition:'width 0.3s'}}/>
+          </div>
+        </div>
+        {SentenceCard}
+        <div style={{display:'flex',flexDirection:'column',gap:8}}>
+          {options.map((opt,i)=>{
+            const isCorrect=opt===correctOpt, isSel=selected===opt;
+            let bg=C.bgGlow,col2=C.paper,border=`1px solid #2a201a`;
+            if(selected){
+              if(isCorrect){bg='#102a10';col2='#4ade80';border='1px solid #4ade80';}
+              else if(isSel){bg='#2a1010';col2='#f87171';border='1px solid #f87171';}
+            }
+            return (
+              <button key={i} onClick={()=>{if(selected)return;setSelected(opt);}} style={{padding:'13px 14px',border,borderRadius:8,cursor:selected?'default':'pointer',background:bg,color:col2,fontFamily:FU,fontSize:14,textAlign:'left',transition:'all 0.2s'}}>
+                {opt}
+              </button>
+            );
+          })}
+        </div>
+        {selected&&(
+          <div style={{marginTop:12}}>
+            <div style={{padding:'10px 12px',background:C.bgGlow,borderRadius:8,borderLeft:`3px solid ${selected===correctOpt?'#4ade80':'#f87171'}`,marginBottom:10}}>
+              <div style={{fontFamily:FU,fontSize:13,fontWeight:600,color:selected===correctOpt?'#4ade80':'#f87171',marginBottom:item.tip?6:0}}>
+                {selected===correctOpt?'✓ Oikein!':`✗ Oikea vastaus: ${correctOpt}`}
+              </div>
+              {item.tip&&<div style={{fontFamily:FU,fontSize:11,color:C.inkFaint}}>{item.tip}</div>}
+            </div>
+            <button onClick={()=>advance(selected===correctOpt)} style={{width:'100%',padding:'14px',border:'none',borderRadius:8,cursor:'pointer',background:`linear-gradient(135deg,${C.accentDark},${C.accent})`,color:'#fff',fontFamily:FS,fontSize:17,fontWeight:600}}>
+              {idx+1>=items.length?'Valmis →':'Jatka →'}
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // mode==='prepWrite'
+  const writeCorrect=normalizeAns(input)===normalizeAns(item.answer);
+  function submitWrite(){ if(!submitted&&input.trim())setSubmitted(true); }
+  return (
+    <div style={{flex:1,overflow:'auto',padding:16}}>
+      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:16}}>
+        <span style={{fontFamily:FM,fontSize:12,color:C.inkMute}}>{idx+1}/{items.length}</span>
+        <div style={{flex:1,height:3,background:C.bgGlow,borderRadius:2}}>
+          <div style={{height:'100%',width:`${prog*100}%`,background:C.accent,borderRadius:2,transition:'width 0.3s'}}/>
+        </div>
+      </div>
+      {SentenceCard}
+      <input autoFocus value={input} disabled={submitted}
+        onChange={e=>setInput(e.target.value)}
+        onKeyDown={e=>{if(e.key==='Enter')submitWrite();}}
+        placeholder="prepositio…"
+        style={{width:'100%',padding:'14px',background:C.bgGlow,border:`1px solid ${submitted?(writeCorrect?'#4ade80':'#f87171'):'#2a201a'}`,borderRadius:8,color:C.paper,fontFamily:FU,fontSize:16,marginBottom:10}}/>
+      {!submitted&&(
+        <button onClick={submitWrite} disabled={!input.trim()} style={{width:'100%',padding:'14px',border:'none',borderRadius:8,cursor:input.trim()?'pointer':'default',background:input.trim()?`linear-gradient(135deg,${C.accentDark},${C.accent})`:C.bgGlow,color:input.trim()?'#fff':C.inkMute,fontFamily:FS,fontSize:17,fontWeight:600}}>
+          Tarkista
+        </button>
+      )}
+      {submitted&&(
+        <div>
+          <div style={{padding:'12px',background:C.bgGlow,borderRadius:8,borderLeft:`3px solid ${writeCorrect?'#4ade80':'#f87171'}`,marginBottom:10}}>
+            <div style={{fontFamily:FU,fontSize:13,fontWeight:600,color:writeCorrect?'#4ade80':'#f87171',marginBottom:6}}>
+              {writeCorrect?'✓ Oikein!':'✗ Väärin'}
+            </div>
+            {!writeCorrect&&<div style={{fontFamily:FU,fontSize:13,color:C.paper,marginBottom:item.tip?6:0}}>Oikea vastaus: <b style={{color:'#4ade80'}}>{item.answer}</b></div>}
+            {item.tip&&<div style={{fontFamily:FU,fontSize:11,color:C.inkFaint}}>{item.tip}</div>}
+          </div>
+          <button onClick={()=>advance(writeCorrect)} style={{width:'100%',padding:'14px',border:'none',borderRadius:8,cursor:'pointer',background:`linear-gradient(135deg,${C.accentDark},${C.accent})`,color:'#fff',fontFamily:FS,fontSize:17,fontWeight:600}}>
+            {idx+1>=items.length?'Valmis →':'Jatka →'}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── HOME VIEW ──────────────────────────────────────────────────────────────── */
-function HomeView({state,onPractice}) {
-  const [showModes,setShowModes]=useState(false);
+function HomeView({state,onPractice,onPracticePrep}) {
+  const [modeScreen,setModeScreen]=useState(null); // null | 'vocab' | 'prep'
   const [selCat,setSelCat]=useState('all');
+  const [selPrepCat,setSelPrepCat]=useState('all');
   const xp=state.xp||0;
   const lv=getLevel(xp), lvIdx=getLevelIdx(xp), next=LEVELS[lvIdx+1];
   const xpIn=xp-lv.min, xpNeed=next?next.min-lv.min:1;
@@ -914,10 +1092,13 @@ function HomeView({state,onPractice}) {
   const dailyGoal=state.dailyGoal||250;
   const todayXp=state.todayXp||0;
   const dailyPct=Math.min(1,todayXp/dailyGoal);
+  const prepMastered=getPrepMastered(state);
+  const prepTot=(state.prepTotalCorrect||0)+(state.prepTotalWrong||0);
+  const prepAcc=prepTot>0?Math.round(((state.prepTotalCorrect||0)/prepTot)*100):0;
 
-  if(showModes) return (
+  if(modeScreen==='vocab') return (
     <div style={{padding:16}}>
-      <button onClick={()=>setShowModes(false)} style={{background:'none',border:'none',color:C.inkMute,cursor:'pointer',fontFamily:FU,fontSize:13,marginBottom:16,padding:0}}>← Takaisin</button>
+      <button onClick={()=>setModeScreen(null)} style={{background:'none',border:'none',color:C.inkMute,cursor:'pointer',fontFamily:FU,fontSize:13,marginBottom:16,padding:0}}>← Takaisin</button>
       <div style={{fontFamily:FS,fontSize:26,color:C.paper,marginBottom:16}}>Valitse harjoitus</div>
       <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:8}}>Kategoria</div>
       <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:20}}>
@@ -930,7 +1111,31 @@ function HomeView({state,onPractice}) {
       <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:8}}>Harjoitusmuoto</div>
       <div style={{display:'flex',flexDirection:'column',gap:10}}>
         {[{id:'flash',title:'Korttipakka',desc:'Kääntele kortteja omaan tahtiin'},{id:'quiz',title:'Monivalinta',desc:'Valitse oikea vastaus neljästä'},{id:'write',title:'Kirjoitus',desc:'Kirjoita englanninkielinen termi muistista'}].map(m=>(
-          <button key={m.id} onClick={()=>{setShowModes(false);onPractice(m.id,selCat);}} style={{padding:'16px',border:`1px solid #2a201a`,borderRadius:10,cursor:'pointer',background:C.bgGlow,textAlign:'left'}}>
+          <button key={m.id} onClick={()=>{setModeScreen(null);onPractice(m.id,selCat);}} style={{padding:'16px',border:`1px solid #2a201a`,borderRadius:10,cursor:'pointer',background:C.bgGlow,textAlign:'left'}}>
+            <div style={{fontFamily:FS,fontSize:20,color:C.paper,marginBottom:4}}>{m.title}</div>
+            <div style={{fontFamily:FU,fontSize:12,color:C.inkMute}}>{m.desc}</div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  if(modeScreen==='prep') return (
+    <div style={{padding:16}}>
+      <button onClick={()=>setModeScreen(null)} style={{background:'none',border:'none',color:C.inkMute,cursor:'pointer',fontFamily:FU,fontSize:13,marginBottom:16,padding:0}}>← Takaisin</button>
+      <div style={{fontFamily:FS,fontSize:26,color:C.paper,marginBottom:16}}>Valitse prepositioharjoitus</div>
+      <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:8}}>Kategoria</div>
+      <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:20}}>
+        {['all',...Object.keys(PREP_CATS)].map(k=>(
+          <button key={k} onClick={()=>setSelPrepCat(k)} style={{padding:'6px 12px',borderRadius:20,border:'none',cursor:'pointer',background:selPrepCat===k?C.accent:C.bgGlow,color:selPrepCat===k?'#fff':C.inkMute,fontFamily:FU,fontSize:12,fontWeight:500}}>
+            {k==='all'?'Kaikki':PREP_CATS[k].fi}
+          </button>
+        ))}
+      </div>
+      <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:8}}>Harjoitusmuoto</div>
+      <div style={{display:'flex',flexDirection:'column',gap:10}}>
+        {[{id:'prepQuiz',title:'Valitse listalta',desc:'Valitse oikea prepositio neljästä vaihtoehdosta'},{id:'prepWrite',title:'Kirjoita itse',desc:'Kirjoita puuttuva prepositio muistista'}].map(m=>(
+          <button key={m.id} onClick={()=>{setModeScreen(null);onPracticePrep(m.id,selPrepCat);}} style={{padding:'16px',border:`1px solid #2a201a`,borderRadius:10,cursor:'pointer',background:C.bgGlow,textAlign:'left'}}>
             <div style={{fontFamily:FS,fontSize:20,color:C.paper,marginBottom:4}}>{m.title}</div>
             <div style={{fontFamily:FU,fontSize:12,color:C.inkMute}}>{m.desc}</div>
           </button>
@@ -958,8 +1163,11 @@ function HomeView({state,onPractice}) {
           <div style={{height:4,background:C.bgGlow,borderRadius:2}}><div style={{height:'100%',width:`${pct}%`,background:`linear-gradient(90deg,${C.accentDark},${C.accent})`,borderRadius:2,transition:'width 0.5s'}}/></div>
         </div>
       )}
-      <button onClick={()=>setShowModes(true)} style={{width:'100%',padding:'16px',border:'none',borderRadius:10,cursor:'pointer',background:`linear-gradient(135deg,${C.accentDark},${C.accent})`,color:'#fff',fontFamily:FS,fontSize:20,fontWeight:600,boxShadow:`0 4px 16px rgba(201,122,60,0.3)`,marginBottom:14}}>
-        Harjoittele →
+      <button onClick={()=>setModeScreen('vocab')} style={{width:'100%',padding:'16px',border:'none',borderRadius:10,cursor:'pointer',background:`linear-gradient(135deg,${C.accentDark},${C.accent})`,color:'#fff',fontFamily:FS,fontSize:20,fontWeight:600,boxShadow:`0 4px 16px rgba(201,122,60,0.3)`,marginBottom:10}}>
+        Sanasto →
+      </button>
+      <button onClick={()=>setModeScreen('prep')} style={{width:'100%',padding:'14px',border:`1px solid ${C.accent}`,borderRadius:10,cursor:'pointer',background:'transparent',color:C.accent,fontFamily:FS,fontSize:17,fontWeight:600,marginBottom:14}}>
+        Prepositiot →
       </button>
       <div style={{background:C.bgGlow,borderRadius:10,padding:'12px 14px',marginBottom:16}}>
         <div style={{display:'flex',justifyContent:'space-between',marginBottom:6}}>
@@ -984,6 +1192,21 @@ function HomeView({state,onPractice}) {
             {s.sub&&<div style={{fontFamily:FU,fontSize:10,color:C.inkFaint}}>{s.sub}</div>}
           </div>
         ))}
+      </div>
+      <div style={{marginBottom:16}}>
+        <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:8}}>Prepositiot</div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+          {[
+            {label:'Hallittu',val:`${prepMastered}`,sub:`/ ${PREP_SENTENCES.length}`},
+            {label:'Tarkkuus',val:(state.prepSessions||0)>0?`${prepAcc}%`:'—',sub:`${state.prepSessions||0} sessiota`},
+          ].map((s,i)=>(
+            <div key={i} style={{background:C.bgGlow,borderRadius:8,padding:'12px'}}>
+              <div style={{fontFamily:FM,fontSize:20,color:C.paper}}>{s.val}</div>
+              <div style={{fontFamily:FU,fontSize:11,color:C.inkMute,marginTop:2}}>{s.label}</div>
+              {s.sub&&<div style={{fontFamily:FU,fontSize:10,color:C.inkFaint}}>{s.sub}</div>}
+            </div>
+          ))}
+        </div>
       </div>
       {(state.achievements||[]).length>0&&(()=>{
         const lastA=ACHIEVEMENTS.find(a=>a.id===(state.achievements||[]).slice(-1)[0]);
@@ -1130,6 +1353,31 @@ function StatsView({state}) {
         );
       })}
 
+      <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:10,marginTop:20}}>Prepositiot kategorioittain</div>
+      {Object.entries(PREP_CATS).map(([key,cat])=>{
+        const ps=PREP_SENTENCES.filter(p=>p.cat===key);
+        const m=ps.filter(p=>state.preps&&state.preps[p.id]?.box>=3).length;
+        const tc=ps.reduce((s,p)=>s+(state.preps&&state.preps[p.id]?.correct||0),0);
+        const tw=ps.reduce((s,p)=>s+(state.preps&&state.preps[p.id]?.wrong||0),0);
+        const catAcc=tc+tw>0?Math.round(100*tc/(tc+tw)):null;
+        const pct=ps.length>0?Math.round((m/ps.length)*100):0;
+        return (
+          <div key={key} style={{background:C.bgGlow,borderRadius:8,padding:'10px 12px',marginBottom:8}}>
+            <div style={{display:'flex',justifyContent:'space-between',marginBottom:6}}>
+              <span style={{fontFamily:FU,fontSize:13,color:C.paper}}>{cat.fi}</span>
+              <span style={{fontFamily:FM,fontSize:11,color:m>0?C.paper:C.inkMute}}>{m}/{ps.length}</span>
+            </div>
+            <div style={{height:4,background:'#1a1510',borderRadius:2,marginBottom:4}}>
+              <div style={{height:'100%',width:`${Math.max(pct,m>0?2:0)}%`,background:prepColor(key),borderRadius:2}}/>
+            </div>
+            {catAcc!==null
+              ?<div style={{fontFamily:FU,fontSize:10,color:C.inkFaint}}>Tarkkuus: {catAcc}%</div>
+              :<div style={{fontFamily:FU,fontSize:10,color:C.inkFaint}}>Ei harjoiteltu vielä</div>
+            }
+          </div>
+        );
+      })}
+
       {weak.length>0&&<>
         <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:10,marginTop:20}}>Kehitettävää</div>
         <div style={{display:'flex',flexDirection:'column',gap:6}}>
@@ -1213,6 +1461,20 @@ function GuideView({state}) {
         <div style={{fontFamily:FU,fontSize:10,color:C.inkFaint,marginTop:8}}>B3+ = sana on "hallittu". B5 = 30 päivän väli.</div>
       </div>
 
+      <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:10}}>Prepositioharjoittelu</div>
+      <div style={{background:C.bgGlow,borderRadius:10,padding:'14px',marginBottom:20}}>
+        <div style={{display:'flex',gap:12,marginBottom:10}}>
+          <div style={{width:36,height:36,borderRadius:8,background:'rgba(201,122,60,0.15)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}}>🔤</div>
+          <div>
+            <div style={{fontFamily:FU,fontSize:14,fontWeight:600,color:C.paper,marginBottom:4}}>Erillinen, kevyt harjoittelumoduuli</div>
+            <div style={{fontFamily:FU,fontSize:12,color:C.inkMute,lineHeight:1.5}}>Prepositiot ovat suomenkieliselle usein hankalia (esim. "responsible for", ei "responsible of"). Etusivun "Prepositiot →" -painike avaa oman harjoittelun: täytä puuttuva prepositio lauseeseen joko valitsemalla listalta tai kirjoittamalla itse.</div>
+          </div>
+        </div>
+        <div style={{fontFamily:FU,fontSize:11,color:C.inkFaint,lineHeight:1.6}}>
+          Käyttää samaa Leitner-kortistoa kuin sanasto, mutta seuranta on <b style={{color:C.paper}}>täysin erillinen</b> eikä vaikuta sanaston XP:hen, tasoon tai saavutuksiin. Etusivulla ja Edistyminen-välilehdellä näet vain kevyen tarkkuus % ja hallittujen lauseiden määrän.
+        </div>
+      </div>
+
       <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:10}}>Tasokartta</div>
       <div style={{background:C.bgGlow,borderRadius:10,overflow:'hidden',marginBottom:20}}>
         {LEVELS.map((l,i)=>{
@@ -1235,9 +1497,9 @@ function GuideView({state}) {
       <div style={{fontFamily:FU,fontSize:10,color:C.inkMute,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:10}}>Välilehdet</div>
       <div style={{display:'flex',flexDirection:'column',gap:8}}>
         {[
-          {icon:'🏠',title:'Etusivu',desc:'Tasosi, XP-palkki, päivän tavoite ja pikakäynnistys harjoitteluun.'},
+          {icon:'🏠',title:'Etusivu',desc:'Tasosi, XP-palkki, päivän tavoite. Kaksi harjoituspolkua: "Sanasto →" ja "Prepositiot →".'},
           {icon:'📚',title:'Sanasto',desc:'Selaa koko sanastoa kategorioittain. Näet boksitason ja oikein/väärin-tilaston.'},
-          {icon:'📊',title:'Edistyminen',desc:'Kategoriakohtainen hallinta, heikot sanat, saavutukset ja export Claudelle.'},
+          {icon:'📊',title:'Edistyminen',desc:'Kategoriakohtainen hallinta, heikot sanat, saavutukset, prepositiokatsaus ja export Claudelle.'},
           {icon:'💡',title:'Ohjeet',desc:'Tämä sivu. SRS-selitys, tasokartta ja välilehtikuvaukset.'},
           {icon:'⚙️',title:'Asetukset',desc:'Päivän XP-tavoite, varmuuskopiointi ja datan nollaus.'},
         ].map(({icon,title,desc})=>(
@@ -1481,6 +1743,18 @@ function App() {
     setPractMode(mode); setPractWords(shuffled); setView('practice');
   }
 
+  function startPracticePrep(mode,cat) {
+    const today=todayKey();
+    let pool=PREP_SENTENCES.filter(p=>{const ps=state.preps[p.id];return !ps||ps.nextReview<=today;});
+    if(cat!=='all') pool=pool.filter(p=>p.cat===cat);
+    if(pool.length<5){
+      pool=cat==='all'?[...PREP_SENTENCES]:PREP_SENTENCES.filter(p=>p.cat===cat);
+    }
+    const picked=weightedSample(pool, p=>wordPriority(state.preps[p.id]), SESSION_SIZE);
+    const shuffled=picked.sort(()=>Math.random()-0.5);
+    setPractMode(mode); setPractWords(shuffled); setView('practice');
+  }
+
   function onFinish(results) {
     const today=todayKey();
     const ns={...state,words:{...state.words}};
@@ -1517,15 +1791,41 @@ function App() {
     setView('home'); setPractWords(null); setPractMode(null);
   }
 
+  // Prepositioiden oma, sanastosta erillinen tulosten kirjaus — sama SRS-mekaniikka,
+  // mutta EI kosketa xp/streak/achievements-kenttiä (kevyt seuranta -periaate).
+  function onFinishPrep(results) {
+    const today=todayKey();
+    const ns={...state,preps:{...state.preps}};
+    results.forEach(({id,correct})=>{
+      const ps={...ns.preps[id]};
+      ps.seen=true;
+      if(correct){ps.box=Math.min((ps.box||0)+1,BOX_INTERVALS.length-1);ps.correct=(ps.correct||0)+1;}
+      else{ps.box=Math.max(0,(ps.box||0)-1);ps.wrong=(ps.wrong||0)+1;}
+      ps.nextReview=addDays(today,BOX_INTERVALS[ps.box]);
+      ns.preps[id]=ps;
+    });
+    const ok=results.filter(r=>r.correct).length;
+    ns.prepTotalCorrect=(ns.prepTotalCorrect||0)+ok;
+    ns.prepTotalWrong=(ns.prepTotalWrong||0)+(results.length-ok);
+    ns.prepSessions=(ns.prepSessions||0)+1;
+    save(ns);
+    setView('home'); setPractWords(null); setPractMode(null);
+  }
+  function isPrepMode(m){ return m==='prepQuiz'||m==='prepWrite'; }
+
   if(view==='practice'&&practWords) return (
     <Shell>
       <div style={{display:'flex',alignItems:'center',padding:'12px 16px',paddingTop:'max(12px,env(safe-area-inset-top))',borderBottom:`1px solid #1a1410`,background:'#0d0a07',flexShrink:0}}>
         <button onClick={()=>{setView('home');setPractWords(null);}} style={{background:'none',border:'none',cursor:'pointer',color:C.inkMute,fontFamily:FU,fontSize:13,padding:0}}>← Takaisin</button>
-        <span style={{flex:1,textAlign:'center',color:C.paper,fontFamily:FU,fontSize:13,fontWeight:600}}>{practMode==='flash'?'Korttipakka':practMode==='write'?'Kirjoitus':'Monivalinta'}</span>
+        <span style={{flex:1,textAlign:'center',color:C.paper,fontFamily:FU,fontSize:13,fontWeight:600}}>
+          {practMode==='flash'?'Korttipakka':practMode==='write'?'Kirjoitus':practMode==='quiz'?'Monivalinta':practMode==='prepQuiz'?'Prepositiot: valinta':practMode==='prepWrite'?'Prepositiot: kirjoitus':''}
+        </span>
         <span style={{width:60}}/>
       </div>
       <div style={{flex:1,overflow:'auto',display:'flex',flexDirection:'column'}}>
-        <Practice mode={practMode} words={practWords} onFinish={onFinish}/>
+        {isPrepMode(practMode)
+          ? <PrepPractice mode={practMode} items={practWords} onFinish={onFinishPrep}/>
+          : <Practice mode={practMode} words={practWords} onFinish={onFinish}/>}
       </div>
     </Shell>
   );
@@ -1533,7 +1833,7 @@ function App() {
   return (
     <Shell>
       <div style={{flex:1,overflow:'auto',paddingTop:'env(safe-area-inset-top)'}}>
-        {view==='home'&&<HomeView state={state} onPractice={startPractice}/>}
+        {view==='home'&&<HomeView state={state} onPractice={startPractice} onPracticePrep={startPracticePrep}/>}
         {view==='library'&&<LibraryView state={state}/>}
         {view==='stats'&&<StatsView state={state}/>}
         {view==='guide'&&<GuideView state={state}/>}
