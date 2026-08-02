@@ -89,6 +89,30 @@ Streak:   3+ päivää
 [ ] 4. Tarkistus tehdään selaimessa VOCAB-taulukkoa lukemalla — ei pelkkää tekstihakua (apostrofit ja escapoinnit vääristävät tekstihakuja)
 ```
 
+### Prepositiot — erillinen kevyt harjoittelumoduuli (lisätty 2.8.2026)
+
+**16 lausetta aloituserässä** (pr1–pr16), tavoite 80+. Data: `PREP_SENTENCES`-taulukko VOCAB:in jälkeen index.html:ssä.
+
+| Kategoria | Sanat nyt | Viimeisin ID |
+|---|---|---|
+| business | pr1–pr6 (6 kpl) | pr6 |
+| time | pr7–pr11 (5 kpl) | pr11 |
+| place | pr12–pr14 (3 kpl) | pr14 |
+| general | pr15–pr16 (2 kpl) | pr16 |
+
+**Rakenne:** `{id, cat, diff, sentence (lause jossa '___' merkitsee aukkoa), answer, fi (suomennos kontekstiksi), tip}`.
+
+**Arkkitehtuuri — TÄRKEÄÄ ymmärtää ennen laajentamista:**
+- Täysin **erillinen tila sanastosta**: `state.preps` (peilaa `state.words`-rakennetta), `state.prepTotalCorrect/Wrong`, `state.prepSessions`. EI omaa XP:tä/tasoa/saavutuksia (kevyt seuranta -päätös) — vain tarkkuus % ja hallittujen lauseiden määrä.
+- Sama Leitner-SRS-moottori (BOX_INTERVALS) uudelleenkäytettynä, mutta `onFinishPrep()` (App-komponentissa) EI koske `words`/`xp`/`achievements`-kenttiin.
+- Kaksi harjoitustyyppiä: `prepQuiz` (valitse listalta, häiriövaihtoehdot `COMMON_PREPS`-poolista) ja `prepWrite` (kirjoita itse, normalisointi samalla `normalizeAns()`-funktiolla kuin sanaston kirjoitustehtävässä).
+- Oma komponentti `PrepPractice` (Practice-komponentin rinnalla). `App()`:ssa `isPrepMode(practMode)` päättää kumpaa komponenttia renderöidään.
+- Etusivulla kaksi selkeää painiketta: **"Sanasto →"** (pääpainike) ja **"Prepositiot →"** (toissijainen, outline-tyyli). EI omaa alapalkin välilehteä — pidetään 5-välilehtirakenne.
+- **Kaikki muutokset tähän moduuliin pitää heijastaa myös Ohjeet-välilehdellä** (käyttäjän nimenomainen vaatimus 2.8.2026) — GuideView:ssa oma "Prepositioharjoittelu"-kortti Leitner-kortin jälkeen.
+- StatsView:ssä oma "Prepositiot kategorioittain" -osio (sama malli kuin sanaston kategoriapalkit, mutta `PREP_CATS`/`PREP_SENTENCES`-pohjainen).
+
+**Laajennettaessa:** lisää `PREP_SENTENCES`-taulukkoon, tarkista viimeisin ID koodista, aja sama duplikaattitarkistus kuin sanastolle (selaimen kautta). Ei tarvitse koskea muualle — data-taulukko riittää.
+
 ### Sanastorakenne
 ```javascript
 {
