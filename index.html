@@ -83,7 +83,7 @@ const TIER_GLYPHS = [
 const BOX_INTERVALS = [0,1,3,7,14,30];
 const SK = 'acceng_v1';
 const SYNC_KEY = 'acceng_sync_v1';
-const APP_VERSION = '2.5.0 · 2026-08-02';  // R4: nosta numero JA päivitä päivämäärä (todellinen julkaisupäivä) joka julkaisussa
+const APP_VERSION = '2.6.0 · 2026-08-02';  // R4: nosta numero JA päivitä päivämäärä (todellinen julkaisupäivä) joka julkaisussa
 const SESSION_SIZE = 15;                   // sanoja per harjoitussessio — saavutusten rajat sidottu tähän
 
 /* ── GITHUB GIST SYNC ──────────────────────────────────────────────────────── */
@@ -522,6 +522,19 @@ const PREP_SENTENCES = [
   {id:'pr55', cat:'place', diff:1, sentence:'The signature line is located next ___ the date field.', answer:'to', fi:'Allekirjoitusrivi sijaitsee päivämääräkentän vieressä.', tip:'"NEXT TO" = jonkin vieressä.'},
   {id:'pr56', cat:'place', diff:2, sentence:'The new process was rolled out ___ the entire organization.', answer:'throughout', fi:'Uusi prosessi otettiin käyttöön koko organisaatiossa.', tip:'"THROUGHOUT" = kauttaaltaan, joka puolella.'},
   {id:'pr57', cat:'place', diff:1, sentence:'Total expenses are listed ___ the revenue line.', answer:'below', fi:'Kokonaiskulut on listattu liikevaihtorivin alapuolella.', tip:'"BELOW" = jonkin alapuolella (esim. raportin rivillä).'},
+  {id:'pr58', cat:'general', diff:1, sentence:'She is very good ___ analyzing complex data.', answer:'at', fi:'Hän on erittäin hyvä analysoimaan monimutkaista dataa.', tip:'"GOOD AT" = hyvä jossakin taidossa.'},
+  {id:'pr59', cat:'general', diff:1, sentence:'Investors are afraid ___ another market downturn.', answer:'of', fi:'Sijoittajat pelkäävät uutta markkinoiden laskua.', tip:'"AFRAID OF" = peloissaan jostakin.'},
+  {id:'pr60', cat:'general', diff:1, sentence:'This approach is similar ___ last year\'s method.', answer:'to', fi:'Tämä lähestymistapa on samankaltainen kuin viime vuoden menetelmä.', tip:'"SIMILAR TO" = samankaltainen kuin jokin.'},
+  {id:'pr61', cat:'general', diff:1, sentence:'Our actual results are different ___ the forecast.', answer:'from', fi:'Toteutuneet tuloksemme poikkeavat ennusteesta.', tip:'"DIFFERENT FROM" = turvallisin muoto. Myös "different to" (UK) käy puhekielessä.'},
+  {id:'pr62', cat:'general', diff:1, sentence:'The company is famous ___ its strict quality control.', answer:'for', fi:'Yhtiö on tunnettu tiukasta laadunvalvonnastaan.', tip:'"FAMOUS FOR" = tunnettu jostakin.'},
+  {id:'pr63', cat:'general', diff:1, sentence:'The whole team is proud ___ this achievement.', answer:'of', fi:'Koko tiimi on ylpeä tästä saavutuksesta.', tip:'"PROUD OF" = ylpeä jostakin.'},
+  {id:'pr64', cat:'general', diff:2, sentence:'The new system is capable ___ processing large data volumes.', answer:'of', fi:'Uusi järjestelmä pystyy käsittelemään suuria datamääriä.', tip:'"CAPABLE OF" = kykenevä johonkin.'},
+  {id:'pr65', cat:'general', diff:1, sentence:'All employees should be familiar ___ the new policy.', answer:'with', fi:'Kaikkien työntekijöiden tulisi tuntea uusi käytäntö.', tip:'"FAMILIAR WITH" = tuttu/perehtynyt johonkin.'},
+  {id:'pr66', cat:'general', diff:2, sentence:'The CFO is directly accountable ___ the board.', answer:'to', fi:'Talousjohtaja on suoraan tilivelvollinen hallitukselle.', tip:'"ACCOUNTABLE TO" = tilivelvollinen jollekulle. Ero: "responsible for" = vastuussa jostakin asiasta.'},
+  {id:'pr67', cat:'general', diff:1, sentence:'Management is worried ___ the rising costs.', answer:'about', fi:'Johto on huolissaan nousevista kustannuksista.', tip:'"WORRIED ABOUT" = huolissaan jostakin.'},
+  {id:'pr68', cat:'general', diff:1, sentence:'Clients were very satisfied ___ the new service.', answer:'with', fi:'Asiakkaat olivat erittäin tyytyväisiä uuteen palveluun.', tip:'"SATISFIED WITH" = tyytyväinen johonkin.'},
+  {id:'pr69', cat:'general', diff:1, sentence:'The company is based ___ Helsinki.', answer:'in', fi:'Yhtiön kotipaikka on Helsingissä.', tip:'"BASED IN" = sijaitsee/toimii jossakin (paikka).'},
+  {id:'pr70', cat:'general', diff:2, sentence:'The board is composed ___ seven independent members.', answer:'of', fi:'Hallitus koostuu seitsemästä riippumattomasta jäsenestä.', tip:'"COMPOSED OF" = koostuu jostakin. Huom: "comprised of" on yleinen mutta kieliopillisesti kiistelty — "composed of" on aina turvallinen valinta.'},
 ];
 
 /* ── VAIHTOEHTOISET HYVÄKSYTTÄVÄT VASTAUKSET (kirjoitusharjoitus) ───────────────
