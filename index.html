@@ -83,7 +83,7 @@ const TIER_GLYPHS = [
 const BOX_INTERVALS = [0,1,3,7,14,30];
 const SK = 'acceng_v1';
 const SYNC_KEY = 'acceng_sync_v1';
-const APP_VERSION = '2.3.0 · 2026-08-01';  // R4: nosta numero JA päivitä päivämäärä (todellinen julkaisupäivä) joka julkaisussa
+const APP_VERSION = '2.4.0 · 2026-08-01';  // R4: nosta numero JA päivitä päivämäärä (todellinen julkaisupäivä) joka julkaisussa
 const SESSION_SIZE = 15;                   // sanoja per harjoitussessio — saavutusten rajat sidottu tähän
 
 /* ── GITHUB GIST SYNC ──────────────────────────────────────────────────────── */
@@ -533,8 +533,30 @@ function getMastered(state) { return VOCAB.filter(w=>state.words[w.id]&&state.wo
 function makeOptions(word, dir) {
   const key = dir==='en2fi'?'fi':'en';
   const correct = word[key];
-  const pool = VOCAB.filter(w=>w.id!==word.id).map(w=>w[key]).sort(()=>Math.random()-0.5).slice(0,3);
+  // Häiriövaihtoehdot samasta kategoriasta ensisijaisesti — pakottaa erottamaan läheiset termit
+  // (esim. "trade receivables" vs "trade payables"). Jos kategoriassa liian vähän sanoja, käytä koko sanastoa.
+  const sameCat = VOCAB.filter(w=>w.id!==word.id&&w.cat===word.cat);
+  const source = sameCat.length>=3 ? sameCat : VOCAB.filter(w=>w.id!==word.id);
+  const pool = source.map(w=>w[key]).sort(()=>Math.random()-0.5).slice(0,3);
   return [correct,...pool].sort(()=>Math.random()-0.5);
+}
+// Sanan harjoitteluprioriteetti: matala box ja paljon vääriä vastauksia -> korkea prioriteetti.
+// Käytetään painotettuun otantaan, jotta heikot sanat toistuvat useammin ilman että ovat aina samat.
+function wordPriority(ws){
+  const box=ws?ws.box||0:0, wrong=ws?ws.wrong||0:0, correct=ws?ws.correct||0:0;
+  return Math.max((5-box)*3 + wrong*2 - correct*0.3, 0.5);
+}
+// Painotettu otanta ilman toistoa: suurempi paino = suurempi todennäköisyys tulla valituksi,
+// mutta ei deterministinen — sama sana ei aina ensimmäisenä.
+function weightedSample(arr, weightFn, n){
+  const pool=arr.slice(), weights=arr.map(weightFn), result=[];
+  for(let k=0;k<n&&pool.length>0;k++){
+    const total=weights.reduce((a,b)=>a+b,0);
+    let r=Math.random()*total, idx=0;
+    for(;idx<pool.length-1;idx++){ r-=weights[idx]; if(r<=0) break; }
+    result.push(pool[idx]); pool.splice(idx,1); weights.splice(idx,1);
+  }
+  return result;
 }
 // Kirjoitusharjoituksen vastauksen normalisointi.
 // Poistaa heittomerkit KOKONAAN — eri puhelinnäppäimistöt tuottavat eri merkin
@@ -1453,7 +1475,9 @@ function App() {
     if(pool.length<5){
       pool=cat==='all'?[...VOCAB]:VOCAB.filter(w=>w.cat===cat);
     }
-    const shuffled=pool.sort(()=>Math.random()-0.5).slice(0,SESSION_SIZE);
+    // Painotettu otanta suosii heikkoja sanoja (matala box, paljon vääriä), lopuksi sekoitus esitysjärjestykseen
+    const picked=weightedSample(pool, w=>wordPriority(state.words[w.id]), SESSION_SIZE);
+    const shuffled=picked.sort(()=>Math.random()-0.5);
     setPractMode(mode); setPractWords(shuffled); setView('practice');
   }
 
